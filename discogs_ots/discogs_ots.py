@@ -31,6 +31,7 @@ class RecordInfo:
     record_id: int = 0
     title: str = ""
     master_id: int = 0
+    tracks:  dict = field(default_factory=dict) # id and title
     extraartists_in_record: dict = field(default_factory=dict)
     extraartists_per_track_in_record: dict = field(default_factory=dict)
     extraartists_in_master: dict = field(default_factory=dict)
@@ -188,6 +189,7 @@ class OtsDiscogsToCsv:
 
             self.writeln(f'{self.current_record.title} {self.current_record.record_id}')
             self.print_extraartists_per_type()
+            self.print_sorted_extraartists()
             tempoim = False
             if ea_found_in_record and ea_found_in_master:
                 self.has_ea_in_record_and_master += 1
@@ -200,6 +202,12 @@ class OtsDiscogsToCsv:
                 self.no_ea += 1
 
             self.writeln(f'{"Note: Only found in Master)" if tempoim else ""}')
+            self.writeln('')
+            if self.current_record.tracks:
+                self.writeln("  Track list:")
+                for pos,title in sorted(self.current_record.tracks.items()):
+                    self.writeln(f"    {pos}. {title}")
+                    
             self.writeln('')
             self.writeln('')
 
@@ -267,7 +275,6 @@ class OtsDiscogsToCsv:
         if artist_name == None:
             self.writeln(f'Error: name not found in extraartists entry')
             return
-        #self.writeln(f'checking {ea["role"]} {ea["tracks"]}')
         ea_entry = ea_dict.setdefault(artist_name, {})
         # adds artist name and list/dict of roles, returned in ea_entry
         # see if role exists in discogs
@@ -285,13 +292,19 @@ class OtsDiscogsToCsv:
 
     def store_ea_info_per_track(self, tl, ea_dict):
         eats = tl.data.get('extraartists')
+        track_pos = tl.data.get('position')
+        if not track_pos:
+            self.writeln(f"track position not found for {tl}")
+            return False
+        track_title = tl.data.get('title')
+
+        if track_pos not in self.current_record.tracks:
+            self.current_record.tracks[track_pos] = track_title
+
         if eats == None:
             #self.writeln(f'Error: No Extra Artists in tracklist')
             return False
-        track = tl.data.get('position')
-        if not track:
-            self.writeln(f"track position not found for {tl}")
-            return False
+
         for ea in eats:
             artist_name = ea["name"]
             if artist_name == None:
@@ -301,7 +314,7 @@ class OtsDiscogsToCsv:
             role = ea["role"]
             if role:
                 current_tracks = ea_entry.setdefault(role,  {})
-                current_tracks[track] = None
+                current_tracks[track_pos] = None
         return True
 
 
@@ -394,6 +407,41 @@ class OtsDiscogsToCsv:
                         r += (f' ({tracks})')
                 roles.append(r)
             self.writeln(f"    {artist}: {','.join(roles)}")
+
+    def print_sorted_extraartists (self):
+        self.writeln('\n  Sorted Extra Artists')
+        types = [
+                ("ear", self.current_record.extraartists_in_record),
+                ("eat", self.current_record.extraartists_per_track_in_record),
+                ("emr", self.current_record.extraartists_in_master),
+                ("emt", self.current_record.extraartists_per_track_in_master)
+                ]
+
+        all_eas = []
+        for p_e in types:
+            all_eas.extend(self.get_extraartists_in_entry(p_e[0], p_e[1]))
+
+        all_eas.sort(key=lambda x: x.split(":", maxsplit=1)[1])
+        for e in all_eas:
+            self.writeln(e)
+
+
+
+    def get_extraartists_in_entry (self, prefix, entry):
+        artist = '' 
+        all_ea = []
+        for a, role_dict in entry.items():
+            artist = a
+            roles = []
+            for r, track_dict in role_dict.items():
+                if track_dict:
+                    tracks = ",".join(track_dict.keys())
+                    if tracks:
+                        r += (f' ({tracks})')
+                roles.append(r)
+            all_ea.append(f"    {prefix}: {artist}: {','.join(roles)}")
+        return all_ea
+
 
     def to_int(self, value):
         try:
