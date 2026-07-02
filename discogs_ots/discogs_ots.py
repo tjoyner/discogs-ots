@@ -5,6 +5,7 @@ import time
 import argparse
 import sys
 import os
+import re
 import contextlib
 import datetime
 from dataclasses import dataclass, field
@@ -12,6 +13,7 @@ import pprint
 import configparser
 
 # temp fix for encoding: $env:PYTHONIOENCODING="utf-8"
+#                        or set pythonencoding="utf-8"
 # or: python your_script.py | Out-File -Encoding utf8 output.txt
 
 """ 
@@ -105,7 +107,7 @@ class OtsDiscogsToCsv:
                 self.user_token = config['api']['user_token']
 
         if output_file:
-            self.out = open(args.output_file, mode='w', encoding='utf-8')
+            self.out = open(args.output_file, mode='w', encoding='utf-8') # temp!!
         else:
             sys.stdout.reconfigure(encoding='utf-8') # Keep PowerShell happy!
             self.out = sys.stdout
@@ -130,6 +132,7 @@ class OtsDiscogsToCsv:
         if self.query_for_ids:
             me = self.d.identity()
             my_releases = me.collection_folders[0].releases
+
             for r in my_releases:
                 if self.get_record_data(r.id):
                     self.records += 1
@@ -188,7 +191,7 @@ class OtsDiscogsToCsv:
             #self.writeln(f'{self.release.title}, {ea_names}, {ea_names_per_track}  {ea_names_master}, {ea_names_per_track_master}')
 
             self.writeln(f'{self.current_record.title} {self.current_record.record_id}')
-            self.print_extraartists_per_type()
+            self.print_extraartists_per_type_dups() # testing!!
             self.print_sorted_extraartists()
             tempoim = False
             if ea_found_in_record and ea_found_in_master:
@@ -205,7 +208,7 @@ class OtsDiscogsToCsv:
             self.writeln('')
             if self.current_record.tracks:
                 self.writeln("  Track list:")
-                for pos,title in sorted(self.current_record.tracks.items()):
+                for pos,title in sorted(self.current_record.tracks.items(), key=self.sort_track_pos):
                     self.writeln(f"    {pos}. {title}")
                     
             self.writeln('')
@@ -222,6 +225,19 @@ class OtsDiscogsToCsv:
                 self.writeln(f"A different API error occurred: {e}")
             return False
 
+    def sort_track_pos(self, item):
+        key = item[0]  # Get the dictionary key
+        match = re.match(r"([a-zA-Z]+)(\d+)", key)
+        if match:
+            alpha, num = match.groups()
+            return (alpha, int(num))  # Returns e.g., ('a', 10)
+        try:
+            r = int(key)
+            return ('', r) 
+        except ValueError:
+            return (key, 0)
+        
+
     def get_extraartists (self, record):
         found_ea = False
         eas = record.data.get('extraartists')
@@ -232,20 +248,17 @@ class OtsDiscogsToCsv:
             cur_dict = self.current_record.extraartists_in_master
 
         if eas == None:
-            pass
+            if self.master:
+                pass
             #self.writeln (f'No extraartists for record id={record.id}')
         else:
+            if self.master:
+                self.writeln (f'Extraartists in master for record id={self.current_record.record_id}')
             for ea in eas:
                 self.store_ea_info(ea, cur_dict)
         #    ea_names = "|".join(f'{ea["role"]} : {ea["name"]}' for ea in eas)
         #    self.writeln (f"cn={ea_names}")
             found_ea = True
-
-        # Temp
-        #for a in cur_dict.keys():
-        #    self.writeln(f'{a}')
-        #self.writeln(f'{pprint.pformat(cur_dict)}')
-        #self.writeln('')
 
         cur_dict = self.current_record.extraartists_per_track_in_record
         if self.master:
@@ -269,12 +282,17 @@ class OtsDiscogsToCsv:
 
         return found_ea
 
+    def remove_trailing_parens(self, artist_name):
+        pattern = r"\s*\(\d+\)$"
+        return re.sub(pattern, '', artist_name)
+
     def store_ea_info(self, ea, ea_dict):
         # ea_dict is artist : roles
         artist_name = ea["name"]
         if artist_name == None:
             self.writeln(f'Error: name not found in extraartists entry')
             return
+        artist_name = self.remove_trailing_parens(artist_name)
         ea_entry = ea_dict.setdefault(artist_name, {})
         # adds artist name and list/dict of roles, returned in ea_entry
         # see if role exists in discogs
@@ -293,10 +311,14 @@ class OtsDiscogsToCsv:
     def store_ea_info_per_track(self, tl, ea_dict):
         eats = tl.data.get('extraartists')
         track_pos = tl.data.get('position')
+        track_type = tl.data.get('type_')
+        track_title = tl.data.get('title')
+        if not track_type or track_type != "track":
+            self.writeln(f"Skipping track type \"{track_type}\" found for {track_title}, pos={track_pos}")
+            return False
         if not track_pos:
             self.writeln(f"track position not found for {tl}")
             return False
-        track_title = tl.data.get('title')
 
         if track_pos not in self.current_record.tracks:
             self.current_record.tracks[track_pos] = track_title
@@ -310,6 +332,7 @@ class OtsDiscogsToCsv:
             if artist_name == None:
                 self.writeln(f'Error: name not found in extraartists entry')
                 continue
+            artist_name = self.remove_trailing_parens(artist_name)
             ea_entry = ea_dict.setdefault(artist_name, {})
             role = ea["role"]
             if role:
@@ -408,12 +431,65 @@ class OtsDiscogsToCsv:
                 roles.append(r)
             self.writeln(f"    {artist}: {','.join(roles)}")
 
+    # test code to show duplicates in different colors
+    def print_extraartists_per_type_dups (self):
+        ea_list_as_string = [
+        [],
+        [],
+        [],
+        []]
+
+
+        self.writeln("  Release Record Extra Artists")
+        self.print_extraartists_dups(self.current_record.extraartists_in_record, 0, ea_list_as_string)
+        self.writeln("\n  Release Record Extra Artists Per Track")
+        self.print_extraartists_dups(self.current_record.extraartists_per_track_in_record, 1, ea_list_as_string)
+        self.writeln("\n  Master Record Extra Artists")
+        self.print_extraartists_dups(self.current_record.extraartists_in_master, 2, ea_list_as_string)
+        self.writeln("\n  Master Record Extra Artists Per Track")
+        self.print_extraartists_dups(self.current_record.extraartists_per_track_in_master, 3, ea_list_as_string)
+
+    def print_extraartists_dups (self, entry, index, ea_list_as_string):
+        artist = '' 
+        for a, role_dict in entry.items():
+            artist = a
+            roles = []
+            for r, track_dict in role_dict.items():
+                if track_dict:
+                    tracks = ",".join(track_dict.keys())
+                    if tracks:
+                        r += (f' ({tracks})')
+                roles.append(r)
+            
+            a_r = f"{artist}: {','.join(roles)}"
+            elas = ea_list_as_string[index]
+            elas.append(a_r)
+            i, dup  = self.check_for_dup(a_r, index, ea_list_as_string)
+            dup_location = '' # asterisks
+            if dup:
+                if i == 0:
+                    dup_location = "* ear"
+                elif i == 1:
+                    dup_location = "** ert"
+                elif i == 2:
+                    dup_location = "*** eam"
+            
+            self.writeln(f"    {a_r}{dup_location}")
+
+    def check_for_dup(self, a_r, index, ea_list_as_string):
+        if index == 0: 
+            return 0, False
+        for ll in range(0,index):
+            if a_r in ea_list_as_string[ll]: 
+                return ll, True
+        return 0, False
+
     def print_sorted_extraartists (self):
         self.writeln('\n  Sorted Extra Artists')
         types = [
                 ("ear", self.current_record.extraartists_in_record),
-                ("eat", self.current_record.extraartists_per_track_in_record),
-                ("emr", self.current_record.extraartists_in_master),
+                ("ert", self.current_record.extraartists_per_track_in_record),
+                ("eam", self.current_record.extraartists_in_master),
                 ("emt", self.current_record.extraartists_per_track_in_master)
                 ]
 
