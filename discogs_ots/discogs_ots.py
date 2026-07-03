@@ -15,6 +15,24 @@ import configparser
 # temp fix for encoding: $env:PYTHONIOENCODING="utf-8"
 #                        or set pythonencoding="utf-8"
 # or: python your_script.py | Out-File -Encoding utf8 output.txt
+API_ROLE = "role"
+API_WRITTEN_BY = "Written-By"
+API_POSITION = "position"
+API_EXTRAARTISTS = "extraartists"
+API_TYPE_ = "type_"
+API_TITLE = "title"
+API_TRACK_TYPE_TRACK = "track"
+
+CFG_SETTINGS="settings"
+CFG_API="api"
+
+CFG_SINGLE_ID="single_id"
+CFG_INPUT_FILE="input_file"
+CFG_OUTPUT_FILE="output_file"
+CFG_QUERY_FOR_IDS="query_for_ids"
+CFG_IGNORE_ROLES="ignore_roles"
+CFG_USER_AGENT="user_agent"
+CFG_USER_TOKEN="user_token"
 
 """ 
 Read the artist and role into a list of tuples. 
@@ -59,6 +77,8 @@ class OtsDiscogsToCsv:
 
         self.start = datetime.datetime.now()
 
+        self.ignore_roles = None
+
         args = self.parse_arguments()
         output_file = None
         if args.output_file:
@@ -91,23 +111,30 @@ class OtsDiscogsToCsv:
         if args.query_for_ids:
             self.query_for_ids = True
 
+        if args.ignore_roles:
+            self.ignore_roles =  [r.strip() for r in args.ignore_roles.split(',')]
+
         if config:
             if not args.record_id:
-                self.single_id = config["settings"]["single_id"]
+                self.single_id = config[CFG_SETTINGS][CFG_SINGLE_ID]
             if not args.output_file:
-                self.output_file = config["settings"]["output_file"]
+                self.output_file = config[CFG_SETTINGS][CFG_OUTPUT_FILE]
             if not args.input_file:
                 self.file = args.input_file
-                self.file = config["settings"]["input_file"]
+                self.file = config[CFG_SETTINGS][CFG_INPUT_FILE]
             if not args.query_for_ids:
-                self.user_agent = config['settings']['query_for_ids']
+                self.user_agent = config[CFG_SETTINGS][CFG_QUERY_FOR_IDS]
+            if not self.ignore_roles:
+                ir = config[CFG_SETTINGS][CFG_IGNORE_ROLES]
+                self.ignore_roles =  [r.strip() for r in ir.split(',')]
+
             if not self.user_agent:
-                self.user_agent = config['api']['user_agent']
+                self.user_agent = config[CFG_API][CFG_USER_AGENT]
             if not self.user_token:
-                self.user_token = config['api']['user_token']
+                self.user_token = config[CFG_API][CFG_USER_TOKEN]
 
         if output_file:
-            self.out = open(args.output_file, mode='w', encoding='utf-8') # temp!!
+            self.out = open(args.output_file, mode='w', encoding='utf-8')
         else:
             sys.stdout.reconfigure(encoding='utf-8') # Keep PowerShell happy!
             self.out = sys.stdout
@@ -231,6 +258,11 @@ class OtsDiscogsToCsv:
         if match:
             alpha, num = match.groups()
             return (alpha, int(num))  # Returns e.g., ('a', 10)
+        # try 1-1 type
+        match = re.match(r"(\d+)-(\d+)", key)
+        if match:
+            n1, n2 = match.groups()
+            return (int(n1), int(n2))  # Returns e.g., ('a', 10)
         try:
             r = int(key)
             return ('', r) 
@@ -240,7 +272,7 @@ class OtsDiscogsToCsv:
 
     def get_extraartists (self, record):
         found_ea = False
-        eas = record.data.get('extraartists')
+        eas = record.data.get(API_EXTRAARTISTS)
         ea_names = ""
 
         cur_dict = self.current_record.extraartists_in_record
@@ -296,8 +328,8 @@ class OtsDiscogsToCsv:
         ea_entry = ea_dict.setdefault(artist_name, {})
         # adds artist name and list/dict of roles, returned in ea_entry
         # see if role exists in discogs
-        role = ea["role"]
-        if role:
+        role = ea[API_ROLE]
+        if role and not self.ignore_role(role):
             current_tracks = ea_entry.setdefault(role,  {})
             # adds role to ea_entry with a list/dict of tracks, returned in current_tracks
             #current_tracks = roles.setdefault(role, {})
@@ -309,11 +341,11 @@ class OtsDiscogsToCsv:
                     #roles.update(dict.fromkeys(tracks))
 
     def store_ea_info_per_track(self, tl, ea_dict):
-        eats = tl.data.get('extraartists')
-        track_pos = tl.data.get('position')
-        track_type = tl.data.get('type_')
-        track_title = tl.data.get('title')
-        if not track_type or track_type != "track":
+        eats = tl.data.get(API_EXTRAARTISTS)
+        track_pos = tl.data.get(API_POSITION)
+        track_type = tl.data.get(API_TYPE_)
+        track_title = tl.data.get(API_TITLE)
+        if not track_type or track_type != API_TRACK_TYPE_TRACK:
             self.writeln(f"Skipping track type \"{track_type}\" found for {track_title}, pos={track_pos}")
             return False
         if not track_pos:
@@ -334,8 +366,8 @@ class OtsDiscogsToCsv:
                 continue
             artist_name = self.remove_trailing_parens(artist_name)
             ea_entry = ea_dict.setdefault(artist_name, {})
-            role = ea["role"]
-            if role:
+            role = ea[API_ROLE]
+            if role and not self.ignore_role(role):
                 current_tracks = ea_entry.setdefault(role,  {})
                 current_tracks[track_pos] = None
         return True
@@ -395,6 +427,12 @@ class OtsDiscogsToCsv:
             help="User-Agent to use for authenicated API request"
         )
 
+        parser.add_argument(
+            '-ir', '--ignore_roles', 
+            type=str, 
+            help="A list of comma-separated roles to ignore"
+        )
+
         # Parse the arguments from the command line
         return parser.parse_args()
 
@@ -451,6 +489,8 @@ class OtsDiscogsToCsv:
 
     def print_extraartists_dups (self, entry, index, ea_list_as_string):
         artist = '' 
+        dup_found = False
+        uniq_found = False
         for a, role_dict in entry.items():
             artist = a
             roles = []
@@ -465,16 +505,26 @@ class OtsDiscogsToCsv:
             elas = ea_list_as_string[index]
             elas.append(a_r)
             i, dup  = self.check_for_dup(a_r, index, ea_list_as_string)
-            dup_location = '' # asterisks
+            dup_location = '' 
             if dup:
+                dup_found = True
                 if i == 0:
                     dup_location = "* ear"
                 elif i == 1:
                     dup_location = "** ert"
                 elif i == 2:
                     dup_location = "*** eam"
+            else:
+                uniq_found = True
             
             self.writeln(f"    {a_r}{dup_location}")
+        if dup_found and uniq_found:
+            self.writeln(f" Found some duplicates")
+        elif dup_found:
+            self.writeln(f" Found all duplicates")
+        else:
+            self.writeln(f" Found no duplicates")
+
 
     def check_for_dup(self, a_r, index, ea_list_as_string):
         if index == 0: 
@@ -518,6 +568,11 @@ class OtsDiscogsToCsv:
             all_ea.append(f"    {prefix}: {artist}: {','.join(roles)}")
         return all_ea
 
+
+    def ignore_role(self, role):
+        if not self.ignore_roles:
+            return False
+        return any(role.casefold() == r.casefold() for r in self.ignore_roles)
 
     def to_int(self, value):
         try:
