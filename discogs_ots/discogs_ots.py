@@ -11,6 +11,7 @@ import datetime
 from dataclasses import dataclass, field
 import pprint
 import configparser
+from collections import Counter
 
 # temp fix for encoding: $env:PYTHONIOENCODING="utf-8"
 #                        or set pythonencoding="utf-8"
@@ -116,22 +117,29 @@ class OtsDiscogsToCsv:
 
         if config:
             if not args.record_id:
-                self.single_id = config[CFG_SETTINGS][CFG_SINGLE_ID]
+                if config.has_option(CFG_SETTINGS,CFG_SINGLE_ID):
+                    self.single_id = config[CFG_SETTINGS][CFG_SINGLE_ID]
             if not args.output_file:
-                self.output_file = config[CFG_SETTINGS][CFG_OUTPUT_FILE]
+                if config.has_option(CFG_SETTINGS,CFG_OUTPUT_FILE):
+                    self.output_file = config[CFG_SETTINGS][CFG_OUTPUT_FILE]
             if not args.input_file:
-                self.file = args.input_file
-                self.file = config[CFG_SETTINGS][CFG_INPUT_FILE]
+                if config.has_option(CFG_SETTINGS,CFG_INPUT_FILE):
+                    self.file = args.input_file
+                    self.file = config[CFG_SETTINGS][CFG_INPUT_FILE]
             if not args.query_for_ids:
-                self.user_agent = config[CFG_SETTINGS][CFG_QUERY_FOR_IDS]
+                if config.has_option(CFG_SETTINGS,CFG_QUERY_FOR_IDS):
+                    self.user_agent = config[CFG_SETTINGS][CFG_QUERY_FOR_IDS]
             if not self.ignore_roles:
-                ir = config[CFG_SETTINGS][CFG_IGNORE_ROLES]
-                self.ignore_roles =  [r.strip() for r in ir.split(',')]
+                if config.has_option(CFG_SETTINGS,CFG_IGNORE_ROLES):
+                    ir = config[CFG_SETTINGS][CFG_IGNORE_ROLES]
+                    self.ignore_roles =  [r.strip() for r in ir.split(',')]
 
             if not self.user_agent:
-                self.user_agent = config[CFG_API][CFG_USER_AGENT]
+                if config.has_option(CFG_API,CFG_USER_AGENT):
+                    self.user_agent = config[CFG_API][CFG_USER_AGENT]
             if not self.user_token:
-                self.user_token = config[CFG_API][CFG_USER_TOKEN]
+                if config.has_option(CFG_API,CFG_USER_TOKEN):
+                    self.user_token = config[CFG_API][CFG_USER_TOKEN]
 
         if output_file:
             self.out = open(args.output_file, mode='w', encoding='utf-8')
@@ -235,8 +243,10 @@ class OtsDiscogsToCsv:
             self.writeln('')
             if self.current_record.tracks:
                 self.writeln("  Track list:")
-                for pos,title in sorted(self.current_record.tracks.items(), key=self.sort_track_pos):
-                    self.writeln(f"    {pos}. {title}")
+                for pos,tw in sorted(self.current_record.tracks.items(), key=self.sort_track_pos):
+                    title = tw[0]
+                    written_by = ", ".join(tw[1])
+                    self.writeln(f"    {pos}. {title} by {written_by}")
                     
             self.writeln('')
             self.writeln('')
@@ -279,6 +289,10 @@ class OtsDiscogsToCsv:
         if self.master:
             cur_dict = self.current_record.extraartists_in_master
 
+        # just to see
+        self.tempea_written_by = []
+        self.tempeat_written_by = []
+
         if eas == None:
             if self.master:
                 pass
@@ -300,17 +314,12 @@ class OtsDiscogsToCsv:
         tls = record.tracklist
         for tl in tls or []:
             found_ea |= self.store_ea_info_per_track(tl, cur_dict)
-            #eats = tl.data.get('extraartists')
-            #if eats != None:
-            #   # self.writeln (f'ea exists in track {tl}: {eats}')
-            #    found_ea = True
-            #    for eat in eats:
-            #        artists_per_tl[eat['name']] = eat['role']
 
-        #ea_names_per_track = "|".join(f'{r} : {a}' for a,r in artists_per_tl.items())
-        #self.writeln (f"cntl={combined_names}")
-        #self.writeln(f'{pprint.pformat(cur_dict)}')
-        #self.writeln('')
+        if len(self.tempea_written_by) > 0 and len(self.tempeat_written_by) == 0:
+            self.writeln(f"Record {self.current_record.record_id} contains written-by only in ea")
+
+        if len(self.tempea_written_by) > 0 and len(self.tempeat_written_by) > 0 and (Counter(self.tempea_written_by) != Counter(self.tempeat_written_by)): 
+            self.writeln(f"Record {self.current_record.record_id} written-by doesn't match\n{self.tempea_written_by}\n{self.tempeat_written_by}")
 
         return found_ea
 
@@ -325,20 +334,26 @@ class OtsDiscogsToCsv:
             self.writeln(f'Error: name not found in extraartists entry')
             return
         artist_name = self.remove_trailing_parens(artist_name)
-        ea_entry = ea_dict.setdefault(artist_name, {})
         # adds artist name and list/dict of roles, returned in ea_entry
         # see if role exists in discogs
         role = ea[API_ROLE]
+        # TODO: store written by? Or is this always per track?
+        #if role and not self.ignore_role(role) and role != API_WRITTEN_BY:
         if role and not self.ignore_role(role):
-            current_tracks = ea_entry.setdefault(role,  {})
-            # adds role to ea_entry with a list/dict of tracks, returned in current_tracks
-            #current_tracks = roles.setdefault(role, {})
-            tracks = ea["tracks"]
-            if tracks:
-                trackList = [t.strip() for t in ea["tracks"].split(',')]
-                for t in trackList or []:
-                    current_tracks[t] = None
-                    #roles.update(dict.fromkeys(tracks))
+            if role == API_WRITTEN_BY:
+                if artist_name not in self.tempea_written_by:
+                    self.tempea_written_by.append(artist_name)
+            else:
+                ea_entry = ea_dict.setdefault(artist_name, {})
+                current_tracks = ea_entry.setdefault(role,  {})
+                # adds role to ea_entry with a list/dict of tracks, returned in current_tracks
+                #current_tracks = roles.setdefault(role, {})
+                tracks = ea["tracks"]
+                if tracks:
+                    trackList = [t.strip() for t in ea["tracks"].split(',')]
+                    for t in trackList or []:
+                        current_tracks[t] = None
+                        #roles.update(dict.fromkeys(tracks))
 
     def store_ea_info_per_track(self, tl, ea_dict):
         eats = tl.data.get(API_EXTRAARTISTS)
@@ -346,14 +361,17 @@ class OtsDiscogsToCsv:
         track_type = tl.data.get(API_TYPE_)
         track_title = tl.data.get(API_TITLE)
         if not track_type or track_type != API_TRACK_TYPE_TRACK:
-            self.writeln(f"Skipping track type \"{track_type}\" found for {track_title}, pos={track_pos}")
+            self.writeln(f"Skipping track type \"{track_type}\" found for {self.current_record.record_id}-{track_title}, pos={track_pos}")
             return False
         if not track_pos:
             self.writeln(f"track position not found for {tl}")
             return False
 
+        written_by = []
         if track_pos not in self.current_record.tracks:
-            self.current_record.tracks[track_pos] = track_title
+            self.current_record.tracks[track_pos] = (track_title, written_by)
+        else:
+            written_by = self.current_record.tracks[track_pos][1]
 
         if eats == None:
             #self.writeln(f'Error: No Extra Artists in tracklist')
@@ -365,11 +383,17 @@ class OtsDiscogsToCsv:
                 self.writeln(f'Error: name not found in extraartists entry')
                 continue
             artist_name = self.remove_trailing_parens(artist_name)
-            ea_entry = ea_dict.setdefault(artist_name, {})
             role = ea[API_ROLE]
             if role and not self.ignore_role(role):
-                current_tracks = ea_entry.setdefault(role,  {})
-                current_tracks[track_pos] = None
+                if role == API_WRITTEN_BY:
+                    if artist_name not in self.tempea_written_by:
+                        self.tempeat_written_by.append(artist_name)
+                    if artist_name not in written_by:
+                        written_by.append(artist_name)
+                else:
+                    ea_entry = ea_dict.setdefault(artist_name, {})
+                    current_tracks = ea_entry.setdefault(role,  {})
+                    current_tracks[track_pos] = None
         return True
 
 
@@ -428,7 +452,7 @@ class OtsDiscogsToCsv:
         )
 
         parser.add_argument(
-            '-ir', '--ignore_roles', 
+            '-ir', '--ignore-roles', 
             type=str, 
             help="A list of comma-separated roles to ignore"
         )
