@@ -53,10 +53,12 @@ class RecordInfo:
     title: str = ""
     master_id: int = 0
     tracks:  dict = field(default_factory=dict) # id and title
+    tracks_master:  dict = field(default_factory=dict) # temp
     extraartists_in_record: dict = field(default_factory=dict)
     extraartists_per_track_in_record: dict = field(default_factory=dict)
     extraartists_in_master: dict = field(default_factory=dict)
     extraartists_per_track_in_master: dict = field(default_factory=dict)
+    artists: str = ""
 
 class OtsDiscogsToCsv:
     def __init__(self):
@@ -199,6 +201,8 @@ class OtsDiscogsToCsv:
             self.release = self.d.release(record_id)
             self.release.refresh()
 
+            #self.writeln(self.process_release_data(record_id_i, self.release))
+
             ea_found_in_record = False
             ea_found_in_master = False
             ea_names = ""
@@ -211,6 +215,7 @@ class OtsDiscogsToCsv:
             self.current_record = RecordInfo()
             self.current_record.record_id = record_id_i
             self.current_record.title = self.release.title
+            self.store_record_data()
             self.master = False
 
             #self.writeln (f"requests={self.requests} record_id={record_id}")
@@ -241,12 +246,37 @@ class OtsDiscogsToCsv:
 
             self.writeln(f'{"Note: Only found in Master)" if tempoim else ""}')
             self.writeln('')
+            # temp to compare
+            rlist = [];
+            mlist = [];
             if self.current_record.tracks:
-                self.writeln("  Track list:")
+                self.writeln("  Track list (release):")
                 for pos,tw in sorted(self.current_record.tracks.items(), key=self.sort_track_pos):
                     title = tw[0]
-                    written_by = ", ".join(tw[1])
-                    self.writeln(f"    {pos}. {title} by {written_by}")
+                    written_by = ''
+                    if tw[1]:
+                        written_by = " by " + ", ".join(tw[1])
+                    self.writeln(f"    {pos}. {title}{written_by}")
+                    rlist.append(f"{title} by {written_by}")
+
+            if self.current_record.tracks_master:
+                self.writeln("  Track list (master):")
+                for pos,tw in sorted(self.current_record.tracks.items(), key=self.sort_track_pos):
+                    title = tw[0]
+                    written_by = ''
+                    if tw[1]:
+                        written_by = " by " + ", ".join(tw[1])
+                    self.writeln(f"    {pos}. {title}{written_by}")
+                    mlist.append(f"{title} by {written_by}")
+            if mlist and rlist:
+                if mlist != rlist:
+                    self.writeln(f"Master and Release tracks have different writer list \n{rlist}\n{mlist}")
+                else:
+                    self.writeln("Master and Release tracks have same writer list")
+            elif mlist:
+                    self.writeln("Only master had writer list")
+            else:
+                    self.writeln("Only release had writer list")
                     
             self.writeln('')
             self.writeln('')
@@ -267,18 +297,22 @@ class OtsDiscogsToCsv:
         match = re.match(r"([a-zA-Z]+)(\d+)", key)
         if match:
             alpha, num = match.groups()
-            return (alpha, int(num))  # Returns e.g., ('a', 10)
+            return (alpha, f'{num.zfill(5)}')  # Returns e.g., ('a', 10)
         # try 1-1 type
         match = re.match(r"(\d+)-(\d+)", key)
         if match:
             n1, n2 = match.groups()
-            return (int(n1), int(n2))  # Returns e.g., ('a', 10)
+            return (f'{n1.zfill(5)}', f'{n2.zfill(5)}')  # Returns e.g., ('a', 10)
         try:
             r = int(key)
-            return ('', r) 
+            return ('', f'{r:05}') 
         except ValueError:
             return (key, 0)
-        
+
+    def store_record_data(self):
+        artist_names = [self.fix_artist_name(artist.name) for artist in self.release.artists]
+        self.artists = ",".join(artist_names)
+        self.writeln(f"Storing artists as {self.artists}")
 
     def get_extraartists (self, record):
         found_ea = False
@@ -323,8 +357,8 @@ class OtsDiscogsToCsv:
 
         return found_ea
 
-    def remove_trailing_parens(self, artist_name):
-        pattern = r"\s*\(\d+\)$"
+    def fix_artist_name(self, artist_name):
+        pattern = r"\s*\(\d+\)\s*$"
         return re.sub(pattern, '', artist_name)
 
     def store_ea_info(self, ea, ea_dict):
@@ -333,7 +367,7 @@ class OtsDiscogsToCsv:
         if artist_name == None:
             self.writeln(f'Error: name not found in extraartists entry')
             return
-        artist_name = self.remove_trailing_parens(artist_name)
+        artist_name = self.fix_artist_name(artist_name)
         # adds artist name and list/dict of roles, returned in ea_entry
         # see if role exists in discogs
         role = ea[API_ROLE]
@@ -368,10 +402,17 @@ class OtsDiscogsToCsv:
             return False
 
         written_by = []
-        if track_pos not in self.current_record.tracks:
-            self.current_record.tracks[track_pos] = (track_title, written_by)
+        # temp code to compare release and master
+        if self.master: 
+            if track_pos not in self.current_record.tracks_master:
+                self.current_record.tracks_master[track_pos] = (track_title, written_by)
+            else:
+                written_by = self.current_record.tracks_master[track_pos][1]
         else:
-            written_by = self.current_record.tracks[track_pos][1]
+            if track_pos not in self.current_record.tracks:
+                self.current_record.tracks[track_pos] = (track_title, written_by)
+            else:
+                written_by = self.current_record.tracks[track_pos][1]
 
         if eats == None:
             #self.writeln(f'Error: No Extra Artists in tracklist')
@@ -382,7 +423,7 @@ class OtsDiscogsToCsv:
             if artist_name == None:
                 self.writeln(f'Error: name not found in extraartists entry')
                 continue
-            artist_name = self.remove_trailing_parens(artist_name)
+            artist_name = self.fix_artist_name(artist_name)
             role = ea[API_ROLE]
             if role and not self.ignore_role(role):
                 if role == API_WRITTEN_BY:
@@ -493,7 +534,7 @@ class OtsDiscogsToCsv:
                 roles.append(r)
             self.writeln(f"    {artist}: {','.join(roles)}")
 
-    # test code to show duplicates in different colors
+    # test code to show duplicates 
     def print_extraartists_per_type_dups (self):
         ea_list_as_string = [
         [],
@@ -603,6 +644,87 @@ class OtsDiscogsToCsv:
             return int(value)
         except (ValueError, TypeError):
             return 0
+        import re
+
+    def process_release_data(self, release_id: int, release) -> dict:
+        try:
+            # 1. Clean the Artist Name (Strips Discogs numbering like 'Artist (2)' to 'Artist')
+            artist_raw = release.artists[0].name if release.artists else "Unknown"
+            artist = self.fix_artist_name(artist_raw)
+
+            title = release.title
+
+            # 2. Extract Format details safely
+            format_name = "Unknown"
+            format_qty = "1"
+            format_descriptions = ""
+            
+            if release.formats:
+                fmt = release.formats[0]
+                format_name = fmt.get('name', 'Unknown')
+                format_qty = fmt.get('qty', '1')
+                # Join multiple descriptions into a single comma-separated string
+                format_descriptions = ", ".join(fmt.get('descriptions', []))
+
+            # 3. Extract Label and Catalog Number safely
+            label_name = "Unknown"
+            cat_no = "Unknown"
+            
+            if release.labels:
+                lbl = release.labels[0]
+                label_name = lbl.name
+                cat_no = lbl.catno
+
+            # 4. Extract Barcode identifier safely from lists of notes/identifiers
+            barcode = "Unknown"
+            if hasattr(release, 'identifiers'):
+                for i in release.identifiers:
+                    if i.get('type') == 'Barcode':
+                        barcode = i.get('value', 'Unknown')
+                        break
+
+            # 5. Build the Tracklist string (Tracks separated by pipes '|' or newlines)
+            track_list = []
+            if release.tracklist:
+                for track in release.tracklist:
+                    # Skips index headings and tracks missing titles
+                    if track.title and track.position:
+                        track_list.append(f"{track.position}. {track.title}")
+                        if track.credits:
+                            for a in release.credits:
+                                print (f'tom-per track: {a.name} {a.role}')
+            tracklist_string = " | ".join(track_list)
+
+            for a in release.credits:
+                print (f'tom: {a.name} {a.role}')
+
+            # 6. Map everything into a flat row matching ROW_NAMES schema
+            return {
+                "release_id": str(release_id),
+                "artist": artist,
+                "title": title,
+                "format": format_name,
+                "qty": str(format_qty),
+                "format_descriptions": format_descriptions,
+                "label": label_name,
+                "catno": cat_no,
+                "country": release.country or '',
+                "year": release.year or '',
+                "genres": ", ".join(release.genres or []),
+                "styles": ", ".join(release.styles or []),
+                "barcode": barcode,
+                "tracklist": tracklist_string
+            }
+
+        except Exception as e:
+            # Gracefully handle any unexpected extraction crash
+            return {
+                "release_id": str(release_id),
+                "artist": f"ERROR: Could not parse ({str(e)})",
+                "format": "", "qty": "", "format_descriptions": "", "label": "",
+                "catno": "", "country": "", "year": "", "genres": "", "styles": "",
+                "barcode": "", "tracklist": ""
+            }
 
 if __name__ == "__main__":
     tpb = OtsDiscogsToCsv()
