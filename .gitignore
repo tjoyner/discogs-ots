@@ -1,2 +1,5 @@
-discogs_ots/.discogs_ots.py.un~
-discogs_ots/.discogs_ots.py.swp
+# Vim swap, backup, and undo files
+.*.sw[a-p]
+*.un~
+*~
+.*.pyc
