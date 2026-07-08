@@ -23,6 +23,7 @@ API_POSITION = "position"
 API_EXTRAARTISTS = "extraartists"
 API_TYPE_ = "type_"
 API_TITLE = "title"
+API_NAME = "name"
 API_TRACK_TYPE_TRACK = "track"
 
 CFG_SETTINGS="settings"
@@ -195,7 +196,7 @@ class OtsDiscogsToCsv:
             record_id_i = self.to_int(record_id)
 
             if record_id_i == 0:
-                self.writeln(f"Skipping invalid record ID {record_id}")
+                self.writelog(f"Skipping invalid record ID {record_id}")
                 return False
 
             #self.writeln(f"\nGetting Release for {record_id}")
@@ -219,9 +220,7 @@ class OtsDiscogsToCsv:
             self.store_record_data()
             self.master = False
 
-            #self.writeln (f"requests={self.requests} record_id={record_id}")
             ea_found_in_record = self.get_extraartists(self.release)
-            #self.writeln(f"\nGetting Master for {record_id}")
             masterRec = self.release.master
             master = None
             if masterRec != None:
@@ -229,8 +228,6 @@ class OtsDiscogsToCsv:
                 master = self.d.master(masterRec.id)
                 master.refresh()
                 ea_found_in_master  = self.get_extraartists(master)
-
-            #self.writeln(f'{self.release.title}, {ea_names}, {ea_names_per_track}  {ea_names_master}, {ea_names_per_track_master}')
 
             self.writeln(f'{self.current_record.title} {self.current_record.id}')
             self.print_extraartists_per_type_dups() # testing!!
@@ -248,10 +245,10 @@ class OtsDiscogsToCsv:
 
             if tempoim:
                 ri = "Main release is different: " if record_id != master.main_release else ''
-                self.writeln(f'Note: Only found in Master {masterRec.id}')
+                self.writelog(f'Note: Only found in Master {masterRec.id}')
 
             if master and record_id != master.main_release.id:
-                    self.writeln(f"Main release in master is different: {record_id} {master.main_release.id}")
+                    self.writelog(f"Main release in master is different: {record_id} {master.main_release.id}")
 
             self.writeln('')
             # temp to compare
@@ -278,13 +275,13 @@ class OtsDiscogsToCsv:
                     mlist.append(f"{title} by {written_by}")
             if mlist and rlist:
                 if mlist != rlist:
-                    self.writeln(f"Master and Release tracks have different writer list \n{rlist}\n{mlist}")
+                    self.writelog(f"Master and Release tracks have different writer list \n{rlist}\n{mlist}")
                 else:
-                    self.writeln("Master and Release tracks have same writer list")
+                    self.writelog("Master and Release tracks have same writer list")
             elif mlist:
-                    self.writeln("Only master had writer list")
+                    self.writelog("Only master had writer list")
             else:
-                    self.writeln("Only release had writer list")
+                    self.writelog("Only release had writer list")
                     
             self.writeln('')
             self.writeln('')
@@ -295,9 +292,9 @@ class OtsDiscogsToCsv:
         except HTTPError as e:
             # Check if the error message or status inside the exception indicates a 404
             if e.status_code == 404:
-                self.writeln(f"Record ID {record_id} was NOT found (404 Error).")
+                self.writelog(f"Record ID {record_id} was NOT found (404 Error).")
             else:
-                self.writeln(f"A different API error occurred: {e}")
+                self.writelog(f"A different API error occurred: {e}")
             return False
 
     def sort_track_pos(self, item):
@@ -319,8 +316,8 @@ class OtsDiscogsToCsv:
 
     def store_record_data(self):
         artist_names = [self.fix_artist_name(artist.name) for artist in self.release.artists]
-        self.artists = ",".join(artist_names)
-        self.writeln(f"Storing artists as {self.artists}")
+        self.artists = ", ".join(artist_names)
+        self.writelog(f"Storing artists as {self.artists}")
 
     def get_extraartists (self, record):
         found_ea = False
@@ -338,10 +335,9 @@ class OtsDiscogsToCsv:
         if eas == None:
             if self.master:
                 pass
-            #self.writeln (f'No extraartists for record id={record.id}')
         else:
             if self.master:
-                self.writeln (f'Extraartists in master for record id={self.current_record.id}')
+                self.writelog (f'Extraartists in master for record id={self.current_record.id}')
             for ea in eas:
                 self.store_ea_info(ea, cur_dict)
             found_ea = True
@@ -356,10 +352,10 @@ class OtsDiscogsToCsv:
             found_ea |= self.store_ea_info_per_track(tl, cur_dict)
 
         if len(self.tempea_written_by) > 0 and len(self.tempeat_written_by) == 0:
-            self.writeln(f"Record {self.current_record.id} contains written-by only in ea")
+            self.writelog(f"Record {self.current_record.id} contains written-by only in ea")
 
         if len(self.tempea_written_by) > 0 and len(self.tempeat_written_by) > 0 and (Counter(self.tempea_written_by) != Counter(self.tempeat_written_by)): 
-            self.writeln(f"Record {self.current_record.id} written-by doesn't match\n{self.tempea_written_by}\n{self.tempeat_written_by}")
+            self.writelog(f"Record {self.current_record.id} written-by doesn't match\n{self.tempea_written_by}\n{self.tempeat_written_by}")
 
         return found_ea
 
@@ -371,7 +367,7 @@ class OtsDiscogsToCsv:
         # ea_dict is artist : roles
         artist_name = ea["name"]
         if artist_name == None:
-            self.writeln(f'Error: name not found in extraartists entry')
+            self.writelog(f'Error: name not found in extraartists entry')
             return
         artist_name = self.fix_artist_name(artist_name)
         # adds artist name and list/dict of roles, returned in ea_entry
@@ -406,11 +402,14 @@ class OtsDiscogsToCsv:
         track_pos = tl.data.get(API_POSITION)
         track_type = tl.data.get(API_TYPE_)
         track_title = tl.data.get(API_TITLE)
+        track_artist = tl.data.get(API_NAME)
+        if not track_artist:
+            track_artist = self.current_record.artists
         if not track_type or track_type != API_TRACK_TYPE_TRACK:
-            self.writeln(f"Skipping track type \"{track_type}\" found for {self.current_record.id}-{track_title}, pos={track_pos}")
+            self.writelog(f"Skipping track type \"{track_type}\" found for {self.current_record.id}-{track_title}, pos={track_pos}")
             return False
         if not track_pos:
-            self.writeln(f"track position not found for {tl}")
+            self.writelog(f"track position not found for {tl}")
             return False
 
         written_by = []
@@ -427,13 +426,12 @@ class OtsDiscogsToCsv:
                 written_by = self.current_record.tracks[track_pos][1]
 
         if eats == None:
-            #self.writeln(f'Error: No Extra Artists in tracklist')
             return False
 
         for ea in eats:
             artist_name = ea["name"]
             if artist_name == None:
-                self.writeln(f'Error: name not found in extraartists entry')
+                self.writelog(f'Error: name not found in extraartists entry')
                 continue
             artist_name = self.fix_artist_name(artist_name)
             role = ea[API_ROLE]
@@ -521,8 +519,12 @@ class OtsDiscogsToCsv:
         self.writeln(f'Total time: {time_difference}')
 
     def writeln(self, text=""):
-        """Helper function to automatically append a newline to a stream."""
         self.out.write(f"{text}\n")
+
+    def writelog(self, text=""):
+        id = self.current_record.id if self.current_record.id else ''
+        padded_id = f"{id:>8}"
+        self.out.write(f"{padded_id}: {text}\n")
 
     def print_extraartists_per_type (self):
         self.writeln("  Release Record Extra Artists")
@@ -597,11 +599,11 @@ class OtsDiscogsToCsv:
             
             self.writeln(f"    {a_r}{dup_location}")
         if dup_found and uniq_found:
-            self.writeln(f" Found some duplicates")
+            self.writelog(f" Found some duplicates")
         elif dup_found:
-            self.writeln(f" Found all duplicates")
+            self.writelog(f" Found all duplicates")
         else:
-            self.writeln(f" Found no duplicates")
+            self.writelog(f" Found no duplicates")
 
 
     def check_for_dup(self, a_r, index, ea_list_as_string):
@@ -631,9 +633,9 @@ class OtsDiscogsToCsv:
             for role,pos in roles.items(): 
                 if self.is_written_by_in_role(role):
                     if pos:
-                        self.writeln(f'Record {self.current_record.id} contains top-level "written by" for {artist} with tracklist: {role} {pos}')
+                        self.writelog(f'Record {self.current_record.id} contains top-level "written by" for {artist} with tracklist: {role} {pos}')
                     else:
-                        self.writeln(f'Record {self.current_record.id} contains top-level "written by" for {artist}: {role}')
+                        self.writelog(f'Record {self.current_record.id} contains top-level "written by" for {artist}: {role}')
 
         # See if "written by" with song positions are found in release and master, and how they compare
         release_wb = {} 
@@ -649,19 +651,21 @@ class OtsDiscogsToCsv:
                 if self.is_written_by_in_role(role) and pos:
                     mrp = (role,pos)
                     master_wb[artist] = mrp
-                    if mrp != release_wb[artist]:
-                        self.writeln (f'Mismatch between eat and emt for {artist} written-by in record {self.current_record.id} {release_wb[artist]} {mrp}')
-                    else:
-                        self.writeln (f'Match between eat and emt for {artist} written-by in record {self.current_record.id} {release_wb[artist]} {mrp}')
+                    if artist in release_wb:
+                        if mrp != release_wb[artist]:
+                            self.writelog (f'Mismatch between eat and emt for {artist} written-by in record {self.current_record.id} {release_wb[artist]} {mrp}')
+                        else:
+                            pass
+                            #self.writelog (f'Match between eat and emt for {artist} written-by in record {self.current_record.id} {release_wb[artist]} {mrp}')
 
         if release_wb and master_wb:
-            self.writeln (f'Both master and release contain per/track written-by, mismatch={mismatch_found}')
+            self.writelog (f'Both master and release contain per/track written-by, mismatch={mismatch_found}')
         elif release_wb and not master_wb:
-            self.writeln (f'Only release contains per/track written-by')
-        elif not release_wb and not master_wb:
-            self.writeln (f'Only master contains per/track written-by')
+            self.writelog (f'Only release contains per/track written-by')
+        elif not release_wb and master_wb:
+            self.writelog (f'Only master contains per/track written-by')
         else:
-            self.writeln (f'Neither release nor master contain per/track written-by')
+            self.writelog (f'Neither release nor master contain per/track written-by')
 
         for p_e in types:
             all_eas.extend(self.get_extraartists_in_entry(p_e[0], p_e[1]))
