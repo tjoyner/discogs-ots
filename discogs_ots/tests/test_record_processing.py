@@ -14,12 +14,14 @@ def discogs_connection():
             FilesystemFetcher(os.path.dirname(os.path.abspath(__file__)) + '/res')
         )
     d._verbose = True
-    return d
+    print (os.path.dirname(os.path.abspath(__file__)) + '/res')
+    yield d
 
-def test_discogs_connection(monkeypatch):
-    
-    monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-id", "11111", "-ua", "testus"])
-
+def test_load_release(monkeypatch, discogs_connection):
+    monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-id", "1799382", "-ua", "testus"])
     d = discogs_connection
-    s = OtsDiscogsToCsv()
+    #r =  d.release(1799382)
+    #print(r)
+    s = OtsDiscogsToCsv(d)
+    s.run()
 

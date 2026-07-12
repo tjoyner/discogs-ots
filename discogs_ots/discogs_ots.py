@@ -25,6 +25,8 @@ API_TYPE_ = "type_"
 API_TITLE = "title"
 API_NAME = "name"
 API_TRACK_TYPE_TRACK = "track"
+API_TRACK_TYPE_INDEX = "index"
+API_TRACK_SUB_TRACKS = "sub_tracks"
 
 CFG_SETTINGS="settings"
 CFG_API="api"
@@ -200,6 +202,7 @@ class OtsDiscogsToCsv:
                 return False
 
             #self.writeln(f"\nGetting Release for {record_id}")
+            print ("b4")
             self.release = self.d.release(record_id)
             self.release.refresh()
 
@@ -223,8 +226,10 @@ class OtsDiscogsToCsv:
             ea_found_in_record = self.get_extraartists(self.release)
             masterRec = self.release.master
             master = None
+            print ("aft")
             if masterRec != None:
                 self.master = True
+                print (f"aft {masterRec.id}")
                 master = self.d.master(masterRec.id)
                 master.refresh()
                 ea_found_in_master  = self.get_extraartists(master)
@@ -292,7 +297,10 @@ class OtsDiscogsToCsv:
         except HTTPError as e:
             # Check if the error message or status inside the exception indicates a 404
             if e.status_code == 404:
-                self.writelog(f"Record ID {record_id} was NOT found (404 Error).")
+                if self.master:
+                    self.writelog(f"Master of record ID {record_id} was NOT found (404 Error).")
+                else:
+                    self.writelog(f"Record ID {record_id} was NOT found (404 Error).")
             else:
                 self.writelog(f"A different API error occurred: {e}")
             return False
@@ -405,9 +413,20 @@ class OtsDiscogsToCsv:
         track_artist = tl.data.get(API_NAME)
         if not track_artist:
             track_artist = self.current_record.artists
-        if not track_type or track_type != API_TRACK_TYPE_TRACK:
+
+        if not track_type:
+            self.writelog(f"track_type not found for {self.current_record.id}-{track_title}, pos={track_pos}")
+
+        if track_type == API_TRACK_TYPE_INDEX:
+            sts = tl.data.get(API_TRACK_SUB_TRACKS, [])
+            for st in sts:
+                st_title = st.get(API_TITLE)
+                self.writelog(f'Tom: subtrack {track_title}-{st_title}\n {st}')
+
+        elif track_type != API_TRACK_TYPE_TRACK:
             self.writelog(f"Skipping track type \"{track_type}\" found for {self.current_record.id}-{track_title}, pos={track_pos}")
             return False
+
         if not track_pos:
             self.writelog(f"track position not found for {tl}")
             return False
@@ -622,6 +641,13 @@ class OtsDiscogsToCsv:
                 ("eam", self.current_record.extraartists_in_master),
                 ("emt", self.current_record.extraartists_per_track_in_master)
                 ]
+
+        if not self.current_record.extraartists_per_track_in_record:
+            if self.current_record.extraartists_per_track_in_master:
+                self.writelog(f'Only master {self.current_record.master_id} contained a tracklist ')
+            else:
+                self.writelog(f'No tracklist found in record (or master) {self.current_record.master_id}')
+
 
         all_eas = []
         for p_e in types:
