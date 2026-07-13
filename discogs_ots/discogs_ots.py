@@ -58,6 +58,7 @@ class RecordInfo:
     master_id: int = 0
     tracks:  dict = field(default_factory=dict) # id and title
     tracks_master:  dict = field(default_factory=dict) # temp
+    tracks_main_release:  dict = field(default_factory=dict) # temp
     extraartists_in_record: dict = field(default_factory=dict)
     extraartists_per_track_in_record: dict = field(default_factory=dict)
     extraartists_in_master: dict = field(default_factory=dict)
@@ -81,6 +82,7 @@ class OtsDiscogsToCsv:
 
         self.has_ea_only_in_record = 0
         self.has_ea_only_in_master = 0
+        self.has_ea_only_in_main_release = 0
         self.has_ea_in_record_and_master = 0
         self.no_ea = 0
 
@@ -202,7 +204,6 @@ class OtsDiscogsToCsv:
                 return False
 
             #self.writeln(f"\nGetting Release for {record_id}")
-            print ("b4")
             self.release = self.d.release(record_id)
             self.release.refresh()
 
@@ -210,6 +211,7 @@ class OtsDiscogsToCsv:
 
             ea_found_in_record = False
             ea_found_in_master = False
+            ea_found_in_main_release = False
             ea_names = ""
             ea_names_per_track = ""
             ea_names_master = ""
@@ -222,17 +224,22 @@ class OtsDiscogsToCsv:
             self.current_record.title = self.release.title
             self.store_record_data()
             self.master = False
+            self.main_release = False
 
             ea_found_in_record = self.get_extraartists(self.release)
             masterRec = self.release.master
             master = None
-            print ("aft")
             if masterRec != None:
                 self.master = True
-                print (f"aft {masterRec.id}")
                 master = self.d.master(masterRec.id)
                 master.refresh()
                 ea_found_in_master  = self.get_extraartists(master)
+                if master.main_release and master.main_release.id != record_id:
+                    self.main_release = True
+                    main_release = self.d.release(master.main_release.id)
+                    main_release.refresh()
+                    ea_found_in_main_release  = self.get_extraartists(main_release)
+
 
             self.writeln(f'{self.current_record.title} {self.current_record.id}')
             self.print_extraartists_per_type_dups() # testing!!
@@ -245,6 +252,8 @@ class OtsDiscogsToCsv:
             elif ea_found_in_master:
                 self.has_ea_only_in_master += 1
                 tempoim = True
+            elif not ea_found_in_master and not ea_found_in_record and ea_found_in_main_release:
+                self.has_ea_only_in_main_release += 1
             else:
                 self.no_ea += 1
 
@@ -259,6 +268,7 @@ class OtsDiscogsToCsv:
             # temp to compare
             rlist = [];
             mlist = [];
+            mrlist = []; # main release list
             if self.current_record.tracks:
                 self.writeln("  Track list (release):")
                 for pos,tw in sorted(self.current_record.tracks.items(), key=self.sort_track_pos):
@@ -271,13 +281,27 @@ class OtsDiscogsToCsv:
 
             if self.current_record.tracks_master:
                 self.writeln("  Track list (master):")
-                for pos,tw in sorted(self.current_record.tracks.items(), key=self.sort_track_pos):
+                for pos,tw in sorted(self.current_record.tracks_master.items(), key=self.sort_track_pos):
                     title = tw[0]
                     written_by = ''
                     if tw[1]:
                         written_by = " by " + ", ".join(tw[1])
                     self.writeln(f"    {pos}. {title}{written_by}")
                     mlist.append(f"{title} by {written_by}")
+            if self.current_record.tracks_main_release:
+                self.writeln("  Track list (main_release):")
+                for pos,tw in sorted(self.current_record.tracks_main_release.items(), key=self.sort_track_pos):
+                    title = tw[0]
+                    written_by = ''
+                    if tw[1]:
+                        written_by = " by " + ", ".join(tw[1])
+                    self.writeln(f"    {pos}. {title}{written_by}")
+                    mrlist.append(f"{title} by {written_by}")
+            if mlist == rlist == mrlist:
+                self.writelog("Master and Release, and Main Release tracks have same writer list")
+            if mlist and rlist and mrlist:
+                if mlist != rlist or mlist != mrlist or mrlist != rlist:
+                    self.writelog(f"Master, Release, and Main Release tracks have different writer list \n{rlist}\n{mlist}")
             if mlist and rlist:
                 if mlist != rlist:
                     self.writelog(f"Master and Release tracks have different writer list \n{rlist}\n{mlist}")
@@ -299,8 +323,8 @@ class OtsDiscogsToCsv:
             if e.status_code == 404:
                 if self.master:
                     self.writelog(f"Master of record ID {record_id} was NOT found (404 Error).")
-                else:
-                    self.writelog(f"Record ID {record_id} was NOT found (404 Error).")
+                    return True
+                self.writelog(f"Record ID {record_id} was NOT found (404 Error).")
             else:
                 self.writelog(f"A different API error occurred: {e}")
             return False
@@ -384,8 +408,8 @@ class OtsDiscogsToCsv:
         # TODO: store written by? Or is this always per track?
         #if role and not self.ignore_role(role) and role != API_WRITTEN_BY:
         if role and not self.ignore_role(role):
-            #if self.is_written_by_in_role(role):
-            if False: # temp
+            if self.is_written_by_in_role(role):
+            #if False: # temp
                 if artist_name not in self.tempea_written_by:
                     self.tempea_written_by.append(artist_name)
             else:
@@ -422,6 +446,8 @@ class OtsDiscogsToCsv:
             for st in sts:
                 st_title = st.get(API_TITLE)
                 self.writelog(f'Tom: subtrack {track_title}-{st_title}\n {st}')
+                self.writelog(f'Tom: track eats: {eats}')
+                self.writelog(f'Tom: subtrack eats: {st.get(API_EXTRAARTISTS)}')
 
         elif track_type != API_TRACK_TYPE_TRACK:
             self.writelog(f"Skipping track type \"{track_type}\" found for {self.current_record.id}-{track_title}, pos={track_pos}")
@@ -433,7 +459,12 @@ class OtsDiscogsToCsv:
 
         written_by = []
         # temp code to compare release and master
-        if self.master: 
+        if self.main_release: 
+            if track_pos not in self.current_record.tracks_main_release:
+                self.current_record.tracks_main_release[track_pos] = (track_title, written_by)
+            else:
+                written_by = self.current_record.tracks_main_release[track_pos][1]
+        elif self.master: 
             if track_pos not in self.current_record.tracks_master:
                 self.current_record.tracks_master[track_pos] = (track_title, written_by)
             else:
@@ -455,8 +486,8 @@ class OtsDiscogsToCsv:
             artist_name = self.fix_artist_name(artist_name)
             role = ea[API_ROLE]
             if role and not self.ignore_role(role):
-                #if self.is_written_by_in_role(role):
-                if False:
+                if self.is_written_by_in_role(role):
+                #if False:
                     if artist_name not in self.tempea_written_by:
                         self.tempeat_written_by.append(artist_name)
                     if artist_name not in written_by:
@@ -533,7 +564,7 @@ class OtsDiscogsToCsv:
 
     def write_final_stats(self):
         self.writeln(f'Total Records={self.records}')
-        self.writeln(f'Extra Artists: found in both={self.has_ea_in_record_and_master} Record only={self.has_ea_only_in_record} Master only={self.has_ea_only_in_master} Nt found={self.no_ea}')
+        self.writeln(f'Extra Artists: found in both={self.has_ea_in_record_and_master} Record only={self.has_ea_only_in_record} Master only={self.has_ea_only_in_master} Nt found={self.no_ea} Main release only={self.has_ea_only_in_main_release}')
         time_difference = datetime.datetime.now() - self.start
         self.writeln(f'Total time: {time_difference}')
 
