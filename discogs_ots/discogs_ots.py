@@ -34,6 +34,7 @@ CFG_API="api"
 CFG_SINGLE_ID="single_id"
 CFG_INPUT_FILE="input_file"
 CFG_OUTPUT_FILE="output_file"
+CFG_LOG_FILE="log_file"
 CFG_QUERY_FOR_IDS="query_for_ids"
 CFG_IGNORE_ROLES="ignore_roles"
 CFG_USER_AGENT="user_agent"
@@ -110,6 +111,10 @@ class OtsDiscogsToCsv:
         if args.input_file:
             self.file = args.input_file
 
+        log_file = None
+        if args.log_file:
+            log_file = args.log_file
+
         self.user_agent = None
         if args.user_agent:
             self.user_agent = args.user_agent
@@ -136,6 +141,9 @@ class OtsDiscogsToCsv:
                 if config.has_option(CFG_SETTINGS,CFG_INPUT_FILE):
                     self.file = args.input_file
                     self.file = config[CFG_SETTINGS][CFG_INPUT_FILE]
+            if not args.log_file:
+                if config.has_option(CFG_SETTINGS,CFG_LOG_FILE):
+                    log_file = config[CFG_SETTINGS][CFG_LOG_FILE]
             if not args.query_for_ids:
                 if config.has_option(CFG_SETTINGS,CFG_QUERY_FOR_IDS):
                     self.user_agent = config[CFG_SETTINGS][CFG_QUERY_FOR_IDS]
@@ -152,10 +160,17 @@ class OtsDiscogsToCsv:
                     self.user_token = config[CFG_API][CFG_USER_TOKEN]
 
         if output_file:
-            self.out = open(args.output_file, mode='w', encoding='utf-8')
+            self.out = open(output_file, mode='w', encoding='utf-8')
         else:
             sys.stdout.reconfigure(encoding='utf-8') # Keep PowerShell happy!
             self.out = sys.stdout
+
+        print(f'tom: {log_file}')
+        if log_file:
+            self.log_out = open(log_file, mode='w', encoding='utf-8')
+        else:
+            sys.stdout.reconfigure(encoding='utf-8') # Keep PowerShell happy!
+            self.log_out = self.out
 
         if not self.user_agent:
             print ('user_agent must be specified')
@@ -200,7 +215,7 @@ class OtsDiscogsToCsv:
             record_id_i = self.to_int(record_id)
 
             if record_id_i == 0:
-                self.writelog(f"Skipping invalid record ID {record_id}")
+                self.writelog(f'Skipping invalid record ID {record_id}')
                 return False
 
             #self.writeln(f"\nGetting Release for {record_id}")
@@ -444,17 +459,23 @@ class OtsDiscogsToCsv:
         if track_type == API_TRACK_TYPE_INDEX:
             sts = tl.data.get(API_TRACK_SUB_TRACKS, [])
             for st in sts:
-                st_title = st.get(API_TITLE)
-                self.writelog(f'Tom: subtrack {track_title}-{st_title}\n {st}')
-                self.writelog(f'Tom: track eats: {eats}')
-                self.writelog(f'Tom: subtrack eats: {st.get(API_EXTRAARTISTS)}')
+                st_title = f'{track_title}-{st.get(API_TITLE)}'
+                st_track_pos = st.get(API_POSITION, track_pos)
+                st_track_artist = st.get(API_POSITION, track_artist)
+                self.store_track_info(eats, ea_dict, st_track_pos, st_title, st_track_artist)
+                #self.writelog(f'Tom: subtrack {track_title}-{st_title}\n {st}')
+                #self.writelog(f'Tom: track eats: {eats}')
+                #self.writelog(f'Tom: subtrack eats: {st.get(API_EXTRAARTISTS)}')
 
         elif track_type != API_TRACK_TYPE_TRACK:
             self.writelog(f"Skipping track type \"{track_type}\" found for {self.current_record.id}-{track_title}, pos={track_pos}")
             return False
+        return self.store_track_info(eats, ea_dict, track_pos, track_title, track_artist)
+
+    def store_track_info(self, ea_dict, eats, track_pos, track_title, track_artists):
 
         if not track_pos:
-            self.writelog(f"track position not found for {tl}")
+            self.writelog(f"track position not found")
             return False
 
         written_by = []
@@ -534,6 +555,12 @@ class OtsDiscogsToCsv:
             type=str, 
             help="Path to the output text/CSV file where results will be saved."
         )
+
+        parser.add_argument(
+            '-l', '--log-file', 
+            type=str, 
+            help="Path to the file where log messages will be saved."
+        )
         
         parser.add_argument(
             '-c', '--config', 
@@ -572,9 +599,9 @@ class OtsDiscogsToCsv:
         self.out.write(f"{text}\n")
 
     def writelog(self, text=""):
-        id = self.current_record.id if self.current_record.id else ''
+        id = self.current_record.id if self.current_record else ''
         padded_id = f"{id:>8}"
-        self.out.write(f"{padded_id}: {text}\n")
+        self.log_out.write(f"{padded_id}: {text}\n")
 
     def print_extraartists_per_type (self):
         self.writeln("  Release Record Extra Artists")
