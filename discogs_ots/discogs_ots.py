@@ -11,6 +11,8 @@ import datetime
 from dataclasses import dataclass, field
 import pprint
 import configparser
+import json
+import traceback
 from collections import Counter
 
 # temp fix for encoding: $env:PYTHONIOENCODING="utf-8"
@@ -19,14 +21,52 @@ from collections import Counter
 API_ROLE = "role"
 API_WRITTEN_BY = "Written-By"
 API_WRITTEN_BY_NO_DASH = "Written By"
+API_COMPOSED_BY = "Composed-By"
+API_COMPOSED_BY_NO_DASH = "Composed By"
 API_POSITION = "position"
 API_EXTRAARTISTS = "extraartists"
 API_TYPE_ = "type_"
 API_TITLE = "title"
 API_NAME = "name"
+API_TRACKLIST = "tracklist"
 API_TRACK_TYPE_TRACK = "track"
 API_TRACK_TYPE_INDEX = "index"
 API_TRACK_SUB_TRACKS = "sub_tracks"
+API_ARTISTS = "artists"
+API_JOIN = "join"
+
+CSV_RELEASE_ID="release_id"
+CSV_ARTIST="artist"
+CSV_TITLE="title"
+CSV_FORMAT="format"
+CSV_QTY="qty"
+CSV_FORMAT_DESCRIPTIONS="format_descriptions"
+CSV_LABEL="label"
+CSV_CATNO="catno"
+CSV_COUNTRY="country"
+CSV_YEAR="year"
+CSV_GENRES="genres"
+CSV_STYLES="styles"
+CSV_TRACKLIST="tracklist"
+CSV_CREDITS="credits"
+
+headers = {
+   CSV_RELEASE_ID : '',
+   CSV_ARTIST : '',
+   CSV_TITLE : '',
+   CSV_FORMAT : '',
+   CSV_QTY : '',
+   CSV_FORMAT_DESCRIPTIONS : '',
+   CSV_LABEL : '',
+   CSV_CATNO : '',
+   CSV_COUNTRY : '',
+   CSV_YEAR : '',
+   CSV_GENRES : '',
+   CSV_STYLES : '',
+   #"barcode" : 
+   CSV_TRACKLIST : {},
+   CSV_CREDITS : ''
+   }
 
 CFG_SETTINGS="settings"
 CFG_API="api"
@@ -39,6 +79,8 @@ CFG_QUERY_FOR_IDS="query_for_ids"
 CFG_IGNORE_ROLES="ignore_roles"
 CFG_USER_AGENT="user_agent"
 CFG_USER_TOKEN="user_token"
+CFG_LOG_ALL_ROLES="log_all_roles"
+CFG_NEW_RECORDS_ONLY="new_records_only"
 
 """ 
 Read the artist and role into a list of tuples. 
@@ -54,23 +96,38 @@ Each record has 4 extra artist lists (for now)
 
 @dataclass
 class RecordInfo:
-    record_id: int = 0
-    title: str = ""
+    id: int = 0
+
+    artists: str = ''
+
+    title: str = ''
+
+    format: str = ''
+    qty: str = ''
+    format_descriptions: str = ''
+
+    label: str = ''
+    catno: str = ''
+
+    country: str = ''
+    year: str = ''
+
+    genres: str = ''
+    styles: str = ''
+
+    tracklist:  dict = field(default_factory=dict) # name, performed by, written by
+
+    credits: dict = field(default_factory=dict)
+
     master_id: int = 0
-    tracks:  dict = field(default_factory=dict) # id and title
-    tracks_master:  dict = field(default_factory=dict) # temp
-    tracks_main_release:  dict = field(default_factory=dict) # temp
-    extraartists_in_record: dict = field(default_factory=dict)
-    extraartists_per_track_in_record: dict = field(default_factory=dict)
-    extraartists_in_master: dict = field(default_factory=dict)
-    extraartists_per_track_in_master: dict = field(default_factory=dict)
-    artists: str = ""
+
+    album_written_by:  list = field(default_factory=list) 
+
 
 class OtsDiscogsToCsv:
     def __init__(self, discogs_test_client=None):
         self.requests=0
-        #self.file = '../Discogs-csv2026-03-19-1 - test.csv'
-        self.file = '../Discogs-csv2026-03-19-1.csv'
+        self.file=None
         self.outfile = None
         self.single_id = 0
 
@@ -89,7 +146,9 @@ class OtsDiscogsToCsv:
 
         self.start = datetime.datetime.now()
 
-        self.ignore_roles = None
+        self.ignore_roles = []
+
+        self.all_roles = []
 
         args = self.parse_arguments()
         output_file = None
@@ -127,8 +186,17 @@ class OtsDiscogsToCsv:
         if args.query_for_ids:
             self.query_for_ids = True
 
+        ignore_roles = None
         if args.ignore_roles:
-            self.ignore_roles =  [r.strip() for r in args.ignore_roles.split(',')]
+            ignore_roles = args.ignore_roles.strip()
+
+        self.log_all_roles = False
+        if args.log_all_roles:
+            self.log_all_roles = True
+
+        self.new_records_only = False
+        if args.new_records_only:
+            self.new_records_only = True
 
         if config:
             if not args.record_id:
@@ -147,10 +215,9 @@ class OtsDiscogsToCsv:
             if not args.query_for_ids:
                 if config.has_option(CFG_SETTINGS,CFG_QUERY_FOR_IDS):
                     self.user_agent = config[CFG_SETTINGS][CFG_QUERY_FOR_IDS]
-            if not self.ignore_roles:
+            if not ignore_roles:
                 if config.has_option(CFG_SETTINGS,CFG_IGNORE_ROLES):
-                    ir = config[CFG_SETTINGS][CFG_IGNORE_ROLES]
-                    self.ignore_roles =  [r.strip() for r in ir.split(',')]
+                    ignore_roles = config[CFG_SETTINGS][CFG_IGNORE_ROLES].strip()
 
             if not self.user_agent:
                 if config.has_option(CFG_API,CFG_USER_AGENT):
@@ -158,6 +225,18 @@ class OtsDiscogsToCsv:
             if not self.user_token:
                 if config.has_option(CFG_API,CFG_USER_TOKEN):
                     self.user_token = config[CFG_API][CFG_USER_TOKEN]
+            if not args.log_all_roles:
+                if config.has_option(CFG_SETTINGS,CFG_LOG_ALL_ROLES):
+                    self.user_agent = config[CFG_SETTINGS][CFG_LOG_ALL_ROLES]
+            if not args.new_records_only:
+                if config.has_option(CFG_SETTINGS,CFG_NEW_RECORDS_ONLY):
+                    self.new_records_only = config[CFG_SETTINGS][CFG_NEW_RECORDS_ONLY]
+
+        if ignore_roles:
+            for r in ignore_roles.split(','):
+                rs = r.strip()
+                if rs:
+                    self.ignore_roles.append(rs)
 
         if output_file:
             self.out = open(output_file, mode='w', encoding='utf-8')
@@ -165,7 +244,6 @@ class OtsDiscogsToCsv:
             sys.stdout.reconfigure(encoding='utf-8') # Keep PowerShell happy!
             self.out = sys.stdout
 
-        print(f'tom: {log_file}')
         if log_file:
             self.log_out = open(log_file, mode='w', encoding='utf-8')
         else:
@@ -180,23 +258,43 @@ class OtsDiscogsToCsv:
             print ("A user token is required for the query option");
             sys.exit(1)
 
+        if self.new_records_only and (not self.query_for_ids or not self.input_file):
+            print ("New records requires an input record list and query-for-ids");
+            sys.exit(1)
+
 
     def run(self):
         if not self.d:
             self.d = discogs_client.Client(self.user_agent,user_token=self.user_token)
+
+        self.init_csv()
+
         if self.single_id:
             self.get_record_data(self.single_id)
             self.records = 1
             self.write_final_stats()
             return
 
+
         if self.query_for_ids:
             me = self.d.identity()
             my_releases = me.collection_folders[0].releases
 
+            records_to_skip = [] 
+            if self.new_records_only:
+                with open(self.file, mode='r', newline='', encoding='utf-8') as file:
+                    for row in file:
+                        record_id = row.split(',', 1)[0]
+                        if record_id:
+                            record_id = record_id.strip()
+                            record_id_i = self.to_int(record_id)
+                            if record_id_i > 0:
+                                records_to_skip.append(record_id_i)
+
             for r in my_releases:
-                if self.get_record_data(r.id):
-                    self.records += 1
+                if r.id not in records_to_skip:
+                    if self.get_record_data(r.id):
+                        self.records += 1
         else:
             with open(self.file, mode='r', newline='', encoding='utf-8') as file:
                 # Iterate through each row
@@ -218,11 +316,13 @@ class OtsDiscogsToCsv:
                 self.writelog(f'Skipping invalid record ID {record_id}')
                 return False
 
-            #self.writeln(f"\nGetting Release for {record_id}")
             self.release = self.d.release(record_id)
             self.release.refresh()
 
-            #self.writeln(self.process_release_data(record_id_i, self.release))
+        #    self.writelog(json.dumps(self.release.data, indent=4))
+        #    return
+
+            
 
             ea_found_in_record = False
             ea_found_in_master = False
@@ -237,11 +337,14 @@ class OtsDiscogsToCsv:
             self.current_record = RecordInfo()
             self.current_record.id = record_id_i
             self.current_record.title = self.release.title
-            self.store_record_data()
             self.master = False
             self.main_release = False
+            self.store_record_data()
+            self.write_csv()
+            return
 
-            ea_found_in_record = self.get_extraartists(self.release)
+            #self.store_record_data(self.release)
+
             masterRec = self.release.master
             master = None
             if masterRec != None:
@@ -256,7 +359,6 @@ class OtsDiscogsToCsv:
                     ea_found_in_main_release  = self.get_extraartists(main_release)
 
 
-            self.writeln(f'{self.current_record.title} {self.current_record.id}')
             self.print_extraartists_per_type_dups() # testing!!
             self.print_sorted_extraartists()
             tempoim = False
@@ -279,23 +381,23 @@ class OtsDiscogsToCsv:
             if master and record_id != master.main_release.id:
                     self.writelog(f"Main release in master is different: {record_id} {master.main_release.id}")
 
-            self.writeln('')
+            self.writelog('')
             # temp to compare
             rlist = [];
             mlist = [];
             mrlist = []; # main release list
             if self.current_record.tracks:
-                self.writeln("  Track list (release):")
+                self.writelog("  Track list (release):")
                 for pos,tw in sorted(self.current_record.tracks.items(), key=self.sort_track_pos):
                     title = tw[0]
                     written_by = ''
                     if tw[1]:
                         written_by = " by " + ", ".join(tw[1])
-                    self.writeln(f"    {pos}. {title}{written_by}")
+                    self.writelog(f"    {pos}. {title}{written_by}")
                     rlist.append(f"{title} by {written_by}")
 
             if self.current_record.tracks_master:
-                self.writeln("  Track list (master):")
+                self.writelog("  Track list (master):")
                 for pos,tw in sorted(self.current_record.tracks_master.items(), key=self.sort_track_pos):
                     title = tw[0]
                     written_by = ''
@@ -361,10 +463,55 @@ class OtsDiscogsToCsv:
         except ValueError:
             return (key, 0)
 
-    def store_record_data(self):
-        artist_names = [self.fix_artist_name(artist.name) for artist in self.release.artists]
-        self.artists = ", ".join(artist_names)
-        self.writelog(f"Storing artists as {self.artists}")
+    def store_album_artists(self):
+        artists = self.release.data.get(API_ARTISTS)
+        if not artists:
+            return
+        self.current_record.artists = self.get_artists(artists) 
+
+    def get_track_artists(self, track):
+        artists = track.get(API_ARTISTS)
+        if not artists:
+            return self.current_record.artists
+        return self.get_artists(artists) 
+
+    def get_artists(self, artists) -> str:
+        artist_names = ''
+        join = ''
+        for artist in artists:
+            artist_name = self.fix_artist_name(artist.get(API_NAME))
+            if not artist_name:
+                self.writelog(f"Artist name was not specified in {artist}")
+                return artist_names
+
+            if artist_names:
+                if join == ',':
+                    join = ', '
+                elif join:
+                    join = f' {join} '
+                artist_names = artist_names + join + artist_name
+            else:
+                artist_names = artist_name
+
+            join = artist.get(API_JOIN, '').strip()
+            if not join:
+                join = ','
+
+        return artist_names
+
+
+    def store_format(self):
+        if self.release.formats:
+            fmt = self.release.formats[0]
+            self.current_record.format = fmt.get('name', 'Unknown')
+            self.current_record.qty = fmt.get('qty', '1')
+            self.current_record.format_descriptions = ", ".join(fmt.get('descriptions', []))
+
+    def store_label(self):
+        if self.release.labels:
+            lbl = self.release.labels[0]
+            self.current_record.label = lbl.name
+            self.current_record.cat_no = lbl.catno
 
     def get_extraartists (self, record):
         found_ea = False
@@ -407,6 +554,8 @@ class OtsDiscogsToCsv:
         return found_ea
 
     def fix_artist_name(self, artist_name):
+        if artist_name == None:
+            return ''
         pattern = r"\s*\(\d+\)\s*$"
         return re.sub(pattern, '', artist_name)
 
@@ -442,6 +591,8 @@ class OtsDiscogsToCsv:
     def is_written_by_in_role(self, role):
         if API_WRITTEN_BY.casefold() in role.casefold() or API_WRITTEN_BY_NO_DASH.casefold() in role.casefold():
             return True
+        if API_COMPOSED_BY.casefold() in role.casefold() or API_COMPOSED_BY_NO_DASH.casefold() in role.casefold():
+            return True
         return False
 
     def store_ea_info_per_track(self, tl, ea_dict):
@@ -463,9 +614,6 @@ class OtsDiscogsToCsv:
                 st_track_pos = st.get(API_POSITION, track_pos)
                 st_track_artist = st.get(API_POSITION, track_artist)
                 self.store_track_info(eats, ea_dict, st_track_pos, st_title, st_track_artist)
-                #self.writelog(f'Tom: subtrack {track_title}-{st_title}\n {st}')
-                #self.writelog(f'Tom: track eats: {eats}')
-                #self.writelog(f'Tom: subtrack eats: {st.get(API_EXTRAARTISTS)}')
 
         elif track_type != API_TRACK_TYPE_TRACK:
             self.writelog(f"Skipping track type \"{track_type}\" found for {self.current_record.id}-{track_title}, pos={track_pos}")
@@ -586,14 +734,28 @@ class OtsDiscogsToCsv:
             help="A list of comma-separated roles to ignore"
         )
 
+        parser.add_argument(
+            '-lar', '--log-all-roles', 
+            action='store_true', 
+            help="Log all roles encountered, not including ignored roles"
+        )
+
+        parser.add_argument(
+            '-nro', '--new-records-only', 
+            action='store_true', 
+            help="Only get records that aren't in the input list. Requires --query-for-ids"
+        )
+
         # Parse the arguments from the command line
         return parser.parse_args()
 
     def write_final_stats(self):
-        self.writeln(f'Total Records={self.records}')
-        self.writeln(f'Extra Artists: found in both={self.has_ea_in_record_and_master} Record only={self.has_ea_only_in_record} Master only={self.has_ea_only_in_master} Nt found={self.no_ea} Main release only={self.has_ea_only_in_main_release}')
+        self.writelog(f'Total Records={self.records}')
+        self.writelog(f'Extra Artists: found in both={self.has_ea_in_record_and_master} Record only={self.has_ea_only_in_record} Master only={self.has_ea_only_in_master} Nt found={self.no_ea} Main release only={self.has_ea_only_in_main_release}')
         time_difference = datetime.datetime.now() - self.start
-        self.writeln(f'Total time: {time_difference}')
+        if self.log_all_roles:
+            self.log_all_roles_found()
+        self.writelog(f'Total time: {time_difference}')
 
     def writeln(self, text=""):
         self.out.write(f"{text}\n")
@@ -602,6 +764,17 @@ class OtsDiscogsToCsv:
         id = self.current_record.id if self.current_record else ''
         padded_id = f"{id:>8}"
         self.log_out.write(f"{padded_id}: {text}\n")
+
+    def log_all_roles_found(self):
+        if not self.log_all_roles:
+            return
+        if self.all_roles:
+            self.log_out.write("\nAll roles found:\n")
+            self.all_roles.sort(key=str.lower)
+            for r in self.all_roles:
+                self.log_out.write(f"  {r}\n")
+        else:
+            self.log_out.write("\nNo roles found:\n")
 
     def print_extraartists_per_type (self):
         self.writeln("  Release Record Extra Artists")
@@ -779,94 +952,230 @@ class OtsDiscogsToCsv:
     def ignore_role(self, role):
         if not self.ignore_roles:
             return False
-        return any(role.casefold() == r.casefold() for r in self.ignore_roles)
+        for r in self.ignore_roles:
+            if r.casefold() in role.casefold():
+                return True
+        return False
+        #return any(r.casefold() in role.casefold() for r in self.ignore_roles)
 
     def to_int(self, value):
         try:
             return int(value)
         except (ValueError, TypeError):
             return 0
-        import re
 
-    def process_release_data(self, release_id: int, release) -> dict:
+    def store_record_data(self) -> bool:
         try:
-            # 1. Clean the Artist Name (Strips Discogs numbering like 'Artist (2)' to 'Artist')
-            artist_raw = release.artists[0].name if release.artists else "Unknown"
-            artist = self.fix_artist_name(artist_raw)
+            self.store_album_artists()
 
-            title = release.title
+            self.current_record.title = self.release.title
 
-            # 2. Extract Format details safely
-            format_name = "Unknown"
-            format_qty = "1"
-            format_descriptions = ""
-            
-            if release.formats:
-                fmt = release.formats[0]
-                format_name = fmt.get('name', 'Unknown')
-                format_qty = fmt.get('qty', '1')
-                # Join multiple descriptions into a single comma-separated string
-                format_descriptions = ", ".join(fmt.get('descriptions', []))
+            self.store_format()
 
-            # 3. Extract Label and Catalog Number safely
-            label_name = "Unknown"
-            cat_no = "Unknown"
-            
-            if release.labels:
-                lbl = release.labels[0]
-                label_name = lbl.name
-                cat_no = lbl.catno
+            self.store_label()
 
-            # 4. Extract Barcode identifier safely from lists of notes/identifiers
-            barcode = "Unknown"
-            if hasattr(release, 'identifiers'):
-                for i in release.identifiers:
-                    if i.get('type') == 'Barcode':
-                        barcode = i.get('value', 'Unknown')
-                        break
+            self.current_record.country = self.release.country or ''
 
-            # 5. Build the Tracklist string (Tracks separated by pipes '|' or newlines)
-            track_list = []
-            if release.tracklist:
-                for track in release.tracklist:
-                    # Skips index headings and tracks missing titles
-                    if track.title and track.position:
-                        track_list.append(f"{track.position}. {track.title}")
-                        if track.credits:
-                            for a in release.credits:
-                                print (f'tom-per track: {a.name} {a.role}')
-            tracklist_string = " | ".join(track_list)
+            self.current_record.year = self.release.year or ''
 
-            for a in release.credits:
-                print (f'tom: {a.name} {a.role}')
+            self.current_record.genres = ", ".join(self.release.genres or [])
 
-            # 6. Map everything into a flat row matching ROW_NAMES schema
-            return {
-                "release_id": str(release_id),
-                "artist": artist,
-                "title": title,
-                "format": format_name,
-                "qty": str(format_qty),
-                "format_descriptions": format_descriptions,
-                "label": label_name,
-                "catno": cat_no,
-                "country": release.country or '',
-                "year": release.year or '',
-                "genres": ", ".join(release.genres or []),
-                "styles": ", ".join(release.styles or []),
-                "barcode": barcode,
-                "tracklist": tracklist_string
-            }
+            self.current_record.styles = ", ".join(self.release.styles or [])
+
+            self.store_credits(self.release)
+
+            self.store_tracklist(self.release)
+
+            return True
 
         except Exception as e:
-            # Gracefully handle any unexpected extraction crash
-            return {
-                "release_id": str(release_id),
-                "artist": f"ERROR: Could not parse ({str(e)})",
-                "format": "", "qty": "", "format_descriptions": "", "label": "",
-                "catno": "", "country": "", "year": "", "genres": "", "styles": "",
-                "barcode": "", "tracklist": ""
-            }
+            self.writelog(f'Exception {e} occurred for {self.current_record}\n{traceback.format_exc()}')
+
+        return False
+
+    # get the overall ea:
+    #  store the credits per artist
+    #    skip if excluded
+    #    store Written By if found
+    #    check for per/track written by???
+    #  Go through the tracklist
+    #    If written-by isn't specified, use overall??
+    #    if index track, find subtracks
+    #    go through extra artists in track
+    #       add writtenby/composed by to track list
+    #       add other per/track roles to credits
+    #    if writtenby not found (or no ea), use overall if exists?
+    #  if "use master if no tracklist" go through master
+    #  if "always use master if no tracklist" go through master if no tracklist
+    #  if "always check master" go through master and add to roles/written by as above
+    #
+    #  if "use main record if no tracklist" go through mainrecord only if record and master don't have it, and main
+    #  record is unique
+    #  if "always check main record" go through main record (if different) and add to roles/written by as above
+    #  
+
+    def store_credits(self, record) -> bool:
+        extraartists = record.data.get(API_EXTRAARTISTS)
+        if not extraartists:
+            self.writelog(f"No album extra artists found in {record.id}")
+            return False
+
+        for ea in extraartists:
+            ea_name = self.fix_artist_name(ea.get(API_NAME))
+            ea_role = ea.get(API_ROLE, '')
+            if ea_role: 
+                #rolelist = [r.strip() for r in ea_role.split(',')]
+                rolelist = self.split_roles(ea_role)
+                for role in rolelist:
+                    if self.is_written_by_in_role(role):
+                        self.writelog(f'Top-Level written-by/composed-by {role}')
+                        if ea_name not in self.current_record.album_written_by:
+                            self.current_record.album_written_by.append(ea_name)
+                    if not self.ignore_role(role):
+                        if role not in self.all_roles:
+                            self.all_roles.append(role)
+                        roles = self.current_record.credits.setdefault(ea_name, [])
+                        roles.append(role)
+        return True
+
+    def store_tracklist(self, record) -> bool:
+        tracklist = record.data.get(API_TRACKLIST, None)
+        if not tracklist:
+            self.writelog(f"No tracklist found in {record.id}")
+            return False
+
+        for track in tracklist:
+            self.store_track(track)
+
+    def store_track(self, track):
+
+        track_pos = track.get(API_POSITION)
+        track_type = track.get(API_TYPE_)
+        track_title = track.get(API_TITLE)
+
+        track_artists = self.get_track_artists(track)
+
+        extraartists = track.get(API_EXTRAARTISTS)
+
+        if not track_type:
+            self.writelog(f"track_type not found for {self.current_record.id}-{track_title}, pos={track_pos}")
+
+        if track_type == API_TRACK_TYPE_INDEX:
+            self.writelog(f"Index track found {track_title}, using {track_artists}")
+            sts = track.get(API_TRACK_SUB_TRACKS, [])
+            st_extraartists = extraartists
+            for st in sts:
+                st_track_pos = st.get(API_POSITION, track_pos)
+                st_title = f'{track_title}-{st.get(API_TITLE)}'
+                self.store_track_info(st_extraartists, st_track_pos, st_title, track_artists)
+                st_extraartists = None # only store extraartists once per track
+
+        elif track_type != API_TRACK_TYPE_TRACK:
+            self.writelog(f"Skipping track type \"{track_type}\" found for {self.current_record.id}-{track_title}, pos={track_pos}")
+            return False
+        return self.store_track_info(extraartists, track_pos, track_title, track_artists)
+
+    def store_track_info(self, extraartists, track_pos, track_title, track_artists):
+
+        if not track_pos:
+            self.writelog(f"Track position not found")
+            return False
+
+        if not track_title:
+            self.writelog(f"Track title not found")
+            return False
+
+        written_by = []
+        self.current_record.tracklist[track_title] =  (track_artists, written_by)
+        if not extraartists: 
+            #self.writelog(f"Extra artists not found for track {track_title}")
+            if self.current_record.album_written_by:
+                self.writelog(f"Using album written by for track {track_title}: {self.current_record.album_written_by}")
+                written_by.extend(self.current_record.album_written_by)
+            return
+
+        for ea in extraartists:
+            ea_role = ea.get(API_ROLE)
+            ea_name = self.fix_artist_name(ea.get(API_NAME))
+            if ea_role: 
+                #rolelist = [r.strip() for r in ea_role.split(',')]
+                rolelist = self.split_roles(ea_role)
+                for role in rolelist:
+                    if not self.ignore_role(role):
+                        if self.is_written_by_in_role(role):
+                            if ea_name not in written_by:
+                                written_by.append(ea_name)
+                        else:
+                            roles = self.current_record.credits.setdefault(ea_name, [])
+                            if role not in roles:
+                                roles.append(role)
+        if not written_by:
+            self.writelog(f"Using album written by for track {track_title}: {self.current_record.album_written_by}")
+            written_by.extend(self.current_record.album_written_by)
+
+    def csv_headers(self):
+        return dict(headers)
+
+    def split_roles(self, roles) -> []:
+        pattern = r",(?![^\[]*\])"
+        result = re.split(pattern, roles)
+        return [s.strip() for s in result]
+
+
+    def init_csv(self):
+        fieldnames=self.csv_headers().keys()
+        self.csv_writer = csv.DictWriter(self.out, fieldnames=fieldnames, quoting=csv.QUOTE_MINIMAL)
+        self.csv_writer.writeheader()
+
+    def write_csv(self):
+        r = self.current_record
+        row = self.csv_headers()
+        row[CSV_RELEASE_ID] = f'{r.id}'
+        row[CSV_ARTIST] = r.artists
+        row[CSV_TITLE] = r.title
+        row[CSV_FORMAT] = r.format
+        row[CSV_QTY] = r.qty
+        row[CSV_FORMAT_DESCRIPTIONS] = r.format_descriptions
+        row[CSV_LABEL] = r.label
+        row[CSV_CATNO]= r.catno
+        row[CSV_COUNTRY] = r.country
+        row[CSV_YEAR] = r.year
+        row[CSV_GENRES] = r.genres
+        row[CSV_STYLES] = r.styles
+        #row = self.csv_headers()
+        row[CSV_TRACKLIST] = self.csv_tracklist(r.tracklist)
+        row[CSV_CREDITS] = self.csv_credits(r.credits)
+        self.csv_writer.writerow(row)
+        
+    def csv_tracklist(self, tracklist) -> str:
+        tracklist_str = ''
+        for title, (performed_by, written_by) in tracklist.items():
+            written_by_str = ",".join(f'{w}' for w in written_by)
+            if written_by_str:
+                written_by_str = f'Written by {written_by_str}'
+            if performed_by:
+                performed_by_str = f'Performed by {performed_by}'
+            else:
+                performed_by_str = ''
+            if tracklist_str:
+                tracklist_str += '|'
+            tracklist_str += f'{title};{performed_by_str};{written_by_str}'
+
+        return tracklist_str
+
+    def csv_credits(self, credits) -> str:
+        credit_str = ''
+        for artist, roles in credits.items():
+            roles_str = ",".join(f'{r}' for r in roles)
+            # What if artist is listed w/o any roles?
+            if roles_str:
+                roles_str = f'[{roles_str}]'
+            if credit_str:
+                credit_str += '|'
+            credit_str += f'{artist}{roles_str}'
+
+        return credit_str
+
 
 if __name__ == "__main__":
     tpb = OtsDiscogsToCsv()

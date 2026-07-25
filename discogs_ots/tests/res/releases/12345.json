@@ -1,0 +1,2030 @@
+{
+  "id": 12345,
+  "status": "Accepted",
+  "year": 2000,
+  "resource_url": "https://api.discogs.com/releases/12345",
+  "uri": "https://www.discogs.com/release/12345-Steve-Earle-Transcendental-Blues",
+  "artists": [
+    {
+      "name": "Steve Earle",
+      "anv": "",
+      "join": "",
+      "role": "",
+      "tracks": "",
+      "id": 252097,
+      "resource_url": "https://api.discogs.com/artists/252097",
+      "thumbnail_url": "https://i.discogs.com/lAADaAAQ44mAANFU2PsmLjzRAfBoC7w39F1F7gMJU3c/rs:fit/g:sm/q:90/h:515/w:515/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9BLTI1MjA5/Ny0xNTAzMTM2NTEy/LTYwNDUuanBlZw.jpeg"
+    }
+  ],
+  "artists_sort": "Steve Earle",
+  "labels": [
+    {
+      "name": "E-Squared",
+      "catno": "751033-2",
+      "entity_type": "1",
+      "entity_type_name": "Label",
+      "id": 40764,
+      "resource_url": "https://api.discogs.com/labels/40764",
+      "thumbnail_url": "https://i.discogs.com/AZD4-svo2RWezoS5j_Es1NqwmK37zKstUsgxlP3lZ7o/rs:fit/g:sm/q:90/h:176/w:300/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9MLTQwNzY0/LTExMzgxNjY2NTMu/anBlZw.jpeg"
+    },
+    {
+      "name": "Artemis Records",
+      "catno": "751033-2",
+      "entity_type": "1",
+      "entity_type_name": "Label",
+      "id": 19813,
+      "resource_url": "https://api.discogs.com/labels/19813",
+      "thumbnail_url": "https://i.discogs.com/FHXzO2OnxjTufQ0uMk1TTIk-5jOn5RUo_YUNNUHU9Gk/rs:fit/g:sm/q:90/h:195/w:197/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9MLTE5ODEz/LTE1ODYxNzQzMDUt/Njg2Ni5qcGVn.jpeg"
+    }
+  ],
+  "series": [],
+  "companies": [
+    {
+      "name": "Artemis Records",
+      "catno": "",
+      "entity_type": "8",
+      "entity_type_name": "Marketed By",
+      "id": 19813,
+      "resource_url": "https://api.discogs.com/labels/19813",
+      "thumbnail_url": "https://i.discogs.com/FHXzO2OnxjTufQ0uMk1TTIk-5jOn5RUo_YUNNUHU9Gk/rs:fit/g:sm/q:90/h:195/w:197/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9MLTE5ODEz/LTE1ODYxNzQzMDUt/Njg2Ni5qcGVn.jpeg"
+    },
+    {
+      "name": "RED Distribution, Inc.",
+      "catno": "",
+      "entity_type": "9",
+      "entity_type_name": "Distributed By",
+      "id": 34690,
+      "resource_url": "https://api.discogs.com/labels/34690"
+    },
+    {
+      "name": "Artemis Records",
+      "catno": "",
+      "entity_type": "10",
+      "entity_type_name": "Manufactured By",
+      "id": 19813,
+      "resource_url": "https://api.discogs.com/labels/19813",
+      "thumbnail_url": "https://i.discogs.com/FHXzO2OnxjTufQ0uMk1TTIk-5jOn5RUo_YUNNUHU9Gk/rs:fit/g:sm/q:90/h:195/w:197/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9MLTE5ODEz/LTE1ODYxNzQzMDUt/Njg2Ni5qcGVn.jpeg"
+    },
+    {
+      "name": "E-Squared, LLC",
+      "catno": "",
+      "entity_type": "13",
+      "entity_type_name": "Phonographic Copyright (p)",
+      "id": 348995,
+      "resource_url": "https://api.discogs.com/labels/348995"
+    },
+    {
+      "name": "Sheridan Square Entertainment, LLC",
+      "catno": "",
+      "entity_type": "13",
+      "entity_type_name": "Phonographic Copyright (p)",
+      "id": 395037,
+      "resource_url": "https://api.discogs.com/labels/395037"
+    },
+    {
+      "name": "E-Squared, LLC",
+      "catno": "",
+      "entity_type": "14",
+      "entity_type_name": "Copyright (c)",
+      "id": 348995,
+      "resource_url": "https://api.discogs.com/labels/348995"
+    },
+    {
+      "name": "Sheridan Square Entertainment, LLC",
+      "catno": "",
+      "entity_type": "14",
+      "entity_type_name": "Copyright (c)",
+      "id": 395037,
+      "resource_url": "https://api.discogs.com/labels/395037"
+    },
+    {
+      "name": "Sarangel Music",
+      "catno": "",
+      "entity_type": "21",
+      "entity_type_name": "Published By",
+      "id": 486917,
+      "resource_url": "https://api.discogs.com/labels/486917"
+    },
+    {
+      "name": "South Nashville Music",
+      "catno": "",
+      "entity_type": "21",
+      "entity_type_name": "Published By",
+      "id": 486919,
+      "resource_url": "https://api.discogs.com/labels/486919"
+    },
+    {
+      "name": "WB Music Corp.",
+      "catno": "",
+      "entity_type": "21",
+      "entity_type_name": "Published By",
+      "id": 131984,
+      "resource_url": "https://api.discogs.com/labels/131984",
+      "thumbnail_url": "https://i.discogs.com/eW6mLUR1nIwiKso3EmkA7ewTn_OYfDqfAqzGzZ91GSY/rs:fit/g:sm/q:90/h:82/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9MLTEzMTk4/NC0xNDkyODM4Mzc3/LTc1MjcuanBlZw.jpeg"
+    },
+    {
+      "name": "Frank's Auto",
+      "catno": "",
+      "entity_type": "23",
+      "entity_type_name": "Recorded At",
+      "id": 486918,
+      "resource_url": "https://api.discogs.com/labels/486918"
+    },
+    {
+      "name": "Room & Board Recording",
+      "catno": "",
+      "entity_type": "23",
+      "entity_type_name": "Recorded At",
+      "id": 274412,
+      "resource_url": "https://api.discogs.com/labels/274412"
+    },
+    {
+      "name": "Totally Wired Studios",
+      "catno": "",
+      "entity_type": "23",
+      "entity_type_name": "Recorded At",
+      "id": 297667,
+      "resource_url": "https://api.discogs.com/labels/297667"
+    },
+    {
+      "name": "Mastermix",
+      "catno": "",
+      "entity_type": "29",
+      "entity_type_name": "Mastered At",
+      "id": 110278,
+      "resource_url": "https://api.discogs.com/labels/110278",
+      "thumbnail_url": "https://i.discogs.com/_UokFZdNt6rbpOHoOO0p7AQUgrrz4Ar1ong1qJkdb-o/rs:fit/g:sm/q:90/h:131/w:178/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9MLTExMDI3/OC0xMzQ0MDkwODM1/LTM1OTQuanBlZw.jpeg"
+    },
+    {
+      "name": "WEA Mfg. Olyphant",
+      "catno": "X11182",
+      "entity_type": "31",
+      "entity_type_name": "Glass Mastered At",
+      "id": 291934,
+      "resource_url": "https://api.discogs.com/labels/291934",
+      "thumbnail_url": "https://i.discogs.com/5qPuDF4wNM6E5YUwhnZ4IufSpws8iWtUku2DvCo69Bs/rs:fit/g:sm/q:90/h:297/w:346/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9MLTI5MTkz/NC0xNjIwMzg1NzMz/LTUxODUuanBlZw.jpeg"
+    },
+    {
+      "name": "WEA Mfg. Olyphant",
+      "catno": "X11182",
+      "entity_type": "17",
+      "entity_type_name": "Pressed By",
+      "id": 291934,
+      "resource_url": "https://api.discogs.com/labels/291934",
+      "thumbnail_url": "https://i.discogs.com/5qPuDF4wNM6E5YUwhnZ4IufSpws8iWtUku2DvCo69Bs/rs:fit/g:sm/q:90/h:297/w:346/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9MLTI5MTkz/NC0xNjIwMzg1NzMz/LTUxODUuanBlZw.jpeg"
+    }
+  ],
+  "formats": [
+    {
+      "name": "CD",
+      "qty": "1",
+      "descriptions": [
+        "HDCD",
+        "Album"
+      ]
+    }
+  ],
+  "data_quality": "Needs Vote",
+  "community": {
+    "have": 831,
+    "want": 27,
+    "rating": {
+      "count": 54,
+      "average": 4.17
+    },
+    "submitter": {
+      "username": "jasonlars",
+      "resource_url": "https://api.discogs.com/users/jasonlars"
+    },
+    "contributors": [
+      {
+        "username": "jasonlars",
+        "resource_url": "https://api.discogs.com/users/jasonlars"
+      },
+      {
+        "username": "vespucci_nl",
+        "resource_url": "https://api.discogs.com/users/vespucci_nl"
+      },
+      {
+        "username": "Mormonthug",
+        "resource_url": "https://api.discogs.com/users/Mormonthug"
+      },
+      {
+        "username": "joeybolt",
+        "resource_url": "https://api.discogs.com/users/joeybolt"
+      },
+      {
+        "username": "alarmclockscreams",
+        "resource_url": "https://api.discogs.com/users/alarmclockscreams"
+      },
+      {
+        "username": "swbostoncd",
+        "resource_url": "https://api.discogs.com/users/swbostoncd"
+      },
+      {
+        "username": "DiscogsUpdateBot",
+        "resource_url": "https://api.discogs.com/users/DiscogsUpdateBot"
+      },
+      {
+        "username": "AndyWhelan",
+        "resource_url": "https://api.discogs.com/users/AndyWhelan"
+      },
+      {
+        "username": "brianvy",
+        "resource_url": "https://api.discogs.com/users/brianvy"
+      },
+      {
+        "username": "data_boy",
+        "resource_url": "https://api.discogs.com/users/data_boy"
+      },
+      {
+        "username": "powerofnow",
+        "resource_url": "https://api.discogs.com/users/powerofnow"
+      },
+      {
+        "username": "dclubok",
+        "resource_url": "https://api.discogs.com/users/dclubok"
+      },
+      {
+        "username": "rb39",
+        "resource_url": "https://api.discogs.com/users/rb39"
+      },
+      {
+        "username": "scottgaluska",
+        "resource_url": "https://api.discogs.com/users/scottgaluska"
+      },
+      {
+        "username": "BAe146",
+        "resource_url": "https://api.discogs.com/users/BAe146"
+      },
+      {
+        "username": "normmnus02",
+        "resource_url": "https://api.discogs.com/users/normmnus02"
+      }
+    ],
+    "data_quality": "Needs Vote",
+    "status": "Accepted"
+  },
+  "format_quantity": 1,
+  "date_added": "2011-01-15T13:03:44-08:00",
+  "date_changed": "2025-01-30T10:34:01-08:00",
+  "num_for_sale": 51,
+  "lowest_price": 1.99,
+  "master_id": 54321,
+  "master_url": "https://api.discogs.com/masters/54321",
+  "title": "Transcendental Blues",
+  "country": "US",
+  "released": "2000",
+  "notes": "Standard jewel case packaging with black tray\nIncludes sixteen-page booklet with artwork, pictures, notes, lyrics, credits, and thanks.\n\nAbove track titles are from the back cover. The following tracks are titled differently in the lyrics section of the booklet:\n11. I Don't Wanna Lose You Yet\n14. All Of My Life\n\n[booklet:]\n[1.] Recorded […] at Frank's Auto, South Philly, PA\nAdditional Recording […] at Room & Board, Nashville, TN\n[2.] Recorded […] at Room & Board\n[3.] Recorded […] at Room & Board\n[4.] Recorded […] at Room & Board\n[5.] Recorded […] at Room & Board\n[6.] Recorded […] at Totally Wired Studios, Dublin, Ireland\nAdditional Recording […] at Room & Board\n[7.] Recorded […] at Totally Wired Studios, Dublin\nAdditional Recording […] at Room & Board\n[8.] Recorded […] at Room & Board\n[9.] Recorded […] at Room & Board\n[10.] Recorded […] at Room & Board\n[11.] Recorded […] at Room & Board\n[12.] Recorded […] at Room & Board\n[13.] Recorded […] at Room & Board\n[14.] Recorded […] at Room & Board\n[15.] Recorded […] at Room & Board\n\nMastered […] at Mastermix, Nashville, TN\nPublished by Sarangel Music (ASCAP)\nexcept: \"Until The Day I Die\", \"Over Yonder (Jonathan's Song)\" and \"All Of My Life\" Published by South Nashville Music/WB Music Corp. (ASCAP)\n\n[a1543392] appears courtesy of [l206654]\n[url=https://www.discogs.com/artist/899014-Tim-OBrien-3]Tim O'Brien[/url] appears courtesy of [url=https://www.discogs.com/label/455057-Howdy-Skies-Records]Howdy Skies[/url]\n[a414382] appears courtesy of [url=https://www.discogs.com/label/466417-The-Grapevine-Label]Grapevine Records[/url]\n[a542247] appears courtesy of [url=https://www.discogs.com/label/99177-Sugar-Hill-Records-2]Sugar Hill Records[/url]\n\nTo Sara\n\n[disc:]\n©℗2000 E-Squared, LLC/Sheridan Square Entertainment, LLC. Manufactured and marketed by Artemis Records, 130 Fifth Avenue, New York, NY 10011. Distributed by RED Distribution, Inc. Printed in the USA. HDCD ® and High Definition Compatible Digital ® are registered trademarks of Pacific Microsonics, Inc. Patent No. 5,479,168\n\n[back cover:]\nwww.e2records.com\nwww.artemisrecords.com\n\nManufactured and marketed by Artemis Records, 130 Fifth Avenue, New York, NY 10011.\nDistributed by RED Distribution, Inc.\nHDCD ® and High Definition Compatible Digital ® are registered trademarks of Pacific Microsonics, Inc. Patent No. 5,479,168.Printed in the U.S.A. Printed in the U.S.A.",
+  "released_formatted": "2000",
+  "identifiers": [
+    {
+      "type": "Barcode",
+      "value": "6 99675 10332 3",
+      "description": "Text"
+    },
+    {
+      "type": "Barcode",
+      "value": "699675103323",
+      "description": "Scanned"
+    },
+    {
+      "type": "Rights Society",
+      "value": "ASCAP"
+    },
+    {
+      "type": "Matrix / Runout",
+      "value": "[wea mfg. OLYPHANT logo] X11182 A2 ART CD-21.1-2 01 M1S5 [barcode]",
+      "description": "Variant 1"
+    },
+    {
+      "type": "Mastering SID Code",
+      "value": "ifpi L902",
+      "description": "Variant 1"
+    },
+    {
+      "type": "Mould SID Code",
+      "value": "IFPI 2U6D",
+      "description": "Variant 1"
+    },
+    {
+      "type": "Matrix / Runout",
+      "value": "[wea mfg. OLYPHANT logo] X11182 A2 ART CD-21.1-2 01 M1S4 [barcode]",
+      "description": "Variant 2"
+    },
+    {
+      "type": "Mastering SID Code",
+      "value": "ifpi L902",
+      "description": "Variant 2"
+    },
+    {
+      "type": "Mould SID Code",
+      "value": "IFPI 2U8G",
+      "description": "Variant 2"
+    },
+    {
+      "type": "Matrix / Runout",
+      "value": "[wea mfg. OLYPHANT logo] X11182 A2 ART CD-21.1-2 01 M1S3 [barcode]",
+      "description": "Variant 3"
+    },
+    {
+      "type": "Mastering SID Code",
+      "value": "ifpi L902",
+      "description": "Variant 3"
+    },
+    {
+      "type": "Mould SID Code",
+      "value": "IFPI 2U3W",
+      "description": "Variant 3"
+    },
+    {
+      "type": "Matrix / Runout",
+      "value": "[wea mfg. OLYPHANT logo] X11182 A2 ART CD-21.1-2 01 M1S2 [barcode]",
+      "description": "Variant 4"
+    },
+    {
+      "type": "Mastering SID Code",
+      "value": "ifpi L902",
+      "description": "Variant 4"
+    },
+    {
+      "type": "Mould SID Code",
+      "value": "IFPI 2U3R",
+      "description": "Variant 4"
+    },
+    {
+      "type": "Matrix / Runout",
+      "value": "[wea mfg. OLYPHANT logo] X11182 A2 ART CD-21.1-2 01 M1S18 [barcode]",
+      "description": "Variant 5"
+    },
+    {
+      "type": "Mastering SID Code",
+      "value": "ifpi L902",
+      "description": "Variant 5"
+    },
+    {
+      "type": "Mould SID Code",
+      "value": "IFPI 2U8G",
+      "description": "Variant 5"
+    }
+  ],
+  "videos": [],
+  "genres": [
+    "Rock",
+    "Folk, World, & Country"
+  ],
+  "styles": [
+    "Country Rock",
+    "Country"
+  ],
+  "tracklist": [
+    {
+      "position": "1",
+      "type_": "track",
+      "title": "Transcendental Blues",
+      "extraartists": [
+        {
+          "name": "Dan Metz",
+          "anv": "",
+          "join": "",
+          "role": "Bass",
+          "tracks": "",
+          "id": 3081912,
+          "resource_url": "https://api.discogs.com/artists/3081912"
+        },
+        {
+          "name": "Ron Vance",
+          "anv": "",
+          "join": "",
+          "role": "Drums",
+          "tracks": "",
+          "id": 3081918,
+          "resource_url": "https://api.discogs.com/artists/3081918"
+        },
+        {
+          "name": "Steve Earle",
+          "anv": "",
+          "join": "",
+          "role": "Guitar [Guitars], Harmonium, Synthesizer [Mini-Moog], Vocals",
+          "tracks": "",
+          "id": 252097,
+          "resource_url": "https://api.discogs.com/artists/252097"
+        },
+        {
+          "name": "Paul Smith (33)",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By",
+          "tracks": "",
+          "id": 1390146,
+          "resource_url": "https://api.discogs.com/artists/1390146"
+        },
+        {
+          "name": "Ray Kennedy (2)",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By [Additional Recording]",
+          "tracks": "",
+          "id": 772139,
+          "resource_url": "https://api.discogs.com/artists/772139"
+        },
+        {
+          "name": "Patrick Earle",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By [Assisted By]",
+          "tracks": "",
+          "id": 465332,
+          "resource_url": "https://api.discogs.com/artists/465332"
+        }
+      ],
+      "duration": "4:13"
+    },
+    {
+      "position": "2",
+      "type_": "track",
+      "title": "Everyone's In Love With You",
+      "extraartists": [
+        {
+          "name": "Kelley Looney",
+          "anv": "",
+          "join": "",
+          "role": "Bass",
+          "tracks": "",
+          "id": 1937763,
+          "resource_url": "https://api.discogs.com/artists/1937763"
+        },
+        {
+          "name": "Will Rigby",
+          "anv": "",
+          "join": "",
+          "role": "Drums, Percussion",
+          "tracks": "",
+          "id": 322566,
+          "resource_url": "https://api.discogs.com/artists/322566"
+        },
+        {
+          "name": "David Steele (3)",
+          "anv": "",
+          "join": "",
+          "role": "Electric Guitar",
+          "tracks": "",
+          "id": 1822185,
+          "resource_url": "https://api.discogs.com/artists/1822185"
+        },
+        {
+          "name": "Steve Earle",
+          "anv": "",
+          "join": "",
+          "role": "Electric Guitar, Vocals",
+          "tracks": "",
+          "id": 252097,
+          "resource_url": "https://api.discogs.com/artists/252097"
+        },
+        {
+          "name": "Ray Kennedy (2)",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By",
+          "tracks": "",
+          "id": 772139,
+          "resource_url": "https://api.discogs.com/artists/772139"
+        },
+        {
+          "name": "Patrick Earle",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By [Assisted By]",
+          "tracks": "",
+          "id": 465332,
+          "resource_url": "https://api.discogs.com/artists/465332"
+        },
+        {
+          "name": "Tom Littlefield",
+          "anv": "",
+          "join": "",
+          "role": "Vocals",
+          "tracks": "",
+          "id": 1214937,
+          "resource_url": "https://api.discogs.com/artists/1214937"
+        }
+      ],
+      "duration": "3:29"
+    },
+    {
+      "position": "3",
+      "type_": "track",
+      "title": "Another Town",
+      "extraartists": [
+        {
+          "name": "Steve Earle",
+          "anv": "",
+          "join": "",
+          "role": "Acoustic Guitar, Vocals",
+          "tracks": "",
+          "id": 252097,
+          "resource_url": "https://api.discogs.com/artists/252097"
+        },
+        {
+          "name": "Kelley Looney",
+          "anv": "",
+          "join": "",
+          "role": "Bass",
+          "tracks": "",
+          "id": 1937763,
+          "resource_url": "https://api.discogs.com/artists/1937763"
+        },
+        {
+          "name": "Will Rigby",
+          "anv": "",
+          "join": "",
+          "role": "Drums, Percussion",
+          "tracks": "",
+          "id": 322566,
+          "resource_url": "https://api.discogs.com/artists/322566"
+        },
+        {
+          "name": "David Steele (3)",
+          "anv": "",
+          "join": "",
+          "role": "Electric Guitar [Electric Guitars]",
+          "tracks": "",
+          "id": 1822185,
+          "resource_url": "https://api.discogs.com/artists/1822185"
+        },
+        {
+          "name": "Ray Kennedy (2)",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By",
+          "tracks": "",
+          "id": 772139,
+          "resource_url": "https://api.discogs.com/artists/772139"
+        },
+        {
+          "name": "Patrick Earle",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By [Assisted By]",
+          "tracks": "",
+          "id": 465332,
+          "resource_url": "https://api.discogs.com/artists/465332"
+        }
+      ],
+      "duration": "2:19"
+    },
+    {
+      "position": "4",
+      "type_": "track",
+      "title": "I Can Wait",
+      "extraartists": [
+        {
+          "name": "Kelley Looney",
+          "anv": "",
+          "join": "",
+          "role": "Bass",
+          "tracks": "",
+          "id": 1937763,
+          "resource_url": "https://api.discogs.com/artists/1937763"
+        },
+        {
+          "name": "Will Rigby",
+          "anv": "",
+          "join": "",
+          "role": "Drums, Percussion",
+          "tracks": "",
+          "id": 322566,
+          "resource_url": "https://api.discogs.com/artists/322566"
+        },
+        {
+          "name": "David Steele (3)",
+          "anv": "",
+          "join": "",
+          "role": "Electric Guitar",
+          "tracks": "",
+          "id": 1822185,
+          "resource_url": "https://api.discogs.com/artists/1822185"
+        },
+        {
+          "name": "Ray Kennedy (2)",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By",
+          "tracks": "",
+          "id": 772139,
+          "resource_url": "https://api.discogs.com/artists/772139"
+        },
+        {
+          "name": "Patrick Earle",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By [Assisted By]",
+          "tracks": "",
+          "id": 465332,
+          "resource_url": "https://api.discogs.com/artists/465332"
+        },
+        {
+          "name": "Steve Earle",
+          "anv": "",
+          "join": "",
+          "role": "Twelve-String Guitar [12-String Acoustic], Vocals",
+          "tracks": "",
+          "id": 252097,
+          "resource_url": "https://api.discogs.com/artists/252097"
+        },
+        {
+          "name": "Tom Littlefield",
+          "anv": "",
+          "join": "",
+          "role": "Vocals",
+          "tracks": "",
+          "id": 1214937,
+          "resource_url": "https://api.discogs.com/artists/1214937"
+        }
+      ],
+      "duration": "3:16"
+    },
+    {
+      "position": "5",
+      "type_": "track",
+      "title": "The Boy Who Never Cried",
+      "extraartists": [
+        {
+          "name": "Kristin Wilkinson",
+          "anv": "",
+          "join": "",
+          "role": "Arranged By [Strings Arranged By], Conductor [Strings Conducted By]",
+          "tracks": "",
+          "id": 477740,
+          "resource_url": "https://api.discogs.com/artists/477740"
+        },
+        {
+          "name": "Kelley Looney",
+          "anv": "",
+          "join": "",
+          "role": "Bass",
+          "tracks": "",
+          "id": 1937763,
+          "resource_url": "https://api.discogs.com/artists/1937763"
+        },
+        {
+          "name": "David Steele (3)",
+          "anv": "",
+          "join": "",
+          "role": "Bouzouki",
+          "tracks": "",
+          "id": 1822185,
+          "resource_url": "https://api.discogs.com/artists/1822185"
+        },
+        {
+          "name": "Will Rigby",
+          "anv": "",
+          "join": "",
+          "role": "Drums, Percussion",
+          "tracks": "",
+          "id": 322566,
+          "resource_url": "https://api.discogs.com/artists/322566"
+        },
+        {
+          "name": "The Love Sponge Strings",
+          "anv": "The Love Sponge",
+          "join": "",
+          "role": "Performer [Strings Performed By]",
+          "tracks": "",
+          "id": 1753652,
+          "resource_url": "https://api.discogs.com/artists/1753652"
+        },
+        {
+          "name": "John Catchings",
+          "anv": "",
+          "join": "",
+          "role": "Performer [The Love Sponge], Cello",
+          "tracks": "",
+          "id": 267645,
+          "resource_url": "https://api.discogs.com/artists/267645"
+        },
+        {
+          "name": "Kristin Wilkinson",
+          "anv": "",
+          "join": "",
+          "role": "Performer [The Love Sponge], Viola",
+          "tracks": "",
+          "id": 477740,
+          "resource_url": "https://api.discogs.com/artists/477740"
+        },
+        {
+          "name": "David Angell",
+          "anv": "",
+          "join": "",
+          "role": "Performer [The Love Sponge], Violin",
+          "tracks": "",
+          "id": 506954,
+          "resource_url": "https://api.discogs.com/artists/506954"
+        },
+        {
+          "name": "David Davidson",
+          "anv": "",
+          "join": "",
+          "role": "Performer [The Love Sponge], Violin",
+          "tracks": "",
+          "id": 271174,
+          "resource_url": "https://api.discogs.com/artists/271174"
+        },
+        {
+          "name": "Ray Kennedy (2)",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By",
+          "tracks": "",
+          "id": 772139,
+          "resource_url": "https://api.discogs.com/artists/772139"
+        },
+        {
+          "name": "Patrick Earle",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By [Assisted By]",
+          "tracks": "",
+          "id": 465332,
+          "resource_url": "https://api.discogs.com/artists/465332"
+        },
+        {
+          "name": "Steve Earle",
+          "anv": "",
+          "join": "",
+          "role": "Twelve-String Guitar [12-String Guitar], Harmonium, Vocals",
+          "tracks": "",
+          "id": 252097,
+          "resource_url": "https://api.discogs.com/artists/252097"
+        }
+      ],
+      "duration": "3:44"
+    },
+    {
+      "position": "6",
+      "type_": "track",
+      "title": "Steve's Last Ramble",
+      "extraartists": [
+        {
+          "name": "Sharon Shannon",
+          "anv": "",
+          "join": "",
+          "role": "Accordion",
+          "tracks": "",
+          "id": 414382,
+          "resource_url": "https://api.discogs.com/artists/414382"
+        },
+        {
+          "name": "Steve Earle",
+          "anv": "",
+          "join": "",
+          "role": "Acoustic Guitar, Harmonica, Vocals",
+          "tracks": "",
+          "id": 252097,
+          "resource_url": "https://api.discogs.com/artists/252097"
+        },
+        {
+          "name": "Mary Shannon",
+          "anv": "",
+          "join": "",
+          "role": "Banjo",
+          "tracks": "",
+          "id": 1109856,
+          "resource_url": "https://api.discogs.com/artists/1109856"
+        },
+        {
+          "name": "Bill Wright (7)",
+          "anv": "",
+          "join": "",
+          "role": "Bouzouki",
+          "tracks": "",
+          "id": 3083279,
+          "resource_url": "https://api.discogs.com/artists/3083279"
+        },
+        {
+          "name": "James Blennerhassett",
+          "anv": "",
+          "join": "",
+          "role": "Double Bass [Upright Bass]",
+          "tracks": "",
+          "id": 565252,
+          "resource_url": "https://api.discogs.com/artists/565252"
+        },
+        {
+          "name": "Noel Bridgeman",
+          "anv": "",
+          "join": "",
+          "role": "Drums",
+          "tracks": "",
+          "id": 408619,
+          "resource_url": "https://api.discogs.com/artists/408619"
+        },
+        {
+          "name": "David Steele (3)",
+          "anv": "",
+          "join": "",
+          "role": "Electric Guitar",
+          "tracks": "",
+          "id": 1822185,
+          "resource_url": "https://api.discogs.com/artists/1822185"
+        },
+        {
+          "name": "Liz Kane",
+          "anv": "",
+          "join": "",
+          "role": "Fiddle",
+          "tracks": "",
+          "id": 1109913,
+          "resource_url": "https://api.discogs.com/artists/1109913"
+        },
+        {
+          "name": "Yvonne Kane",
+          "anv": "",
+          "join": "",
+          "role": "Fiddle",
+          "tracks": "",
+          "id": 1109914,
+          "resource_url": "https://api.discogs.com/artists/1109914"
+        },
+        {
+          "name": "Jim Murray",
+          "anv": "",
+          "join": "",
+          "role": "Guitar [Gut String Guitar]",
+          "tracks": "",
+          "id": 506073,
+          "resource_url": "https://api.discogs.com/artists/506073"
+        },
+        {
+          "name": "Ciarán Byrne",
+          "anv": "Ciaran Byrne",
+          "join": "",
+          "role": "Recorded By",
+          "tracks": "",
+          "id": 1324763,
+          "resource_url": "https://api.discogs.com/artists/1324763"
+        },
+        {
+          "name": "Patrick Earle",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By [Additional Recording, Assisted By]",
+          "tracks": "",
+          "id": 465332,
+          "resource_url": "https://api.discogs.com/artists/465332"
+        },
+        {
+          "name": "Ray Kennedy (2)",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By [Additional Recording]",
+          "tracks": "",
+          "id": 772139,
+          "resource_url": "https://api.discogs.com/artists/772139"
+        },
+        {
+          "name": "Keith McDonnell (3)",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By [Assisted By]",
+          "tracks": "",
+          "id": 10745857,
+          "resource_url": "https://api.discogs.com/artists/10745857"
+        }
+      ],
+      "duration": "3:38"
+    },
+    {
+      "position": "7",
+      "type_": "track",
+      "title": "The Galway Girl",
+      "extraartists": [
+        {
+          "name": "Sharon Shannon",
+          "anv": "",
+          "join": "",
+          "role": "Accordion",
+          "tracks": "",
+          "id": 414382,
+          "resource_url": "https://api.discogs.com/artists/414382"
+        },
+        {
+          "name": "Mary Shannon",
+          "anv": "",
+          "join": "",
+          "role": "Banjo",
+          "tracks": "",
+          "id": 1109856,
+          "resource_url": "https://api.discogs.com/artists/1109856"
+        },
+        {
+          "name": "Joyce Redmond",
+          "anv": "",
+          "join": "",
+          "role": "Bodhrán [Bodhran]",
+          "tracks": "",
+          "id": 3083281,
+          "resource_url": "https://api.discogs.com/artists/3083281"
+        },
+        {
+          "name": "Bill Wright (7)",
+          "anv": "",
+          "join": "",
+          "role": "Bouzouki",
+          "tracks": "",
+          "id": 3083279,
+          "resource_url": "https://api.discogs.com/artists/3083279"
+        },
+        {
+          "name": "James Blennerhassett",
+          "anv": "",
+          "join": "",
+          "role": "Double Bass [Upright Bass]",
+          "tracks": "",
+          "id": 565252,
+          "resource_url": "https://api.discogs.com/artists/565252"
+        },
+        {
+          "name": "Noel Bridgeman",
+          "anv": "",
+          "join": "",
+          "role": "Drums",
+          "tracks": "",
+          "id": 408619,
+          "resource_url": "https://api.discogs.com/artists/408619"
+        },
+        {
+          "name": "Liz Kane",
+          "anv": "",
+          "join": "",
+          "role": "Fiddle",
+          "tracks": "",
+          "id": 1109913,
+          "resource_url": "https://api.discogs.com/artists/1109913"
+        },
+        {
+          "name": "Yvonne Kane",
+          "anv": "",
+          "join": "",
+          "role": "Fiddle",
+          "tracks": "",
+          "id": 1109914,
+          "resource_url": "https://api.discogs.com/artists/1109914"
+        },
+        {
+          "name": "Jim Murray",
+          "anv": "",
+          "join": "",
+          "role": "Guitar",
+          "tracks": "",
+          "id": 506073,
+          "resource_url": "https://api.discogs.com/artists/506073"
+        },
+        {
+          "name": "Steve Earle",
+          "anv": "",
+          "join": "",
+          "role": "Mandolin, Vocals",
+          "tracks": "",
+          "id": 252097,
+          "resource_url": "https://api.discogs.com/artists/252097"
+        },
+        {
+          "name": "Ciarán Byrne",
+          "anv": "Ciaran Byrne",
+          "join": "",
+          "role": "Recorded By",
+          "tracks": "",
+          "id": 1324763,
+          "resource_url": "https://api.discogs.com/artists/1324763"
+        },
+        {
+          "name": "Patrick Earle",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By [Additional Recording, Assisted By]",
+          "tracks": "",
+          "id": 465332,
+          "resource_url": "https://api.discogs.com/artists/465332"
+        },
+        {
+          "name": "Ray Kennedy (2)",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By [Additional Recording]",
+          "tracks": "",
+          "id": 772139,
+          "resource_url": "https://api.discogs.com/artists/772139"
+        },
+        {
+          "name": "Keith McDonnell (3)",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By [Assisted By]",
+          "tracks": "",
+          "id": 10745857,
+          "resource_url": "https://api.discogs.com/artists/10745857"
+        },
+        {
+          "name": "Dan Gillis",
+          "anv": "",
+          "join": "",
+          "role": "Tin Whistle",
+          "tracks": "",
+          "id": 1662843,
+          "resource_url": "https://api.discogs.com/artists/1662843"
+        }
+      ],
+      "duration": "3:03"
+    },
+    {
+      "position": "8",
+      "type_": "track",
+      "title": "Lonelier Than This",
+      "extraartists": [
+        {
+          "name": "Steve Earle",
+          "anv": "",
+          "join": "",
+          "role": "Acoustic Guitar, Vocals",
+          "tracks": "",
+          "id": 252097,
+          "resource_url": "https://api.discogs.com/artists/252097"
+        },
+        {
+          "name": "Kelley Looney",
+          "anv": "",
+          "join": "",
+          "role": "Bass",
+          "tracks": "",
+          "id": 1937763,
+          "resource_url": "https://api.discogs.com/artists/1937763"
+        },
+        {
+          "name": "Will Rigby",
+          "anv": "",
+          "join": "",
+          "role": "Drums, Percussion",
+          "tracks": "",
+          "id": 322566,
+          "resource_url": "https://api.discogs.com/artists/322566"
+        },
+        {
+          "name": "Ray Kennedy (2)",
+          "anv": "",
+          "join": "",
+          "role": "Electric Guitar",
+          "tracks": "",
+          "id": 772139,
+          "resource_url": "https://api.discogs.com/artists/772139"
+        },
+        {
+          "name": "Ray Kennedy (2)",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By",
+          "tracks": "",
+          "id": 772139,
+          "resource_url": "https://api.discogs.com/artists/772139"
+        },
+        {
+          "name": "Patrick Earle",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By [Assisted By]",
+          "tracks": "",
+          "id": 465332,
+          "resource_url": "https://api.discogs.com/artists/465332"
+        },
+        {
+          "name": "David Steele (3)",
+          "anv": "",
+          "join": "",
+          "role": "Resonator Guitar",
+          "tracks": "",
+          "id": 1822185,
+          "resource_url": "https://api.discogs.com/artists/1822185"
+        }
+      ],
+      "duration": "3:12"
+    },
+    {
+      "position": "9",
+      "type_": "track",
+      "title": "Wherever I Go",
+      "extraartists": [
+        {
+          "name": "Kelley Looney",
+          "anv": "",
+          "join": "",
+          "role": "Bass",
+          "tracks": "",
+          "id": 1937763,
+          "resource_url": "https://api.discogs.com/artists/1937763"
+        },
+        {
+          "name": "Will Rigby",
+          "anv": "",
+          "join": "",
+          "role": "Drums",
+          "tracks": "",
+          "id": 322566,
+          "resource_url": "https://api.discogs.com/artists/322566"
+        },
+        {
+          "name": "Steve Earle",
+          "anv": "",
+          "join": "",
+          "role": "Electric Guitar, Acoustic Guitar, Vocals",
+          "tracks": "",
+          "id": 252097,
+          "resource_url": "https://api.discogs.com/artists/252097"
+        },
+        {
+          "name": "Benmont Tench",
+          "anv": "",
+          "join": "",
+          "role": "Organ, Piano",
+          "tracks": "",
+          "id": 259392,
+          "resource_url": "https://api.discogs.com/artists/259392"
+        },
+        {
+          "name": "Ray Kennedy (2)",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By",
+          "tracks": "",
+          "id": 772139,
+          "resource_url": "https://api.discogs.com/artists/772139"
+        },
+        {
+          "name": "Patrick Earle",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By [Assisted By]",
+          "tracks": "",
+          "id": 465332,
+          "resource_url": "https://api.discogs.com/artists/465332"
+        },
+        {
+          "name": "David Steele (3)",
+          "anv": "",
+          "join": "",
+          "role": "Twelve-String Guitar [Electric 12-String Guitar]",
+          "tracks": "",
+          "id": 1822185,
+          "resource_url": "https://api.discogs.com/artists/1822185"
+        }
+      ],
+      "duration": "1:57"
+    },
+    {
+      "position": "10",
+      "type_": "track",
+      "title": "When I Fall",
+      "extraartists": [
+        {
+          "name": "Steve Earle",
+          "anv": "",
+          "join": "",
+          "role": "Acoustic Guitar, Harmonica, Vocals",
+          "tracks": "",
+          "id": 252097,
+          "resource_url": "https://api.discogs.com/artists/252097"
+        },
+        {
+          "name": "Ray Kennedy (2)",
+          "anv": "",
+          "join": "",
+          "role": "Bass",
+          "tracks": "",
+          "id": 772139,
+          "resource_url": "https://api.discogs.com/artists/772139"
+        },
+        {
+          "name": "Patrick Earle",
+          "anv": "",
+          "join": "",
+          "role": "Drums, Percussion",
+          "tracks": "",
+          "id": 465332,
+          "resource_url": "https://api.discogs.com/artists/465332"
+        },
+        {
+          "name": "Doug Lancio",
+          "anv": "",
+          "join": "",
+          "role": "Electric Guitar [Electric Guitars]",
+          "tracks": "",
+          "id": 382939,
+          "resource_url": "https://api.discogs.com/artists/382939"
+        },
+        {
+          "name": "Ray Kennedy (2)",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By",
+          "tracks": "",
+          "id": 772139,
+          "resource_url": "https://api.discogs.com/artists/772139"
+        },
+        {
+          "name": "Patrick Earle",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By [Assisted By]",
+          "tracks": "",
+          "id": 465332,
+          "resource_url": "https://api.discogs.com/artists/465332"
+        },
+        {
+          "name": "Stacey Earle",
+          "anv": "",
+          "join": "",
+          "role": "Vocals",
+          "tracks": "",
+          "id": 1543392,
+          "resource_url": "https://api.discogs.com/artists/1543392"
+        }
+      ],
+      "duration": "4:33"
+    },
+    {
+      "position": "11",
+      "type_": "track",
+      "title": "I Don't Want To Lose You Yet",
+      "extraartists": [
+        {
+          "name": "Steve Earle",
+          "anv": "",
+          "join": "",
+          "role": "Acoustic Guitar, Vocals",
+          "tracks": "",
+          "id": 252097,
+          "resource_url": "https://api.discogs.com/artists/252097"
+        },
+        {
+          "name": "Kelley Looney",
+          "anv": "",
+          "join": "",
+          "role": "Bass",
+          "tracks": "",
+          "id": 1937763,
+          "resource_url": "https://api.discogs.com/artists/1937763"
+        },
+        {
+          "name": "Will Rigby",
+          "anv": "",
+          "join": "",
+          "role": "Drums, Percussion",
+          "tracks": "",
+          "id": 322566,
+          "resource_url": "https://api.discogs.com/artists/322566"
+        },
+        {
+          "name": "David Steele (3)",
+          "anv": "",
+          "join": "",
+          "role": "Electric Guitar [Electric Guitars]",
+          "tracks": "",
+          "id": 1822185,
+          "resource_url": "https://api.discogs.com/artists/1822185"
+        },
+        {
+          "name": "Benmont Tench",
+          "anv": "",
+          "join": "",
+          "role": "Organ",
+          "tracks": "",
+          "id": 259392,
+          "resource_url": "https://api.discogs.com/artists/259392"
+        },
+        {
+          "name": "Ray Kennedy (2)",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By",
+          "tracks": "",
+          "id": 772139,
+          "resource_url": "https://api.discogs.com/artists/772139"
+        },
+        {
+          "name": "Patrick Earle",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By [Assisted By]",
+          "tracks": "",
+          "id": 465332,
+          "resource_url": "https://api.discogs.com/artists/465332"
+        },
+        {
+          "name": "Tom Littlefield",
+          "anv": "",
+          "join": "",
+          "role": "Vocals",
+          "tracks": "",
+          "id": 1214937,
+          "resource_url": "https://api.discogs.com/artists/1214937"
+        }
+      ],
+      "duration": "3:22"
+    },
+    {
+      "position": "12",
+      "type_": "track",
+      "title": "Halo 'Round The Moon",
+      "extraartists": [
+        {
+          "name": "Kelley Looney",
+          "anv": "",
+          "join": "",
+          "role": "Bass",
+          "tracks": "",
+          "id": 1937763,
+          "resource_url": "https://api.discogs.com/artists/1937763"
+        },
+        {
+          "name": "Will Rigby",
+          "anv": "",
+          "join": "",
+          "role": "Drums, Percussion",
+          "tracks": "",
+          "id": 322566,
+          "resource_url": "https://api.discogs.com/artists/322566"
+        },
+        {
+          "name": "Ray Kennedy (2)",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By",
+          "tracks": "",
+          "id": 772139,
+          "resource_url": "https://api.discogs.com/artists/772139"
+        },
+        {
+          "name": "Patrick Earle",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By [Assisted By]",
+          "tracks": "",
+          "id": 465332,
+          "resource_url": "https://api.discogs.com/artists/465332"
+        },
+        {
+          "name": "David Steele (3)",
+          "anv": "",
+          "join": "",
+          "role": "Resonator Guitar",
+          "tracks": "",
+          "id": 1822185,
+          "resource_url": "https://api.discogs.com/artists/1822185"
+        },
+        {
+          "name": "Steve Earle",
+          "anv": "",
+          "join": "",
+          "role": "Resonator Guitar, Harmonium, Vocals",
+          "tracks": "",
+          "id": 252097,
+          "resource_url": "https://api.discogs.com/artists/252097"
+        }
+      ],
+      "duration": "2:12"
+    },
+    {
+      "position": "13",
+      "type_": "track",
+      "title": "Until The Day I Die",
+      "extraartists": [
+        {
+          "name": "Darrell Scott",
+          "anv": "",
+          "join": "",
+          "role": "Banjo, Vocals",
+          "tracks": "",
+          "id": 542247,
+          "resource_url": "https://api.discogs.com/artists/542247"
+        },
+        {
+          "name": "Dennis Crouch",
+          "anv": "",
+          "join": "",
+          "role": "Double Bass [Upright Bass]",
+          "tracks": "",
+          "id": 530121,
+          "resource_url": "https://api.discogs.com/artists/530121"
+        },
+        {
+          "name": "Casey Driessen",
+          "anv": "",
+          "join": "",
+          "role": "Fiddle",
+          "tracks": "",
+          "id": 986838,
+          "resource_url": "https://api.discogs.com/artists/986838"
+        },
+        {
+          "name": "Steve Earle",
+          "anv": "",
+          "join": "",
+          "role": "Guitar, Vocals",
+          "tracks": "",
+          "id": 252097,
+          "resource_url": "https://api.discogs.com/artists/252097"
+        },
+        {
+          "name": "Tim O'Brien (3)",
+          "anv": "",
+          "join": "",
+          "role": "Mandolin, Vocals",
+          "tracks": "",
+          "id": 899014,
+          "resource_url": "https://api.discogs.com/artists/899014"
+        },
+        {
+          "name": "Ray Kennedy (2)",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By",
+          "tracks": "",
+          "id": 772139,
+          "resource_url": "https://api.discogs.com/artists/772139"
+        },
+        {
+          "name": "Patrick Earle",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By [Assisted By]",
+          "tracks": "",
+          "id": 465332,
+          "resource_url": "https://api.discogs.com/artists/465332"
+        }
+      ],
+      "duration": "3:22"
+    },
+    {
+      "position": "14",
+      "type_": "track",
+      "title": "All My Life",
+      "extraartists": [
+        {
+          "name": "Ray Kennedy (2)",
+          "anv": "",
+          "join": "",
+          "role": "Bass",
+          "tracks": "",
+          "id": 772139,
+          "resource_url": "https://api.discogs.com/artists/772139"
+        },
+        {
+          "name": "Patrick Earle",
+          "anv": "",
+          "join": "",
+          "role": "Drums, Percussion",
+          "tracks": "",
+          "id": 465332,
+          "resource_url": "https://api.discogs.com/artists/465332"
+        },
+        {
+          "name": "Steve Earle",
+          "anv": "",
+          "join": "",
+          "role": "Guitar [Guitars], Harmonium, Vocals",
+          "tracks": "",
+          "id": 252097,
+          "resource_url": "https://api.discogs.com/artists/252097"
+        },
+        {
+          "name": "Ray Kennedy (2)",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By",
+          "tracks": "",
+          "id": 772139,
+          "resource_url": "https://api.discogs.com/artists/772139"
+        },
+        {
+          "name": "Patrick Earle",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By [Assisted By]",
+          "tracks": "",
+          "id": 465332,
+          "resource_url": "https://api.discogs.com/artists/465332"
+        }
+      ],
+      "duration": "3:26"
+    },
+    {
+      "position": "15",
+      "type_": "track",
+      "title": "Over Yonder (Jonathan's Song)",
+      "extraartists": [
+        {
+          "name": "Steve Earle",
+          "anv": "",
+          "join": "",
+          "role": "Acoustic Guitar, Harmonica, Vocals",
+          "tracks": "",
+          "id": 252097,
+          "resource_url": "https://api.discogs.com/artists/252097"
+        },
+        {
+          "name": "Kelley Looney",
+          "anv": "",
+          "join": "",
+          "role": "Bass",
+          "tracks": "",
+          "id": 1937763,
+          "resource_url": "https://api.discogs.com/artists/1937763"
+        },
+        {
+          "name": "Will Rigby",
+          "anv": "",
+          "join": "",
+          "role": "Drums, Percussion",
+          "tracks": "",
+          "id": 322566,
+          "resource_url": "https://api.discogs.com/artists/322566"
+        },
+        {
+          "name": "David Steele (3)",
+          "anv": "",
+          "join": "",
+          "role": "Mandola",
+          "tracks": "",
+          "id": 1822185,
+          "resource_url": "https://api.discogs.com/artists/1822185"
+        },
+        {
+          "name": "Ray Kennedy (2)",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By",
+          "tracks": "",
+          "id": 772139,
+          "resource_url": "https://api.discogs.com/artists/772139"
+        },
+        {
+          "name": "Patrick Earle",
+          "anv": "",
+          "join": "",
+          "role": "Recorded By [Assisted By]",
+          "tracks": "",
+          "id": 465332,
+          "resource_url": "https://api.discogs.com/artists/465332"
+        }
+      ],
+      "duration": "3:51"
+    }
+  ],
+  "extraartists": [
+    {
+      "name": "Debra Young (2)",
+      "anv": "",
+      "join": "",
+      "role": "A&R [A&R Administration, For Artemis Records]",
+      "tracks": "",
+      "id": 2709019,
+      "resource_url": "https://api.discogs.com/artists/2709019"
+    },
+    {
+      "name": "Elisa Sanders",
+      "anv": "",
+      "join": "",
+      "role": "A&R [A&R Administration, For E-Squared]",
+      "tracks": "",
+      "id": 2967056,
+      "resource_url": "https://api.discogs.com/artists/2967056"
+    },
+    {
+      "name": "Artemis Records",
+      "anv": "",
+      "join": "",
+      "role": "A&R [A&R Administration, For]",
+      "tracks": "",
+      "id": 14419430,
+      "resource_url": "https://api.discogs.com/artists/14419430"
+    },
+    {
+      "name": "E-Squared",
+      "anv": "",
+      "join": "",
+      "role": "A&R [A&R Administration, For]",
+      "tracks": "",
+      "id": 14419433,
+      "resource_url": "https://api.discogs.com/artists/14419433"
+    },
+    {
+      "name": "Brad Talbott",
+      "anv": "",
+      "join": "",
+      "role": "Art Direction, Design",
+      "tracks": "",
+      "id": 1829425,
+      "resource_url": "https://api.discogs.com/artists/1829425"
+    },
+    {
+      "name": "Tony Fitzpatrick (2)",
+      "anv": "",
+      "join": "",
+      "role": "Artwork [Cover Art], Illustration [Additional Illustration]",
+      "tracks": "",
+      "id": 2531538,
+      "resource_url": "https://api.discogs.com/artists/2531538"
+    },
+    {
+      "name": "Asgard Agency",
+      "anv": "ASGARD",
+      "join": "",
+      "role": "Booking [(Int'l), For]",
+      "tracks": "",
+      "id": 4469593,
+      "resource_url": "https://api.discogs.com/artists/4469593"
+    },
+    {
+      "name": "Paul Fenn",
+      "anv": "",
+      "join": "",
+      "role": "Booking [(Int'l)]",
+      "tracks": "",
+      "id": 2310919,
+      "resource_url": "https://api.discogs.com/artists/2310919"
+    },
+    {
+      "name": "Steve Cheney (2)",
+      "anv": "",
+      "join": "",
+      "role": "Booking [(Int'l)]",
+      "tracks": "",
+      "id": 5467216,
+      "resource_url": "https://api.discogs.com/artists/5467216"
+    },
+    {
+      "name": "Monterey Peninsula Artists",
+      "anv": "",
+      "join": "",
+      "role": "Booking [(US & Canada), For]",
+      "tracks": "",
+      "id": 2594837,
+      "resource_url": "https://api.discogs.com/artists/2594837"
+    },
+    {
+      "name": "Frank Riley (2)",
+      "anv": "",
+      "join": "",
+      "role": "Booking [(US & Canada)]",
+      "tracks": "",
+      "id": 1834753,
+      "resource_url": "https://api.discogs.com/artists/1834753"
+    },
+    {
+      "name": "Janine Natter",
+      "anv": "",
+      "join": "",
+      "role": "Legal",
+      "tracks": "",
+      "id": 4470508,
+      "resource_url": "https://api.discogs.com/artists/4470508"
+    },
+    {
+      "name": "Rosemary Carroll",
+      "anv": "",
+      "join": "",
+      "role": "Legal",
+      "tracks": "",
+      "id": 2794394,
+      "resource_url": "https://api.discogs.com/artists/2794394"
+    },
+    {
+      "name": "Codikow, Carroll, Guido & Groffman",
+      "anv": "",
+      "join": "",
+      "role": "Legal [For]",
+      "tracks": "",
+      "id": 4288224,
+      "resource_url": "https://api.discogs.com/artists/4288224"
+    },
+    {
+      "name": "Steve Earle",
+      "anv": "",
+      "join": "",
+      "role": "Liner Notes [Chicago, January, 2000]",
+      "tracks": "",
+      "id": 252097,
+      "resource_url": "https://api.discogs.com/artists/252097"
+    },
+    {
+      "name": "Dan Gillis",
+      "anv": "",
+      "join": "",
+      "role": "Management",
+      "tracks": "",
+      "id": 1662843,
+      "resource_url": "https://api.discogs.com/artists/1662843"
+    },
+    {
+      "name": "Sussman & Associates",
+      "anv": "",
+      "join": "",
+      "role": "Management [Business Management, For]",
+      "tracks": "",
+      "id": 2216976,
+      "resource_url": "https://api.discogs.com/artists/2216976"
+    },
+    {
+      "name": "Charles Sussman",
+      "anv": "",
+      "join": "",
+      "role": "Management [Business Management]",
+      "tracks": "",
+      "id": 2005181,
+      "resource_url": "https://api.discogs.com/artists/2005181"
+    },
+    {
+      "name": "Kurt Vitolo",
+      "anv": "",
+      "join": "",
+      "role": "Management [Business Management]",
+      "tracks": "",
+      "id": 3081916,
+      "resource_url": "https://api.discogs.com/artists/3081916"
+    },
+    {
+      "name": "Dan Gillis Management",
+      "anv": "",
+      "join": "",
+      "role": "Management [For]",
+      "tracks": "",
+      "id": 6369899,
+      "resource_url": "https://api.discogs.com/artists/6369899"
+    },
+    {
+      "name": "Hank Williams (2)",
+      "anv": "",
+      "join": "",
+      "role": "Mastered By",
+      "tracks": "",
+      "id": 423833,
+      "resource_url": "https://api.discogs.com/artists/423833"
+    },
+    {
+      "name": "Ray Kennedy (2)",
+      "anv": "",
+      "join": "",
+      "role": "Mixed By",
+      "tracks": "",
+      "id": 772139,
+      "resource_url": "https://api.discogs.com/artists/772139"
+    },
+    {
+      "name": "Patrick Earle",
+      "anv": "",
+      "join": "",
+      "role": "Mixed By [Assisted By]",
+      "tracks": "",
+      "id": 465332,
+      "resource_url": "https://api.discogs.com/artists/465332"
+    },
+    {
+      "name": "Adam W. Carlos",
+      "anv": "",
+      "join": "",
+      "role": "Photography By [Photos]",
+      "tracks": "",
+      "id": 3081917,
+      "resource_url": "https://api.discogs.com/artists/3081917"
+    },
+    {
+      "name": "Michael Wilson (8)",
+      "anv": "",
+      "join": "",
+      "role": "Photography By [Photos]",
+      "tracks": "",
+      "id": 1829968,
+      "resource_url": "https://api.discogs.com/artists/1829968"
+    },
+    {
+      "name": "Sara Sharpe",
+      "anv": "",
+      "join": "",
+      "role": "Photography By [Photos]",
+      "tracks": "",
+      "id": 3081919,
+      "resource_url": "https://api.discogs.com/artists/3081919"
+    },
+    {
+      "name": "the twangtrust",
+      "anv": "",
+      "join": "",
+      "role": "Producer [Produced By], Mixed By",
+      "tracks": "",
+      "id": 322794,
+      "resource_url": "https://api.discogs.com/artists/322794"
+    },
+    {
+      "name": "Sage Robinson",
+      "anv": "",
+      "join": "",
+      "role": "Public Relations [Publicity, For Artemis Records]",
+      "tracks": "",
+      "id": 3081915,
+      "resource_url": "https://api.discogs.com/artists/3081915"
+    },
+    {
+      "name": "Traci Thomas",
+      "anv": "",
+      "join": "",
+      "role": "Public Relations [Publicity, For Grassroots Media]",
+      "tracks": "",
+      "id": 2827892,
+      "resource_url": "https://api.discogs.com/artists/2827892"
+    },
+    {
+      "name": "Artemis Records",
+      "anv": "",
+      "join": "",
+      "role": "Public Relations [Publicity, For]",
+      "tracks": "",
+      "id": 14419430,
+      "resource_url": "https://api.discogs.com/artists/14419430"
+    },
+    {
+      "name": "Grassroots Media",
+      "anv": "",
+      "join": "",
+      "role": "Public Relations [Publicity, For]",
+      "tracks": "",
+      "id": 14419436,
+      "resource_url": "https://api.discogs.com/artists/14419436"
+    },
+    {
+      "name": "Steve Earle",
+      "anv": "",
+      "join": "",
+      "role": "Written-By",
+      "tracks": "",
+      "id": 252097,
+      "resource_url": "https://api.discogs.com/artists/252097"
+    }
+  ],
+  "images": [
+    {
+      "type": "primary",
+      "uri": "https://i.discogs.com/I_FzhI489jxsR186ezCaqoNKwBs0oTAr4vvGI6VwJ5k/rs:fit/g:sm/q:90/h:596/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM2/OC02NzY5LmpwZWc.jpeg",
+      "resource_url": "https://i.discogs.com/I_FzhI489jxsR186ezCaqoNKwBs0oTAr4vvGI6VwJ5k/rs:fit/g:sm/q:90/h:596/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM2/OC02NzY5LmpwZWc.jpeg",
+      "uri150": "https://i.discogs.com/dUl4nWkBlIlcABx3Yyso6uXt9j9beZ5tDt0d3av7QWc/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM2/OC02NzY5LmpwZWc.jpeg",
+      "width": 600,
+      "height": 596
+    },
+    {
+      "type": "secondary",
+      "uri": "https://i.discogs.com/C0g74uAnzf8bnWhMuDh0mx2dvXdygmArDfGgaMJKqYs/rs:fit/g:sm/q:90/h:472/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM3/MS0yNDcwLmpwZWc.jpeg",
+      "resource_url": "https://i.discogs.com/C0g74uAnzf8bnWhMuDh0mx2dvXdygmArDfGgaMJKqYs/rs:fit/g:sm/q:90/h:472/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM3/MS0yNDcwLmpwZWc.jpeg",
+      "uri150": "https://i.discogs.com/sVxt48slPHbCeC0MvGApHnHBcxjbbGpVqxwzV_D6T1E/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM3/MS0yNDcwLmpwZWc.jpeg",
+      "width": 600,
+      "height": 472
+    },
+    {
+      "type": "secondary",
+      "uri": "https://i.discogs.com/PCnSwb036k4gw6jYEC5PvADB5w7Ml8a6LBlHy7mCJ0M/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM3/Mi0xMjg5LmpwZWc.jpeg",
+      "resource_url": "https://i.discogs.com/PCnSwb036k4gw6jYEC5PvADB5w7Ml8a6LBlHy7mCJ0M/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM3/Mi0xMjg5LmpwZWc.jpeg",
+      "uri150": "https://i.discogs.com/CvwMiWQD2fA59VJQzAQnsctQHXmsxvt8wH6e2QhDzVA/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM3/Mi0xMjg5LmpwZWc.jpeg",
+      "width": 600,
+      "height": 600
+    },
+    {
+      "type": "secondary",
+      "uri": "https://i.discogs.com/aTa8k9sRObEKlOeG6LtVp3gYEHJP82zIzRlZBNVsE4s/rs:fit/g:sm/q:90/h:600/w:588/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM3/NS00MDE1LmpwZWc.jpeg",
+      "resource_url": "https://i.discogs.com/aTa8k9sRObEKlOeG6LtVp3gYEHJP82zIzRlZBNVsE4s/rs:fit/g:sm/q:90/h:600/w:588/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM3/NS00MDE1LmpwZWc.jpeg",
+      "uri150": "https://i.discogs.com/PKJyVc6cGgSCCgAKNDptiZPNaauY9qH7dqCzapmc6wg/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM3/NS00MDE1LmpwZWc.jpeg",
+      "width": 588,
+      "height": 600
+    },
+    {
+      "type": "secondary",
+      "uri": "https://i.discogs.com/aNTeill64KM41N1Hn2HxjtBzvb5pxav7tQFI3pTngzA/rs:fit/g:sm/q:90/h:590/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM4/Mi0xNTA2LmpwZWc.jpeg",
+      "resource_url": "https://i.discogs.com/aNTeill64KM41N1Hn2HxjtBzvb5pxav7tQFI3pTngzA/rs:fit/g:sm/q:90/h:590/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM4/Mi0xNTA2LmpwZWc.jpeg",
+      "uri150": "https://i.discogs.com/rIWzxO3eRu8n3wTlR4AhtTlfW23-ng_e400-ct6JlxQ/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM4/Mi0xNTA2LmpwZWc.jpeg",
+      "width": 600,
+      "height": 590
+    },
+    {
+      "type": "secondary",
+      "uri": "https://i.discogs.com/rvwboBYvs9stqs1rp9QoG0I9CArlJpmAQhnZLWzVH8U/rs:fit/g:sm/q:90/h:591/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM4/NS0yOTU2LmpwZWc.jpeg",
+      "resource_url": "https://i.discogs.com/rvwboBYvs9stqs1rp9QoG0I9CArlJpmAQhnZLWzVH8U/rs:fit/g:sm/q:90/h:591/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM4/NS0yOTU2LmpwZWc.jpeg",
+      "uri150": "https://i.discogs.com/lLiP8Oez4h8j1nxqAemaiC6emiZhFs82SUcanpXCbSM/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM4/NS0yOTU2LmpwZWc.jpeg",
+      "width": 600,
+      "height": 591
+    },
+    {
+      "type": "secondary",
+      "uri": "https://i.discogs.com/a09ckK71cGuyU2wnE1TN4ILOg2QCWKVRM5di2vqePGc/rs:fit/g:sm/q:90/h:596/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM5/Mi02MDQyLmpwZWc.jpeg",
+      "resource_url": "https://i.discogs.com/a09ckK71cGuyU2wnE1TN4ILOg2QCWKVRM5di2vqePGc/rs:fit/g:sm/q:90/h:596/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM5/Mi02MDQyLmpwZWc.jpeg",
+      "uri150": "https://i.discogs.com/UAHfyslnBdZ993vXWnbqCAh9EF4y75j7iCbH20T8C60/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM5/Mi02MDQyLmpwZWc.jpeg",
+      "width": 600,
+      "height": 596
+    },
+    {
+      "type": "secondary",
+      "uri": "https://i.discogs.com/mG9acPbSkVHaV1faWsnpWZWBLcZ4Xr987JAENIrZgps/rs:fit/g:sm/q:90/h:592/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM5/Ni0xMTI5LmpwZWc.jpeg",
+      "resource_url": "https://i.discogs.com/mG9acPbSkVHaV1faWsnpWZWBLcZ4Xr987JAENIrZgps/rs:fit/g:sm/q:90/h:592/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM5/Ni0xMTI5LmpwZWc.jpeg",
+      "uri150": "https://i.discogs.com/vOz9BP4WAJ8GGEVSaZMO3UJDBRaZW0MxpWtOMq1F5a0/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM5/Ni0xMTI5LmpwZWc.jpeg",
+      "width": 600,
+      "height": 592
+    },
+    {
+      "type": "secondary",
+      "uri": "https://i.discogs.com/6y-IehilaZYFCtQZr3hgZNj07EM-eaE87zC1N9y_A3A/rs:fit/g:sm/q:90/h:591/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQw/My03NTUwLmpwZWc.jpeg",
+      "resource_url": "https://i.discogs.com/6y-IehilaZYFCtQZr3hgZNj07EM-eaE87zC1N9y_A3A/rs:fit/g:sm/q:90/h:591/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQw/My03NTUwLmpwZWc.jpeg",
+      "uri150": "https://i.discogs.com/29L2sKSciT6xut64i4jjqEgUi0E-su92ZnwQPAGZPlQ/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQw/My03NTUwLmpwZWc.jpeg",
+      "width": 600,
+      "height": 591
+    },
+    {
+      "type": "secondary",
+      "uri": "https://i.discogs.com/ZsUEvj2d_6T6oYOrWkjUjp6ijXkymWRFobTUV2TILwc/rs:fit/g:sm/q:90/h:589/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQw/Ny0xNjk1LmpwZWc.jpeg",
+      "resource_url": "https://i.discogs.com/ZsUEvj2d_6T6oYOrWkjUjp6ijXkymWRFobTUV2TILwc/rs:fit/g:sm/q:90/h:589/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQw/Ny0xNjk1LmpwZWc.jpeg",
+      "uri150": "https://i.discogs.com/lN7bibBVHbM9xiRQlHBnb1kqOyHA0RmCFnvb4vekqMQ/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQw/Ny0xNjk1LmpwZWc.jpeg",
+      "width": 600,
+      "height": 589
+    },
+    {
+      "type": "secondary",
+      "uri": "https://i.discogs.com/Bt5BC2J8xReqHlP9RYaxzEV4H5xk7I0fopFDSe_Ugaw/rs:fit/g:sm/q:90/h:589/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQy/My00NjA4LmpwZWc.jpeg",
+      "resource_url": "https://i.discogs.com/Bt5BC2J8xReqHlP9RYaxzEV4H5xk7I0fopFDSe_Ugaw/rs:fit/g:sm/q:90/h:589/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQy/My00NjA4LmpwZWc.jpeg",
+      "uri150": "https://i.discogs.com/eq2V5DkUrfjucv-axhYu92iLe1NjFOryKDIpFshVBzA/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQy/My00NjA4LmpwZWc.jpeg",
+      "width": 600,
+      "height": 589
+    },
+    {
+      "type": "secondary",
+      "uri": "https://i.discogs.com/Onm74Khi9xjc7I1xTX4CQ-2nlGHSvwLq1L2bd3XSmtA/rs:fit/g:sm/q:90/h:593/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQy/OC0zOTg4LmpwZWc.jpeg",
+      "resource_url": "https://i.discogs.com/Onm74Khi9xjc7I1xTX4CQ-2nlGHSvwLq1L2bd3XSmtA/rs:fit/g:sm/q:90/h:593/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQy/OC0zOTg4LmpwZWc.jpeg",
+      "uri150": "https://i.discogs.com/VHYf4RH_GRJS2bjLAdsCKwVOHklZWbu-V37yMr3SGio/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQy/OC0zOTg4LmpwZWc.jpeg",
+      "width": 600,
+      "height": 593
+    },
+    {
+      "type": "secondary",
+      "uri": "https://i.discogs.com/uj_ZXjMSycEa8Xq78TxpYxy1TPl51uYp6yFG5wr-ZL0/rs:fit/g:sm/q:90/h:587/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQz/Mi02ODU3LmpwZWc.jpeg",
+      "resource_url": "https://i.discogs.com/uj_ZXjMSycEa8Xq78TxpYxy1TPl51uYp6yFG5wr-ZL0/rs:fit/g:sm/q:90/h:587/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQz/Mi02ODU3LmpwZWc.jpeg",
+      "uri150": "https://i.discogs.com/tD4MBjeHDlXpBR65RKv6S3tAOaJFZrG8RQLJo-WrS28/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQz/Mi02ODU3LmpwZWc.jpeg",
+      "width": 600,
+      "height": 587
+    },
+    {
+      "type": "secondary",
+      "uri": "https://i.discogs.com/X_fkWk54OUdSTSH2liCWFGHBWhkfvimnePajAdiLAeM/rs:fit/g:sm/q:90/h:586/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQz/Ny0yMjQ3LmpwZWc.jpeg",
+      "resource_url": "https://i.discogs.com/X_fkWk54OUdSTSH2liCWFGHBWhkfvimnePajAdiLAeM/rs:fit/g:sm/q:90/h:586/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQz/Ny0yMjQ3LmpwZWc.jpeg",
+      "uri150": "https://i.discogs.com/4Upy2GxZ92Yl9rsuBZc2ZHwb7eXrMoVCZBm5ckIKlzA/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQz/Ny0yMjQ3LmpwZWc.jpeg",
+      "width": 600,
+      "height": 586
+    },
+    {
+      "type": "secondary",
+      "uri": "https://i.discogs.com/K4Rfbkno22djuBurJUx7Zx5MuYg5hj8RIYr30jvChq4/rs:fit/g:sm/q:90/h:594/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQ0/NS0zNjkxLmpwZWc.jpeg",
+      "resource_url": "https://i.discogs.com/K4Rfbkno22djuBurJUx7Zx5MuYg5hj8RIYr30jvChq4/rs:fit/g:sm/q:90/h:594/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQ0/NS0zNjkxLmpwZWc.jpeg",
+      "uri150": "https://i.discogs.com/kYSfSNjpUe82FA1mtU4Vc43BK5OZZpIOFpI8m-74Mas/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQ0/NS0zNjkxLmpwZWc.jpeg",
+      "width": 600,
+      "height": 594
+    },
+    {
+      "type": "secondary",
+      "uri": "https://i.discogs.com/zI9CD_W4krgLkQxFzg6mqKMJJMfNMyyFRdUVLTKomhc/rs:fit/g:sm/q:90/h:591/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQ0/OS0yNzI2LmpwZWc.jpeg",
+      "resource_url": "https://i.discogs.com/zI9CD_W4krgLkQxFzg6mqKMJJMfNMyyFRdUVLTKomhc/rs:fit/g:sm/q:90/h:591/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQ0/OS0yNzI2LmpwZWc.jpeg",
+      "uri150": "https://i.discogs.com/V7ry86bPHs3C8qf7jE4Ladd7Ca_StMUys8S7ryCWXcc/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQ0/OS0yNzI2LmpwZWc.jpeg",
+      "width": 600,
+      "height": 591
+    },
+    {
+      "type": "secondary",
+      "uri": "https://i.discogs.com/ehOcXdbSGM-5IoTKVKoee2Z61T-8ybe8ab-BlZMNf8M/rs:fit/g:sm/q:90/h:593/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQ1/NS03OTc4LmpwZWc.jpeg",
+      "resource_url": "https://i.discogs.com/ehOcXdbSGM-5IoTKVKoee2Z61T-8ybe8ab-BlZMNf8M/rs:fit/g:sm/q:90/h:593/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQ1/NS03OTc4LmpwZWc.jpeg",
+      "uri150": "https://i.discogs.com/D4eISRAw0zShXxJ1X1z5P1UDBWacyZnfXjQXv81Yw0g/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQ1/NS03OTc4LmpwZWc.jpeg",
+      "width": 600,
+      "height": 593
+    },
+    {
+      "type": "secondary",
+      "uri": "https://i.discogs.com/5UuXT9hyrbLwuaP2_RD1gVFyCBY8ZRB5nIi_6VUFloE/rs:fit/g:sm/q:90/h:585/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQ2/MC01ODk4LmpwZWc.jpeg",
+      "resource_url": "https://i.discogs.com/5UuXT9hyrbLwuaP2_RD1gVFyCBY8ZRB5nIi_6VUFloE/rs:fit/g:sm/q:90/h:585/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQ2/MC01ODk4LmpwZWc.jpeg",
+      "uri150": "https://i.discogs.com/LxXOwqXKekPlg3cqMxpFLSp5-5JR-S_K8CysYI1GyWU/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQ2/MC01ODk4LmpwZWc.jpeg",
+      "width": 600,
+      "height": 585
+    },
+    {
+      "type": "secondary",
+      "uri": "https://i.discogs.com/AbxF1TxBufNX1a-tW6JvakVhPICjBbN6I1Kxwju_v-M/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQ3/MC0xODA5LmpwZWc.jpeg",
+      "resource_url": "https://i.discogs.com/AbxF1TxBufNX1a-tW6JvakVhPICjBbN6I1Kxwju_v-M/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQ3/MC0xODA5LmpwZWc.jpeg",
+      "uri150": "https://i.discogs.com/ZTmhoLjI79ysdBk0muD-RRQ-O7OHKoLLzMKO7c7u_XA/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjQ3/MC0xODA5LmpwZWc.jpeg",
+      "width": 600,
+      "height": 600
+    }
+  ],
+  "thumb": "https://i.discogs.com/dUl4nWkBlIlcABx3Yyso6uXt9j9beZ5tDt0d3av7QWc/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTM5/NTAtMTcyMTAxMjM2/OC02NzY5LmpwZWc.jpeg",
+  "estimated_weight": 85,
+  "blocked_from_sale": false,
+  "is_offensive": false
+}
