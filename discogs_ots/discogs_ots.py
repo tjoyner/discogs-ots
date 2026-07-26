@@ -82,6 +82,7 @@ CFG_USER_AGENT="user_agent"
 CFG_USER_TOKEN="user_token"
 CFG_LOG_ALL_ROLES="log_all_roles"
 CFG_NEW_RECORDS_ONLY="new_records_only"
+CFG_CHECK_MASTER="check_master"
 
 """ 
 Read the artist and role into a list of tuples. 
@@ -124,6 +125,30 @@ class RecordInfo:
 
     album_written_by:  list = field(default_factory=list) 
 
+@dataclass
+class RecordStats:
+    ea_found_in_record = 0
+    ea_found_in_master = 0
+    ea_found_in_main_release = 0
+    tl_found_in_record = 0
+    tl_found_in_master = 0
+    tl_found_in_main_release = 0
+
+class AllStats:
+    has_ea_only_in_record = 0
+    has_ea_only_in_master = 0
+    has_ea_only_in_main_release = 0
+    has_ea_in_record_and_master = 0
+    no_ea = 0
+
+    has_tl_only_in_record = 0
+    has_tl_only_in_master = 0
+    has_tl_only_in_main_release = 0
+    has_tl_in_record_and_master = 0
+    no_tl = 0
+
+    records = 0
+
 
 class OtsDiscogsToCsv:
     def __init__(self, discogs_test_client=None):
@@ -136,15 +161,6 @@ class OtsDiscogsToCsv:
 
         self.current_record = None
 
-        # stats
-        self.records = 0
-
-        self.has_ea_only_in_record = 0
-        self.has_ea_only_in_master = 0
-        self.has_ea_only_in_main_release = 0
-        self.has_ea_in_record_and_master = 0
-        self.no_ea = 0
-
         self.start = datetime.datetime.now()
 
         self.ignore_roles = []
@@ -152,13 +168,6 @@ class OtsDiscogsToCsv:
         self.all_roles = []
 
         args = self.parse_arguments()
-        output_file = None
-        if args.output_file:
-            output_file = args.output_file
-
-        if args.record_id:
-            self.single_id = args.record_id
-
         config = None
         if args.config:
             if not os.path.exists(args.config):
@@ -168,70 +177,70 @@ class OtsDiscogsToCsv:
             config = configparser.ConfigParser()
             config.read(args.config)
 
+        output_file = None
+        if args.output_file:
+            output_file = args.output_file
+        elif config and config.has_option(CFG_SETTINGS,CFG_OUTPUT_FILE):
+            output_file = config[CFG_SETTINGS][CFG_OUTPUT_FILE]
+
+        self.file = None
         if args.input_file:
             self.file = args.input_file
+        if config and config.has_option(CFG_SETTINGS,CFG_INPUT_FILE):
+            self.file = config[CFG_SETTINGS][CFG_INPUT_FILE]
+
+        if args.record_id:
+            self.single_id = args.record_id
+        elif config and config.has_option(CFG_SETTINGS,CFG_OUTPUT_FILE):
+            self.single_id = config[CFG_SETTINGS][CFG_SINGLE_ID]
 
         log_file = None
         if args.log_file:
             log_file = args.log_file
+        elif config and config.has_option(CFG_SETTINGS,CFG_LOG_FILE):
+            log_file = config[CFG_SETTINGS][CFG_LOG_FILE]
 
         self.user_agent = None
         if args.user_agent:
             self.user_agent = args.user_agent
+        elif config and config.has_option(CFG_API,CFG_USER_AGENT):
+            self.user_agent = config[CFG_API][CFG_USER_AGENT]
 
         self.user_token = None
         if args.user_token:
             self.user_token = args.user_token
+        elif config and config.has_option(CFG_API,CFG_USER_TOKEN):
+            self.user_token = config[CFG_API][CFG_USER_TOKEN]
 
         self.query_for_ids = False
         if args.query_for_ids:
             self.query_for_ids = True
+        elif config and config.has_option(CFG_SETTINGS,CFG_QUERY_FOR_IDS):
+            self.query_for_ids = config[CFG_SETTINGS][CFG_QUERY_FOR_IDS]
 
         ignore_roles = None
         if args.ignore_roles:
             ignore_roles = args.ignore_roles.strip()
+        elif config and config.has_option(CFG_SETTINGS,CFG_IGNORE_ROLES):
+            ignore_roles = config[CFG_SETTINGS][CFG_IGNORE_ROLES].strip()
 
         self.log_all_roles = False
         if args.log_all_roles:
             self.log_all_roles = True
+        elif config and config.has_option(CFG_SETTINGS,CFG_LOG_ALL_ROLES):
+            self.log_all_roles = config[CFG_SETTINGS][CFG_LOG_ALL_ROLES]
 
         self.new_records_only = False
         if args.new_records_only:
             self.new_records_only = True
+        elif config and config.has_option(CFG_SETTINGS,CFG_NEW_RECORDS_ONLY):
+            self.new_records_only = config[CFG_SETTINGS][CFG_NEW_RECORDS_ONLY]
 
-        if config:
-            if not args.record_id:
-                if config.has_option(CFG_SETTINGS,CFG_SINGLE_ID):
-                    self.single_id = config[CFG_SETTINGS][CFG_SINGLE_ID]
-            if not args.output_file:
-                if config.has_option(CFG_SETTINGS,CFG_OUTPUT_FILE):
-                    self.output_file = config[CFG_SETTINGS][CFG_OUTPUT_FILE]
-            if not args.input_file:
-                if config.has_option(CFG_SETTINGS,CFG_INPUT_FILE):
-                    self.file = args.input_file
-                    self.file = config[CFG_SETTINGS][CFG_INPUT_FILE]
-            if not args.log_file:
-                if config.has_option(CFG_SETTINGS,CFG_LOG_FILE):
-                    log_file = config[CFG_SETTINGS][CFG_LOG_FILE]
-            if not args.query_for_ids:
-                if config.has_option(CFG_SETTINGS,CFG_QUERY_FOR_IDS):
-                    self.user_agent = config[CFG_SETTINGS][CFG_QUERY_FOR_IDS]
-            if not ignore_roles:
-                if config.has_option(CFG_SETTINGS,CFG_IGNORE_ROLES):
-                    ignore_roles = config[CFG_SETTINGS][CFG_IGNORE_ROLES].strip()
-
-            if not self.user_agent:
-                if config.has_option(CFG_API,CFG_USER_AGENT):
-                    self.user_agent = config[CFG_API][CFG_USER_AGENT]
-            if not self.user_token:
-                if config.has_option(CFG_API,CFG_USER_TOKEN):
-                    self.user_token = config[CFG_API][CFG_USER_TOKEN]
-            if not args.log_all_roles:
-                if config.has_option(CFG_SETTINGS,CFG_LOG_ALL_ROLES):
-                    self.user_agent = config[CFG_SETTINGS][CFG_LOG_ALL_ROLES]
-            if not args.new_records_only:
-                if config.has_option(CFG_SETTINGS,CFG_NEW_RECORDS_ONLY):
-                    self.new_records_only = config[CFG_SETTINGS][CFG_NEW_RECORDS_ONLY]
+        self.check_master = False
+        if args.check_master:
+            self.check_master = True
+        elif config and config.has_option(CFG_SETTINGS,CFG_CHECK_MASTER):
+            self.check_master = config[CFG_SETTINGS][CFG_CHECK_MASTER]
 
         if ignore_roles:
             for r in ignore_roles.split(','):
@@ -273,11 +282,11 @@ class OtsDiscogsToCsv:
             sys.exit(1)
 
         if not self.user_token and self.query_for_ids:
-            print ("A user token is required for the query option");
+            print ("A user token is required for the query option")
             sys.exit(1)
 
         if self.new_records_only and (not self.query_for_ids or not self.input_file):
-            print ("New records requires an input record list and query-for-ids");
+            print ("New records requires an input record list and query-for-ids")
             sys.exit(1)
 
 
@@ -287,10 +296,12 @@ class OtsDiscogsToCsv:
 
         self.init_csv()
 
+        self.st = AllStats()
+
         if self.single_id:
             self.get_record_data(self.single_id)
-            self.records = 1
-            self.write_final_stats()
+            self.st.records = 1
+            self.log_final_stats()
             return
 
 
@@ -312,7 +323,7 @@ class OtsDiscogsToCsv:
             for r in my_releases:
                 if r.id not in records_to_skip:
                     if self.get_record_data(r.id):
-                        self.records += 1
+                        self.st.records += 1
         else:
             with open(self.file, mode='r', newline='', encoding='utf-8') as file:
                 # Iterate through each row
@@ -322,9 +333,9 @@ class OtsDiscogsToCsv:
                         record_id = record_id.strip()
         
                     if self.get_record_data(record_id):
-                        self.records += 1
+                        self.st.records += 1
 
-        self.write_final_stats()
+        self.log_final_stats()
 
     def get_record_data(self, record_id):
         try:
@@ -334,21 +345,25 @@ class OtsDiscogsToCsv:
                 self.writelog(f'Skipping invalid record ID {record_id}')
                 return False
 
+            self.rs = RecordStats()
+
             self.release = self.d.release(record_id)
             self.release.refresh()
 
-        #    self.writelog(json.dumps(self.release.data, indent=4))
-        #    return
-
-            
-
+            # record-level extraartists
             ea_found_in_record = False
             ea_found_in_master = False
             ea_found_in_main_release = False
-            ea_names = ""
-            ea_names_per_track = ""
-            ea_names_master = ""
-            ea_names_per_track_master = ""
+
+            # tracklist
+            tl_found_in_record = False
+            tl_found_in_master = False
+            tl_found_in_main_release = False
+
+            # extraartists in tracklist
+            tl_ea_found_in_record = False
+            tl_ea_found_in_master = False
+            tl_ea_found_in_main_release = False
 
             self.requests += 1
 
@@ -357,98 +372,55 @@ class OtsDiscogsToCsv:
             self.current_record.title = self.release.title
             self.master = False
             self.main_release = False
-            self.store_record_data()
-            self.write_csv()
-            return
 
-            #self.store_record_data(self.release)
+            self.store_record_data()
+
+            if not self.check_master or not self.release.master:
+                self.write_csv()
+                return True
 
             masterRec = self.release.master
             master = None
-            if masterRec != None:
-                self.master = True
-                master = self.d.master(masterRec.id)
-                master.refresh()
-                ea_found_in_master  = self.get_extraartists(master)
-                if master.main_release and master.main_release.id != record_id:
-                    self.main_release = True
-                    main_release = self.d.release(master.main_release.id)
-                    main_release.refresh()
-                    ea_found_in_main_release  = self.get_extraartists(main_release)
+
+            self.master = True
+            master = self.d.master(masterRec.id)
+            master.refresh()
+
+            self.store_master_data()
+            #ea_found_in_master = self.get_extraartists(master)
+
+            self.write_csv()
+
+            #if master.main_release and master.main_release.id != record_id:
+            #    self.main_release = True
+            #    main_release = self.d.release(master.main_release.id)
+            #    main_release.refresh()
+            #    ea_found_in_main_release  = self.get_extraartists(main_release)
 
 
-            self.print_extraartists_per_type_dups() # testing!!
-            self.print_sorted_extraartists()
-            tempoim = False
-            if ea_found_in_record and ea_found_in_master:
-                self.has_ea_in_record_and_master += 1
-            elif ea_found_in_record:
-                self.has_ea_only_in_record += 1
-            elif ea_found_in_master:
-                self.has_ea_only_in_master += 1
-                tempoim = True
-            elif not ea_found_in_master and not ea_found_in_record and ea_found_in_main_release:
-                self.has_ea_only_in_main_release += 1
+            #self.print_extraartists_per_type_dups() # testing!!
+            #self.print_sorted_extraartists()
+            if self.rs.ea_found_in_record and self.rs.ea_found_in_master:
+                self.st.has_ea_in_record_and_master += 1
+            elif self.rs.ea_found_in_record:
+                self.st.has_ea_only_in_record += 1
+            elif self.rs.ea_found_in_master:
+                self.st.has_ea_only_in_master += 1
+            elif not self.rs.ea_found_in_master and not self.rs.ea_found_in_record and self.rs.ea_found_in_main_release:
+                self.st.has_ea_only_in_main_release += 1
             else:
-                self.no_ea += 1
+                self.st.no_ea += 1
 
-            if tempoim:
-                ri = "Main release is different: " if record_id != master.main_release else ''
-                self.writelog(f'Note: Only found in Master {masterRec.id}')
-
-            if master and record_id != master.main_release.id:
-                    self.writelog(f"Main release in master is different: {record_id} {master.main_release.id}")
-
-            self.writelog('')
-            # temp to compare
-            rlist = [];
-            mlist = [];
-            mrlist = []; # main release list
-            if self.current_record.tracks:
-                self.writelog("  Track list (release):")
-                for pos,tw in sorted(self.current_record.tracks.items(), key=self.sort_track_pos):
-                    title = tw[0]
-                    written_by = ''
-                    if tw[1]:
-                        written_by = " by " + ", ".join(tw[1])
-                    self.writelog(f"    {pos}. {title}{written_by}")
-                    rlist.append(f"{title} by {written_by}")
-
-            if self.current_record.tracks_master:
-                self.writelog("  Track list (master):")
-                for pos,tw in sorted(self.current_record.tracks_master.items(), key=self.sort_track_pos):
-                    title = tw[0]
-                    written_by = ''
-                    if tw[1]:
-                        written_by = " by " + ", ".join(tw[1])
-                    self.writeln(f"    {pos}. {title}{written_by}")
-                    mlist.append(f"{title} by {written_by}")
-            if self.current_record.tracks_main_release:
-                self.writeln("  Track list (main_release):")
-                for pos,tw in sorted(self.current_record.tracks_main_release.items(), key=self.sort_track_pos):
-                    title = tw[0]
-                    written_by = ''
-                    if tw[1]:
-                        written_by = " by " + ", ".join(tw[1])
-                    self.writeln(f"    {pos}. {title}{written_by}")
-                    mrlist.append(f"{title} by {written_by}")
-            if mlist == rlist == mrlist:
-                self.writelog("Master and Release, and Main Release tracks have same writer list")
-            if mlist and rlist and mrlist:
-                if mlist != rlist or mlist != mrlist or mrlist != rlist:
-                    self.writelog(f"Master, Release, and Main Release tracks have different writer list \n{rlist}\n{mlist}")
-            if mlist and rlist:
-                if mlist != rlist:
-                    self.writelog(f"Master and Release tracks have different writer list \n{rlist}\n{mlist}")
-                else:
-                    self.writelog("Master and Release tracks have same writer list")
-            elif mlist:
-                    self.writelog("Only master had writer list")
+            if self.rs.tl_found_in_record and self.rs.tl_found_in_master:
+                self.st.has_tl_in_record_and_master += 1
+            elif self.rs.tl_found_in_record:
+                self.st.has_tl_only_in_record += 1
+            elif self.rs.tl_found_in_master:
+                self.st.has_tl_only_in_master += 1
+            elif not self.rs.tl_found_in_master and not self.rs.tl_found_in_record and self.rs.tl_found_in_main_release:
+                self.st.rs.has_tl_only_in_main_release += 1
             else:
-                    self.writelog("Only release had writer list")
-                    
-            self.writeln('')
-            self.writeln('')
+                self.st.no_tl += 1
 
             return True
                 
@@ -458,7 +430,7 @@ class OtsDiscogsToCsv:
             if e.status_code == 404:
                 if self.master:
                     self.writelog(f"Master of record ID {record_id} was NOT found (404 Error).")
-                    return True
+                    return False
                 self.writelog(f"Record ID {record_id} was NOT found (404 Error).")
             else:
                 self.writelog(f"A different API error occurred: {e}")
@@ -764,12 +736,19 @@ class OtsDiscogsToCsv:
             help="Only get records that aren't in the input list. Requires --query-for-ids"
         )
 
+        parser.add_argument(
+            '-cm', '--check-master', 
+            action='store_true', 
+            help="Check the master record if one exists"
+        )
+
         # Parse the arguments from the command line
         return parser.parse_args()
 
-    def write_final_stats(self):
-        self.writelog(f'Total Records={self.records}')
-        self.writelog(f'Extra Artists: found in both={self.has_ea_in_record_and_master} Record only={self.has_ea_only_in_record} Master only={self.has_ea_only_in_master} Nt found={self.no_ea} Main release only={self.has_ea_only_in_main_release}')
+    def log_final_stats(self):
+        self.writelog(f'Total Records={self.st.records}')
+        self.writelog(f'Extra Artists:\n Found in record and master={self.st.has_ea_in_record_and_master}\n Found in Record only={self.st.has_ea_only_in_record} Master only={self.st.has_ea_only_in_master}\n Not found={self.st.no_ea}\n Main release only={self.st.has_ea_only_in_main_release}')
+        self.writelog(f'Track lists:\n Found in record and master={self.st.has_tl_in_record_and_master}\n Found in Record only={self.st.has_tl_only_in_record} Master only={self.st.has_tl_only_in_master}\n Not found={self.st.no_tl}\n Main release only={self.st.has_tl_only_in_main_release}')
         time_difference = datetime.datetime.now() - self.start
         if self.log_all_roles:
             self.log_all_roles_found()
@@ -1011,6 +990,19 @@ class OtsDiscogsToCsv:
 
         return False
 
+    def store_master_data(self) -> bool:
+        try:
+            self.store_credits(self.master)
+
+            self.store_tracklist(self.master)
+
+            return True
+
+        except Exception as e:
+            self.writelog(f'Exception {e} occurred for {self.current_record}\n{traceback.format_exc()}')
+
+        return False
+
     # get the overall ea:
     #  store the credits per artist
     #    skip if excluded
@@ -1177,7 +1169,7 @@ class OtsDiscogsToCsv:
                 performed_by_str = ''
             if tracklist_str:
                 tracklist_str += '|'
-            tracklist_str += f'{title};{performed_by_str};{written_by_str}'
+            tracklist_str += f'{title}\\{performed_by_str}\\{written_by_str}'
 
         return tracklist_str
 
