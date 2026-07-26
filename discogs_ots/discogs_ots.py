@@ -1,6 +1,7 @@
 import discogs_client
 from discogs_client.exceptions import HTTPError
 import csv
+from pathlib import Path
 import time
 import argparse
 import sys
@@ -238,14 +239,31 @@ class OtsDiscogsToCsv:
                 if rs:
                     self.ignore_roles.append(rs)
 
+        self.out = None
         if output_file:
-            self.out = open(output_file, mode='w', encoding='utf-8')
+            try:
+                self.out = open(output_file, mode='x', encoding='utf-8')
+            except FileExistsError:
+                print (f'{output_file} already exists')
+                sys.exit(1)
         else:
             sys.stdout.reconfigure(encoding='utf-8') # Keep PowerShell happy!
             self.out = sys.stdout
 
+        self.log_out = None
         if log_file:
-            self.log_out = open(log_file, mode='w', encoding='utf-8')
+            try:
+                self.log_out = open(log_file, mode='x', encoding='utf-8')
+            except FileExistsError:
+                print (f'{log_file} already exists')
+                sys.exit(1)
+        elif output_file:
+            log_file = Path(output_file).with_suffix('.log')
+            try:
+                self.log_out = open(log_file, mode='x', encoding='utf-8')
+            except FileExistsError:
+                print (f'{log_file} already exists')
+                sys.exit(1)
         else:
             sys.stdout.reconfigure(encoding='utf-8') # Keep PowerShell happy!
             self.log_out = self.out
