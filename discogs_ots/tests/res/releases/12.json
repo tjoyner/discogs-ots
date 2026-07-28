@@ -1,26 +1,170 @@
-{"status": "Accepted", 
-  "styles": ["Modern Classical", "Chiptune", "Breaks", "Ambient"], 
-  "genres": ["Electronic", "Shoe Gaze"], 
-  "formats": [{"name": "LP", "qty": "1", "descriptions": ["MP3", "Album"]}], 
-  "extraartists": [], 
-  "title": "No Extra Artists", 
-  "released_formatted": "2005", 
-  "labels": [{"name": "First Label", "entity_type": "1", "catno": "CAT-1", "id": 1818, "entity_type_name": "Label"}], 
-  "companies": [], 
-  "artists": [{"join": "&", "name": "Trash80", "anv": "", "tracks": "", "role": "", "id": 95780}, {"join": "", "name": "Dma-Sc", "anv": "", "tracks": "", "role": "", "id": 216524}], 
-  "released": "2005", 
-  "country": "UK", 
-  "year": 2005, 
+{
+  "status": "Accepted",
+  "styles": [
+    "Modern Classical",
+    "Chipmonk",
+    "Ambient"
+  ],
+  "genres": [
+    "Electronic",
+    "Shoe Gaze"
+  ],
+  "formats": [
+    {
+      "name": "LP",
+      "qty": "1",
+      "descriptions": [
+        "MP3",
+        "Album"
+      ]
+    }
+  ],
+  "extraartists": [],
+  "title": "No Extra Artists",
+  "released_formatted": "2005",
+  "labels": [
+    {
+      "name": "First Label",
+      "entity_type": "1",
+      "catno": "CAT-1",
+      "id": 1818,
+      "entity_type_name": "Label"
+    }
+  ],
+  "companies": [],
+  "artists": [
+    {
+      "join": "&",
+      "name": "Porch Chops",
+      "anv": "",
+      "tracks": "",
+      "role": "",
+      "id": 95780
+    },
+    {
+      "join": "",
+      "name": "Tom J",
+      "anv": "",
+      "tracks": "",
+      "role": "",
+      "id": 216524
+    }
+  ],
+  "released": "2005",
+  "country": "UK",
+  "year": 2005,
   "tracklist": [
-    {"duration": "5:30", "position": "1", "artists": [{"join": "", "name": "Dma-Sc", "anv": "", "tracks": "", "role": "", 
-    "id": 216524}], 
-    "title": "Visitors From Dreams"}, 
-    {"duration": "5:46", "position": "2", "type_": "track", "artists": [{"join": "", "name": "Trash80", "anv": "", "tracks": "", "role": "", "id": 95780}], "title": "Excuses"}, 
-    {"duration": "3:42", "position": "3",  "type_": "track",
-      "artists": [{"join": "", "name": "Only Me", "anv": "", "tracks": "", "role": "", "id": 95780}], 
-      "title": "Death of Music"}, 
-      {"duration": "3:36", "position": "4", "type_": "track", "artists": [{"join": "", "name": "Trash80", "anv": "", "tracks": "", "role": "", "id": 95780}], "title": "Pain Fade Down"}, 
-      {"duration": "3:41", "position": "5", "type_": "track", "artists": [{"join": "", "name": "Trash80", "anv": "", "tracks": "", "role": "", "id": 95780}], "title": "Impact Of Silence"}, 
-      {"duration": "4:38", "position": "6", "type_": "track", "artists": [{"join": "", "name": "Trash80", "anv": "", "tracks": "", "role": "", "id": 95780}], "title": "Faces Of A Fashion"}], 
-
-   "id": 12, "data_quality": "Needs Vote"}
+    {
+      "duration": "5:30",
+      "position": "1",
+      "type_": "track",
+      "artists": [
+        {
+          "join": "",
+          "name": "Some Guy",
+          "anv": "",
+          "tracks": "",
+          "role": "",
+          "id": 216524
+        }
+      ],
+      "title": "Title 1"
+    },
+    {
+      "duration": "5:46",
+      "position": "2",
+      "type_": "track",
+      "artists": [
+        {
+          "join": "&",
+          "name": "Tom I Am",
+          "anv": "",
+          "tracks": "",
+          "role": "",
+          "id": 95780
+        },
+        {
+          "join": "",
+          "name": "Tom I Am Not",
+          "anv": "",
+          "tracks": "",
+          "role": "",
+          "id": 95780
+        }
+      ],
+      "title": "Scusi"
+    },
+    {
+      "duration": "3:42",
+      "position": "3",
+      "type_": "track",
+      "title": "Title with, comma"
+    },
+    {
+      "duration": "3:36",
+      "position": "4",
+      "type_": "track",
+      "artists": [
+        {
+          "join": ",",
+          "name": "Winken",
+          "anv": "",
+          "tracks": "",
+          "role": "",
+          "id": 95780
+        },
+        {
+          "join": ", and",
+          "name": "Blinken",
+          "anv": "",
+          "tracks": "",
+          "role": "",
+          "id": 95780
+        },
+        {
+          "join": "",
+          "name": "Nod",
+          "anv": "",
+          "tracks": "",
+          "role": "",
+          "id": 95780
+        }
+      ],
+      "title": "We're Number 4"
+    },
+    {
+      "duration": "3:41",
+      "position": "5",
+      "type_": "track",
+      "artists": [
+        {
+          "join": ",",
+          "name": "Unknown",
+          "anv": "",
+          "tracks": "",
+          "role": "",
+          "id": 95780
+        }
+      ],
+      "title": "Penultimate Tune"
+    },
+    {
+      "duration": "4:38",
+      "position": "6",
+      "type_": "track",
+      "artists": [
+        {
+          "join": "",
+          "name": "Anonymous",
+          "anv": "",
+          "tracks": "",
+          "role": "",
+          "id": 95780
+        }
+      ],
+      "title": "Finally, \"right?\""
+    }
+  ],
+  "id": 12,
+  "data_quality": "Needs Vote"
+}

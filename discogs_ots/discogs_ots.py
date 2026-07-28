@@ -35,15 +35,15 @@ API_TRACK_TYPE_INDEX = "index"
 API_TRACK_SUB_TRACKS = "sub_tracks"
 API_ARTISTS = "artists"
 API_JOIN = "join"
+API_CATNO = "catno"
+API_QTY = "qty"
+API_DESCRIPTIONS = "descriptions"
 
 CSV_RELEASE_ID="release_id"
 CSV_ARTIST="artist"
 CSV_TITLE="title"
-CSV_FORMAT="format"
-CSV_QTY="qty"
-CSV_FORMAT_DESCRIPTIONS="format_descriptions"
-CSV_LABEL="label"
-CSV_CATNO="catno"
+CSV_FORMATS="formats"
+CSV_LABELS="labels"
 CSV_COUNTRY="country"
 CSV_YEAR="year"
 CSV_GENRES="genres"
@@ -55,11 +55,8 @@ headers = {
    CSV_RELEASE_ID : '',
    CSV_ARTIST : '',
    CSV_TITLE : '',
-   CSV_FORMAT : '',
-   CSV_QTY : '',
-   CSV_FORMAT_DESCRIPTIONS : '',
-   CSV_LABEL : '',
-   CSV_CATNO : '',
+   CSV_FORMATS : '',
+   CSV_LABELS : '',
    CSV_COUNTRY : '',
    CSV_YEAR : '',
    CSV_GENRES : '',
@@ -104,12 +101,9 @@ class RecordInfo:
 
     title: str = ''
 
-    format: str = ''
-    qty: str = ''
-    format_descriptions: str = ''
+    formats: str = ''
 
-    label: str = ''
-    catno: str = ''
+    labels: str = ''
 
     country: str = ''
     year: str = ''
@@ -127,13 +121,19 @@ class RecordInfo:
 
 @dataclass
 class RecordStats:
-    ea_found_in_record = 0
-    ea_found_in_master = 0
-    ea_found_in_main_release = 0
-    tl_found_in_record = 0
-    tl_found_in_master = 0
-    tl_found_in_main_release = 0
+    ea_found_in_record = False
+    ea_found_in_master = False
+    ea_found_in_main_release = False
 
+    tl_found_in_record = False
+    tl_found_in_master = False
+    tl_found_in_main_release = False
+
+    tl_ea_found_in_record = False
+    tl_ea_found_in_master = False
+    tl_ea_found_in_main_release = False
+
+@dataclass
 class AllStats:
     has_ea_only_in_record = 0
     has_ea_only_in_master = 0
@@ -147,10 +147,17 @@ class AllStats:
     has_tl_in_record_and_master = 0
     no_tl = 0
 
+    has_tl_ea_only_in_record = 0
+    has_tl_ea_only_in_master = 0
+    has_tl_ea_only_in_main_release = 0
+    has_tl_ea_in_record_and_master = 0
+    no_tl_ea = 0
+
     records = 0
 
 
 class OtsDiscogsToCsv:
+    # test cases will pass a test client
     def __init__(self, discogs_test_client=None):
         self.requests=0
         self.file=None
@@ -350,21 +357,6 @@ class OtsDiscogsToCsv:
             self.release = self.d.release(record_id)
             self.release.refresh()
 
-            # record-level extraartists
-            ea_found_in_record = False
-            ea_found_in_master = False
-            ea_found_in_main_release = False
-
-            # tracklist
-            tl_found_in_record = False
-            tl_found_in_master = False
-            tl_found_in_main_release = False
-
-            # extraartists in tracklist
-            tl_ea_found_in_record = False
-            tl_ea_found_in_master = False
-            tl_ea_found_in_main_release = False
-
             self.requests += 1
 
             self.current_record = RecordInfo()
@@ -375,19 +367,14 @@ class OtsDiscogsToCsv:
 
             self.store_record_data()
 
-            if not self.check_master or not self.release.master:
-                self.write_csv()
-                return True
+            if self.check_master and self.release.master:
+                masterRec = self.release.master
+                master = None
 
-            masterRec = self.release.master
-            master = None
-
-            self.master = True
-            master = self.d.master(masterRec.id)
-            master.refresh()
-
-            self.store_master_data()
-            #ea_found_in_master = self.get_extraartists(master)
+                self.master = True
+                master = self.d.master(masterRec.id)
+                master.refresh()
+                self.store_master_data(master)
 
             self.write_csv()
 
@@ -397,9 +384,6 @@ class OtsDiscogsToCsv:
             #    main_release.refresh()
             #    ea_found_in_main_release  = self.get_extraartists(main_release)
 
-
-            #self.print_extraartists_per_type_dups() # testing!!
-            #self.print_sorted_extraartists()
             if self.rs.ea_found_in_record and self.rs.ea_found_in_master:
                 self.st.has_ea_in_record_and_master += 1
             elif self.rs.ea_found_in_record:
@@ -422,6 +406,17 @@ class OtsDiscogsToCsv:
             else:
                 self.st.no_tl += 1
 
+            if self.rs.tl_ea_found_in_record and self.rs.tl_ea_found_in_master:
+                self.st.has_tl_ea_in_record_and_master += 1
+            elif self.rs.tl_ea_found_in_record:
+                self.st.has_tl_ea_only_in_record += 1
+            elif self.rs.tl_ea_found_in_master:
+                self.st.has_tl_ea_only_in_master += 1
+            elif not self.rs.tl_ea_found_in_master and not self.rs.tl_ea_found_in_record and self.rs.tl_ea_found_in_main_release:
+                self.st.rs.has_tl_ea_only_in_main_release += 1
+            else:
+                self.st.no_tl_ea += 1
+
             return True
                 
 
@@ -435,23 +430,6 @@ class OtsDiscogsToCsv:
             else:
                 self.writelog(f"A different API error occurred: {e}")
             return False
-
-    def sort_track_pos(self, item):
-        key = item[0]  # Get the dictionary key
-        match = re.match(r"([a-zA-Z]+)(\d+)", key)
-        if match:
-            alpha, num = match.groups()
-            return (alpha, f'{num.zfill(5)}')  # Returns e.g., ('a', 10)
-        # try 1-1 type
-        match = re.match(r"(\d+)-(\d+)", key)
-        if match:
-            n1, n2 = match.groups()
-            return (f'{n1.zfill(5)}', f'{n2.zfill(5)}')  # Returns e.g., ('a', 10)
-        try:
-            r = int(key)
-            return ('', f'{r:05}') 
-        except ValueError:
-            return (key, 0)
 
     def store_album_artists(self):
         artists = self.release.data.get(API_ARTISTS)
@@ -475,8 +453,8 @@ class OtsDiscogsToCsv:
                 return artist_names
 
             if artist_names:
-                if join == ',':
-                    join = ', '
+                if join.startswith(','):
+                    join = f'{join} '
                 elif join:
                     join = f' {join} '
                 artist_names = artist_names + join + artist_name
@@ -490,18 +468,40 @@ class OtsDiscogsToCsv:
         return artist_names
 
 
-    def store_format(self):
-        if self.release.formats:
-            fmt = self.release.formats[0]
-            self.current_record.format = fmt.get('name', 'Unknown')
-            self.current_record.qty = fmt.get('qty', '1')
-            self.current_record.format_descriptions = ", ".join(fmt.get('descriptions', []))
+    def store_formats(self):
+        if not self.release.formats:
+            return
 
-    def store_label(self):
-        if self.release.labels:
-            lbl = self.release.labels[0]
-            self.current_record.label = lbl.name
-            self.current_record.cat_no = lbl.catno
+        format_entries = []
+
+        for format in self.release.formats:
+            name = format.get(API_NAME, "").strip()
+            qty = format.get(API_QTY, "1").strip()
+            desc = ", ".join(format.get(API_DESCRIPTIONS, []))
+            #format_entries.append(f"{qty}x {name}{desc}")
+            # FIXME: is qty needed?
+            format_entries.append(f"{name} [{desc}]")
+
+        self.current_record.formats = " | ".join(format_entries)
+
+    def store_labels(self):
+        if not self.release.labels:
+            return
+
+        label_entries = []
+
+        for label in self.release.labels:
+            name = label.name.strip()
+            #name = label.get(API_NAME, "").strip()
+            catno = label.catno.strip()
+    
+            # Format as "Label Name [Catalog Number]"
+            if catno and catno.lower() != "none":
+                label_entries.append(f"{name} [{catno}]")
+            elif name:
+                label_entries.append(name)
+
+        self.current_record.labels = " | ".join(label_entries)
 
     def get_extraartists (self, record):
         found_ea = False
@@ -746,12 +746,14 @@ class OtsDiscogsToCsv:
         return parser.parse_args()
 
     def log_final_stats(self):
-        self.writelog(f'Total Records={self.st.records}')
-        self.writelog(f'Extra Artists:\n Found in record and master={self.st.has_ea_in_record_and_master}\n Found in Record only={self.st.has_ea_only_in_record} Master only={self.st.has_ea_only_in_master}\n Not found={self.st.no_ea}\n Main release only={self.st.has_ea_only_in_main_release}')
-        self.writelog(f'Track lists:\n Found in record and master={self.st.has_tl_in_record_and_master}\n Found in Record only={self.st.has_tl_only_in_record} Master only={self.st.has_tl_only_in_master}\n Not found={self.st.no_tl}\n Main release only={self.st.has_tl_only_in_main_release}')
-        time_difference = datetime.datetime.now() - self.start
         if self.log_all_roles:
             self.log_all_roles_found()
+
+        self.writelog(f'Total Records={self.st.records}\n')
+        self.writelog(f'Extra Artists:\n    Found in record and master={self.st.has_ea_in_record_and_master}\n    Found in Record only={self.st.has_ea_only_in_record}  Master only={self.st.has_ea_only_in_master}\n    Not found={self.st.no_ea}\n    Main release only={self.st.has_ea_only_in_main_release}')
+        self.writelog(f'Track lists:\n    Found in record and master={self.st.has_tl_in_record_and_master}\n    Found in Record only={self.st.has_tl_only_in_record} Master only={self.st.has_tl_only_in_master}\n    Not found={self.st.no_tl}\n    Main release only={self.st.has_tl_only_in_main_release}')
+        self.writelog(f'Extra Artists in Track lists:\n    Found in record and master={self.st.has_tl_ea_in_record_and_master}\n    Found in Record only={self.st.has_tl_ea_only_in_record} Master only={self.st.has_tl_ea_only_in_master}\n    Not found={self.st.no_tl_ea}\n    Main release only={self.st.has_tl_ea_only_in_main_release}')
+        time_difference = datetime.datetime.now() - self.start
         self.writelog(f'Total time: {time_difference}')
 
     def writeln(self, text=""):
@@ -773,187 +775,15 @@ class OtsDiscogsToCsv:
         else:
             self.log_out.write("\nNo roles found:\n")
 
-    def print_extraartists_per_type (self):
-        self.writeln("  Release Record Extra Artists")
-        self.print_extraartists(self.current_record.extraartists_in_record)
-        self.writeln("\n  Release Record Extra Artists Per Track")
-        self.print_extraartists(self.current_record.extraartists_per_track_in_record)
-        self.writeln("\n  Master Record Extra Artists")
-        self.print_extraartists(self.current_record.extraartists_in_master)
-        self.writeln("\n  Master Record Extra Artists Per Track")
-        self.print_extraartists(self.current_record.extraartists_per_track_in_master)
-
-    def print_extraartists (self, entry):
-        artist = '' 
-        for a, role_dict in entry.items():
-            artist = a
-            roles = []
-            for r, track_dict in role_dict.items():
-                if track_dict:
-                    tracks = ",".join(track_dict.keys())
-                    if tracks:
-                        r += (f' ({tracks})')
-                roles.append(r)
-            self.writeln(f"    {artist}: {','.join(roles)}")
-
-    # test code to show duplicates 
-    def print_extraartists_per_type_dups (self):
-        ea_list_as_string = [
-        [],
-        [],
-        [],
-        []]
-
-
-        self.writeln("  Release Record Extra Artists")
-        self.print_extraartists_dups(self.current_record.extraartists_in_record, 0, ea_list_as_string)
-        self.writeln("\n  Release Record Extra Artists Per Track")
-        self.print_extraartists_dups(self.current_record.extraartists_per_track_in_record, 1, ea_list_as_string)
-        self.writeln("\n  Master Record Extra Artists")
-        self.print_extraartists_dups(self.current_record.extraartists_in_master, 2, ea_list_as_string)
-        self.writeln("\n  Master Record Extra Artists Per Track")
-        self.print_extraartists_dups(self.current_record.extraartists_per_track_in_master, 3, ea_list_as_string)
-
-    def print_extraartists_dups (self, entry, index, ea_list_as_string):
-        artist = '' 
-        dup_found = False
-        uniq_found = False
-        for a, role_dict in entry.items():
-            artist = a
-            roles = []
-            for r, track_dict in role_dict.items():
-                if track_dict:
-                    tracks = ",".join(track_dict.keys())
-                    if tracks:
-                        r += (f' ({tracks})')
-                roles.append(r)
-            
-            a_r = f"{artist}: {','.join(roles)}"
-            elas = ea_list_as_string[index]
-            elas.append(a_r)
-            i, dup  = self.check_for_dup(a_r, index, ea_list_as_string)
-            dup_location = '' 
-            if dup:
-                dup_found = True
-                if i == 0:
-                    dup_location = "* ear"
-                elif i == 1:
-                    dup_location = "** ert"
-                elif i == 2:
-                    dup_location = "*** eam"
-            else:
-                uniq_found = True
-            
-            self.writeln(f"    {a_r}{dup_location}")
-        if dup_found and uniq_found:
-            self.writelog(f" Found some duplicates")
-        elif dup_found:
-            self.writelog(f" Found all duplicates")
-        else:
-            self.writelog(f" Found no duplicates")
-
-
-    def check_for_dup(self, a_r, index, ea_list_as_string):
-        if index == 0: 
-            return 0, False
-        for ll in range(0,index):
-            if a_r in ea_list_as_string[ll]: 
-                return ll, True
-        return 0, False
-
-    def print_sorted_extraartists (self):
-        self.writeln('\n  Sorted Extra Artists')
-        types = [
-                ("ear", self.current_record.extraartists_in_record),
-                ("ert", self.current_record.extraartists_per_track_in_record),
-                ("eam", self.current_record.extraartists_in_master),
-                ("emt", self.current_record.extraartists_per_track_in_master)
-                ]
-
-        if not self.current_record.extraartists_per_track_in_record:
-            if self.current_record.extraartists_per_track_in_master:
-                self.writelog(f'Only master {self.current_record.master_id} contained a tracklist ')
-            else:
-                self.writelog(f'No tracklist found in record (or master) {self.current_record.master_id}')
-
-
-        all_eas = []
-        for p_e in types:
-            all_eas.extend(self.get_extraartists_in_entry(p_e[0], p_e[1]))
-
-        # analyze written-by
-        # First, see if there are any "Written-By" in the top level without tracklists
-        for artist, roles in types[0][1].items():
-            for role,pos in roles.items(): 
-                if self.is_written_by_in_role(role):
-                    if pos:
-                        self.writelog(f'Record {self.current_record.id} contains top-level "written by" for {artist} with tracklist: {role} {pos}')
-                    else:
-                        self.writelog(f'Record {self.current_record.id} contains top-level "written by" for {artist}: {role}')
-
-        # See if "written by" with song positions are found in release and master, and how they compare
-        release_wb = {} 
-        for artist, roles in types[1][1].items():
-            for role,pos in roles.items(): 
-                if self.is_written_by_in_role(role) and pos:
-                    release_wb[artist] = (role, pos)
-
-        master_wb = {} 
-        mismatch_found = False
-        for artist, roles in types[3][1].items():
-            for role,pos in roles.items(): 
-                if self.is_written_by_in_role(role) and pos:
-                    mrp = (role,pos)
-                    master_wb[artist] = mrp
-                    if artist in release_wb:
-                        if mrp != release_wb[artist]:
-                            self.writelog (f'Mismatch between eat and emt for {artist} written-by in record {self.current_record.id} {release_wb[artist]} {mrp}')
-                        else:
-                            pass
-                            #self.writelog (f'Match between eat and emt for {artist} written-by in record {self.current_record.id} {release_wb[artist]} {mrp}')
-
-        if release_wb and master_wb:
-            self.writelog (f'Both master and release contain per/track written-by, mismatch={mismatch_found}')
-        elif release_wb and not master_wb:
-            self.writelog (f'Only release contains per/track written-by')
-        elif not release_wb and master_wb:
-            self.writelog (f'Only master contains per/track written-by')
-        else:
-            self.writelog (f'Neither release nor master contain per/track written-by')
-
-        for p_e in types:
-            all_eas.extend(self.get_extraartists_in_entry(p_e[0], p_e[1]))
-
-        all_eas.sort(key=lambda x: x.split(":", maxsplit=1)[1])
-        for e in all_eas:
-            self.writeln(e)
-
-
-
-    def get_extraartists_in_entry (self, prefix, entry):
-        artist = '' 
-        all_ea = []
-        for a, role_dict in entry.items():
-            artist = a
-            roles = []
-            for r, track_dict in role_dict.items():
-                if track_dict:
-                    tracks = ",".join(track_dict.keys())
-                    if tracks:
-                        r += (f' ({tracks})')
-                roles.append(r)
-            all_ea.append(f"    {prefix}: {artist}: {','.join(roles)}")
-        return all_ea
-
+        self.log_out.write('\n')
 
     def ignore_role(self, role):
         if not self.ignore_roles:
             return False
         for r in self.ignore_roles:
-            if r.casefold() in role.casefold():
+            if role.casefold().startswith(r.casefold()):
                 return True
         return False
-        #return any(r.casefold() in role.casefold() for r in self.ignore_roles)
 
     def to_int(self, value):
         try:
@@ -967,17 +797,17 @@ class OtsDiscogsToCsv:
 
             self.current_record.title = self.release.title
 
-            self.store_format()
+            self.store_formats()
 
-            self.store_label()
+            self.store_labels()
 
             self.current_record.country = self.release.country or ''
 
             self.current_record.year = self.release.year or ''
 
-            self.current_record.genres = ", ".join(self.release.genres or [])
+            self.current_record.genres = " | ".join(self.release.genres or [])
 
-            self.current_record.styles = ", ".join(self.release.styles or [])
+            self.current_record.styles = " | ".join(self.release.styles or [])
 
             self.store_credits(self.release)
 
@@ -990,11 +820,11 @@ class OtsDiscogsToCsv:
 
         return False
 
-    def store_master_data(self) -> bool:
+    def store_master_data(self, master) -> bool:
         try:
-            self.store_credits(self.master)
+            self.store_credits(master)
 
-            self.store_tracklist(self.master)
+            self.store_tracklist(master)
 
             return True
 
@@ -1030,6 +860,11 @@ class OtsDiscogsToCsv:
             self.writelog(f"No album extra artists found in {record.id}")
             return False
 
+        if self.master:
+            self.rs.ea_found_in_master = True
+        else:
+            self.rs.ea_found_in_record = True
+
         for ea in extraartists:
             ea_name = self.fix_artist_name(ea.get(API_NAME))
             ea_role = ea.get(API_ROLE, '')
@@ -1053,6 +888,11 @@ class OtsDiscogsToCsv:
         if not tracklist:
             self.writelog(f"No tracklist found in {record.id}")
             return False
+
+        if self.master:
+            self.rs.tl_found_in_master = True
+        else:
+            self.rs.tl_found_in_record = True
 
         for track in tracklist:
             self.store_track(track)
@@ -1108,6 +948,11 @@ class OtsDiscogsToCsv:
             ea_role = ea.get(API_ROLE)
             ea_name = self.fix_artist_name(ea.get(API_NAME))
             if ea_role: 
+                if self.master:
+                    self.rs.tl_ea_found_in_master = True
+                else:
+                    self.rs.tl_ea_found_in_record = True
+
                 #rolelist = [r.strip() for r in ea_role.split(',')]
                 rolelist = self.split_roles(ea_role)
                 for role in rolelist:
@@ -1143,11 +988,8 @@ class OtsDiscogsToCsv:
         row[CSV_RELEASE_ID] = f'{r.id}'
         row[CSV_ARTIST] = r.artists
         row[CSV_TITLE] = r.title
-        row[CSV_FORMAT] = r.format
-        row[CSV_QTY] = r.qty
-        row[CSV_FORMAT_DESCRIPTIONS] = r.format_descriptions
-        row[CSV_LABEL] = r.label
-        row[CSV_CATNO]= r.catno
+        row[CSV_FORMATS] = r.formats
+        row[CSV_LABELS] = r.labels
         row[CSV_COUNTRY] = r.country
         row[CSV_YEAR] = r.year
         row[CSV_GENRES] = r.genres
@@ -1169,7 +1011,7 @@ class OtsDiscogsToCsv:
                 performed_by_str = ''
             if tracklist_str:
                 tracklist_str += '|'
-            tracklist_str += f'{title}\\{performed_by_str}\\{written_by_str}'
+            tracklist_str += f'{title}++{performed_by_str}++{written_by_str}'
 
         return tracklist_str
 

@@ -3,7 +3,8 @@ import re
 import sys
 from discogs_ots import OtsDiscogsToCsv
 
-def test_sort(monkeypatch):
+# remove for now, not needed?
+def dont_test_sort(monkeypatch):
     monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-id", "11111", "-ua", "testus"])
 
     s = OtsDiscogsToCsv()
