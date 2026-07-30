@@ -1,0 +1,64 @@
+{
+  "_comment": "Release with no tracklist, but master has one (1014), no extra artists",
+  "status": "Accepted",
+  "styles": [
+    "Modern Classical"
+  ],
+  "genres": [
+    "Acid Shoe Gaze"
+  ],
+  "formats": [
+    {
+      "name": "LP",
+      "qty": "1",
+      "descriptions": [
+        "Album"
+      ]
+    }
+  ],
+  "master_id": 1014,
+  "master_url": "https://api.example.com/masters/1014",
+  "extraartists": [],
+  "title": "Release + Master, No Track List",
+  "released_formatted": "2005",
+  "labels": [
+    {
+      "name": "First Label",
+      "entity_type": "1",
+      "catno": "CAT-1",
+      "id": 1818,
+      "entity_type_name": "Label"
+    },
+    {
+      "name": "Second Label",
+      "entity_type": "1",
+      "catno": "CAT-2",
+      "id": 1819,
+      "entity_type_name": "Label"
+    }
+  ],
+  "companies": [],
+  "artists": [
+    {
+      "join": "&",
+      "name": "Porch Chops",
+      "anv": "",
+      "tracks": "",
+      "role": "",
+      "id": 95780
+    },
+    {
+      "join": "",
+      "name": "Tom J",
+      "anv": "",
+      "tracks": "",
+      "role": "",
+      "id": 216524
+    }
+  ],
+  "released": "2005",
+  "country": "UK",
+  "year": 2005,
+  "id": 12,
+  "data_quality": "Needs Vote"
+}

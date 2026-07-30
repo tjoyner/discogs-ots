@@ -1,27 +1,25 @@
 {
-  "_comment": "Release only, no extra artists",
+  "_comment": "Release with master (1013), no extra artists",
   "status": "Accepted",
   "styles": [
-    "Modern Classical",
-    "Chipmonk",
-    "Ambient"
+    "Modern Classical"
   ],
   "genres": [
-    "Electronic",
-    "Shoe Gaze"
+    "Acid Shoe Gaze"
   ],
   "formats": [
     {
       "name": "LP",
       "qty": "1",
       "descriptions": [
-        "MP3",
         "Album"
       ]
     }
   ],
+  "master_id": 1013,
+  "master_url": "https://api.example.com/masters/1013",
   "extraartists": [],
-  "title": "No Extra Artists",
+  "title": "Release + Master, No Extra Artists",
   "released_formatted": "2005",
   "labels": [
     {
@@ -29,6 +27,13 @@
       "entity_type": "1",
       "catno": "CAT-1",
       "id": 1818,
+      "entity_type_name": "Label"
+    },
+    {
+      "name": "Second Label",
+      "entity_type": "1",
+      "catno": "CAT-2",
+      "id": 1819,
       "entity_type_name": "Label"
     }
   ],
@@ -61,8 +66,16 @@
       "type_": "track",
       "artists": [
         {
-          "join": "",
+          "join": "and not",
           "name": "Some Guy",
+          "anv": "",
+          "tracks": "",
+          "role": "",
+          "id": 216524
+        },
+        {
+          "join": "",
+          "name": "Some Other Guy",
           "anv": "",
           "tracks": "",
           "role": "",

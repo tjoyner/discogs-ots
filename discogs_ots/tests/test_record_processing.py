@@ -30,11 +30,11 @@ def test_load_release(monkeypatch, discogs_connection):
     assert cr.title == "Transcendental Blues"
     assert cr.formats == "CD [HDCD, Album]"
     #assert cr.label == "E-Squared, Artemis Records"
-    assert cr.labels ==  "E-Squared [751033-2] | Artemis Records [751033-2]"
+    assert cr.labels ==  "E-Squared [751033-2]|Artemis Records [751033-2]"
     assert cr.country == "US"
     assert cr.year == 2000
-    assert cr.genres == "Rock | Folk, World, & Country"
-    assert cr.styles == "Country Rock | Country"
+    assert cr.genres == "Rock|Folk, World, & Country"
+    assert cr.styles == "Country Rock|Country"
     tl = cr.tracklist
     assert len(tl) == 15
     t1 = next(iter(tl.items()))
@@ -56,8 +56,8 @@ def test_load_release(monkeypatch, discogs_connection):
     assert cr.labels == "First Label [CAT-1]"
     assert cr.country == "UK"
     assert cr.year == 2005
-    assert cr.genres == "Electronic | Shoe Gaze"
-    assert cr.styles == "Modern Classical | Chipmonk | Ambient"
+    assert cr.genres == "Electronic|Shoe Gaze"
+    assert cr.styles == "Modern Classical|Chipmonk|Ambient"
 
     tl = cr.tracklist
     assert len(tl) == 6
@@ -93,5 +93,116 @@ def test_load_release(monkeypatch, discogs_connection):
     assert track[1][1] == [] # no written by
 
     assert s.st.has_tl_only_in_record == 1
+
+# check master is set, but tracklist was found in record
+def test_load_release_with_check_master(monkeypatch, discogs_connection):
+
+    # No extra artists
+    monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-cm", "-id", "13", "-ua", "testus" ])
+    d = discogs_connection
+    s = OtsDiscogsToCsv(d)
+    s.run()
+    cr = s.current_record
+    assert cr.id == 13
+    assert cr.artists == "Porch Chops & Tom J"
+    assert cr.title == "Release + Master, No Extra Artists"
+    assert cr.formats == "LP [Album]"
+    assert cr.labels == "First Label [CAT-1]|Second Label [CAT-2]"
+    assert cr.country == "UK"
+    assert cr.year == 2005
+    assert cr.genres == "Acid Shoe Gaze"
+    assert cr.styles == "Modern Classical"
+
+    tl = cr.tracklist
+    assert len(tl) == 6
+    iterator = iter(tl.items())
+    track = next(iterator)
+    assert track[0] == "Title 1"
+    assert track[1][0] == "Some Guy and not Some Other Guy"
+    assert track[1][1] == [] # no written by
+    
+    track = next(iterator)
+    assert track[0] == "Scusi"
+    assert track[1][0] == "Tom I Am & Tom I Am Not"
+    assert track[1][1] == [] # no written by
+    
+    track = next(iterator)
+    assert track[0] == "Title with, comma"
+    assert track[1][0] == "Porch Chops & Tom J"
+    assert track[1][1] == [] # no written by
+    
+    track = next(iterator)
+    assert track[0] == "We're Number 4"
+    assert track[1][0] == "Winken, Blinken, and Nod"
+    assert track[1][1] == [] # no written by
+    
+    track = next(iterator)
+    assert track[0] == "Penultimate Tune"
+    assert track[1][0] == "Unknown"
+    assert track[1][1] == [] # no written by
+
+    track = next(iterator)
+    assert track[0] == "Finally, \"right?\""
+    assert track[1][0] == "Anonymous"
+    assert track[1][1] == [] # no written by
+
+    assert s.st.has_tl_only_in_record == 1
+
+def test_load_release_with_master_tracklist(monkeypatch, discogs_connection):
+
+    # No extra artists
+    monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-cm", "-id", "14", "-ua", "testus" ])
+    d = discogs_connection
+    s = OtsDiscogsToCsv(d)
+    s.run()
+    cr = s.current_record
+    assert cr.id == 14
+    assert cr.artists == "Porch Chops & Tom J"
+    assert cr.title == "Release + Master, No Track List"
+    assert cr.formats == "LP [Album]"
+    assert cr.labels == "First Label [CAT-1]|Second Label [CAT-2]"
+    assert cr.country == "UK"
+    assert cr.year == 2005
+    assert cr.genres == "Acid Shoe Gaze"
+    assert cr.styles == "Modern Classical"
+
+    tl = cr.tracklist
+    assert len(tl) == 6
+    iterator = iter(tl.items())
+    track = next(iterator)
+    assert track[0] == "Title 1"
+    assert track[1][0] == "Some Guy in the Master"
+    assert track[1][1] == [] # no written by
+    
+    track = next(iterator)
+    assert track[0] == "Scusi"
+    assert track[1][0] == "Tom I Am & Tom I Am Not"
+    assert track[1][1] == [] # no written by
+    
+    track = next(iterator)
+    assert track[0] == "Title with, comma"
+    assert track[1][0] == "Porch Chops & Tom J"
+    assert track[1][1] == [] # no written by
+    
+    track = next(iterator)
+    assert track[0] == "We're Number 4"
+    assert track[1][0] == "Winken, Blinken, and Nod"
+    assert track[1][1] == [] # no written by
+    
+    track = next(iterator)
+    assert track[0] == "Penultimate Tune"
+    assert track[1][0] == "Unknown"
+    assert track[1][1] == [] # no written by
+
+    track = next(iterator)
+    assert track[0] == "Finally, \"right?\""
+    assert track[1][0] == "Anonymous"
+    assert track[1][1] == [] # no written by
+
+    assert s.st.has_tl_only_in_record == 0
+    assert s.st.has_tl_only_in_master == 1
+
+
+
 
 

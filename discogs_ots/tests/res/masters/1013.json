@@ -1,13 +1,10 @@
 {
-  "_comment": "Release only, no extra artists",
+  "_comment": "Master for Record 13",
   "status": "Accepted",
   "styles": [
-    "Modern Classical",
-    "Chipmonk",
-    "Ambient"
+    "Modern Classical"
   ],
   "genres": [
-    "Electronic",
     "Shoe Gaze"
   ],
   "formats": [
@@ -15,13 +12,12 @@
       "name": "LP",
       "qty": "1",
       "descriptions": [
-        "MP3",
         "Album"
       ]
     }
   ],
   "extraartists": [],
-  "title": "No Extra Artists",
+  "title": "Release + Master, No Extra Artists",
   "released_formatted": "2005",
   "labels": [
     {
@@ -29,6 +25,13 @@
       "entity_type": "1",
       "catno": "CAT-1",
       "id": 1818,
+      "entity_type_name": "Label"
+    },
+    {
+      "name": "Second Label",
+      "entity_type": "1",
+      "catno": "CAT-2",
+      "id": 1819,
       "entity_type_name": "Label"
     }
   ],

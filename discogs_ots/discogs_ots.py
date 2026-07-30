@@ -51,6 +51,10 @@ CSV_STYLES="styles"
 CSV_TRACKLIST="tracklist"
 CSV_CREDITS="credits"
 
+CSV_COL_SEPARATOR=","
+CSV_ITEM_SEPARATOR1="|"
+CSV_ITEM_SEPARATOR2="++"
+
 headers = {
    CSV_RELEASE_ID : '',
    CSV_ARTIST : '',
@@ -367,7 +371,9 @@ class OtsDiscogsToCsv:
 
             self.store_record_data()
 
-            if self.check_master and self.release.master:
+            # TODO: Only check master if no tracklist found?
+            #       Need to remove the "both found" stats
+            if self.check_master and self.release.master and not self.rs.tl_found_in_record:
                 masterRec = self.release.master
                 master = None
 
@@ -482,7 +488,7 @@ class OtsDiscogsToCsv:
             # FIXME: is qty needed?
             format_entries.append(f"{name} [{desc}]")
 
-        self.current_record.formats = " | ".join(format_entries)
+        self.current_record.formats = f"{CSV_ITEM_SEPARATOR1}".join(format_entries)
 
     def store_labels(self):
         if not self.release.labels:
@@ -501,7 +507,7 @@ class OtsDiscogsToCsv:
             elif name:
                 label_entries.append(name)
 
-        self.current_record.labels = " | ".join(label_entries)
+        self.current_record.labels = f"{CSV_ITEM_SEPARATOR1}".join(label_entries)
 
     def get_extraartists (self, record):
         found_ea = False
@@ -805,9 +811,9 @@ class OtsDiscogsToCsv:
 
             self.current_record.year = self.release.year or ''
 
-            self.current_record.genres = " | ".join(self.release.genres or [])
+            self.current_record.genres = f"{CSV_ITEM_SEPARATOR1}".join(self.release.genres or [])
 
-            self.current_record.styles = " | ".join(self.release.styles or [])
+            self.current_record.styles = f"{CSV_ITEM_SEPARATOR1}".join(self.release.styles or [])
 
             self.store_credits(self.release)
 
@@ -979,7 +985,7 @@ class OtsDiscogsToCsv:
 
     def init_csv(self):
         fieldnames=self.csv_headers().keys()
-        self.csv_writer = csv.DictWriter(self.out, fieldnames=fieldnames, quoting=csv.QUOTE_MINIMAL)
+        self.csv_writer = csv.DictWriter(self.out, fieldnames=fieldnames, quoting=csv.QUOTE_MINIMAL, delimiter=f'{CSV_COL_SEPARATOR}')
         self.csv_writer.writeheader()
 
     def write_csv(self):
@@ -1010,8 +1016,8 @@ class OtsDiscogsToCsv:
             else:
                 performed_by_str = ''
             if tracklist_str:
-                tracklist_str += '|'
-            tracklist_str += f'{title}++{performed_by_str}++{written_by_str}'
+                tracklist_str += f'{CSV_ITEM_SEPARATOR1}'
+            tracklist_str += f'{title}{CSV_ITEM_SEPARATOR2}{performed_by_str}{CSV_ITEM_SEPARATOR2}{written_by_str}'
 
         return tracklist_str
 
@@ -1023,7 +1029,7 @@ class OtsDiscogsToCsv:
             if roles_str:
                 roles_str = f'[{roles_str}]'
             if credit_str:
-                credit_str += '|'
+                credit_str += f'{CSV_ITEM_SEPARATOR1}'
             credit_str += f'{artist}{roles_str}'
 
         return credit_str

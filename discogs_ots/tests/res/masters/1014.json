@@ -1,34 +1,37 @@
 {
-  "_comment": "Release only, no extra artists",
+  "_comment": "Master for Record 13",
   "status": "Accepted",
   "styles": [
-    "Modern Classical",
-    "Chipmonk",
-    "Ambient"
+    "Not Modern Classical"
   ],
   "genres": [
-    "Electronic",
-    "Shoe Gaze"
+    "Not Shoe Gaze"
   ],
   "formats": [
     {
       "name": "LP",
       "qty": "1",
       "descriptions": [
-        "MP3",
-        "Album"
+        "Not Album"
       ]
     }
   ],
   "extraartists": [],
-  "title": "No Extra Artists",
+  "title": "Master With Track List",
   "released_formatted": "2005",
   "labels": [
     {
-      "name": "First Label",
+      "name": "Not First Label",
       "entity_type": "1",
       "catno": "CAT-1",
       "id": 1818,
+      "entity_type_name": "Label"
+    },
+    {
+      "name": "Not Second Label",
+      "entity_type": "1",
+      "catno": "CAT-2",
+      "id": 1819,
       "entity_type_name": "Label"
     }
   ],
@@ -44,7 +47,7 @@
     },
     {
       "join": "",
-      "name": "Tom J",
+      "name": "Not Tom J",
       "anv": "",
       "tracks": "",
       "role": "",
@@ -62,7 +65,7 @@
       "artists": [
         {
           "join": "",
-          "name": "Some Guy",
+          "name": "Some Guy in the Master",
           "anv": "",
           "tracks": "",
           "role": "",
