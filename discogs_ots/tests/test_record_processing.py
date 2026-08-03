@@ -37,10 +37,10 @@ def test_load_release(monkeypatch, discogs_connection):
     assert cr.styles == "Country Rock|Country"
     tl = cr.tracklist
     assert len(tl) == 15
-    t1 = next(iter(tl.items()))
-    assert t1[0] == "Transcendental Blues"
-    assert t1[1][0] == "Steve Earle"
-    assert t1[1][1] == ["Steve Earle"]
+    title, track_info = next(iter(tl.items()))
+    assert title == "Transcendental Blues"
+    assert track_info.performed_by == "Steve Earle"
+    assert track_info.written_by == ["Steve Earle"]
 
     assert cr.album_written_by == ["Steve Earle"]
 
@@ -62,35 +62,40 @@ def test_load_release(monkeypatch, discogs_connection):
     tl = cr.tracklist
     assert len(tl) == 6
     iterator = iter(tl.items())
-    track = next(iterator)
-    assert track[0] == "Title 1"
-    assert track[1][0] == "Some Guy"
-    assert track[1][1] == [] # no written by
-    
-    track = next(iterator)
-    assert track[0] == "Scusi"
-    assert track[1][0] == "Tom I Am & Tom I Am Not"
-    assert track[1][1] == [] # no written by
-    
-    track = next(iterator)
-    assert track[0] == "Title with, comma"
-    assert track[1][0] == "Porch Chops & Tom J"
-    assert track[1][1] == [] # no written by
-    
-    track = next(iterator)
-    assert track[0] == "We're Number 4"
-    assert track[1][0] == "Winken, Blinken, and Nod"
-    assert track[1][1] == [] # no written by
-    
-    track = next(iterator)
-    assert track[0] == "Penultimate Tune"
-    assert track[1][0] == "Unknown"
-    assert track[1][1] == [] # no written by
+    title, track_info = next(iterator)
+    assert title == "Title 1"
+    assert track_info.performed_by == "Some Guy"
+    assert track_info.written_by == [] # no written by
 
-    track = next(iterator)
-    assert track[0] == "Finally, \"right?\""
-    assert track[1][0] == "Anonymous"
-    assert track[1][1] == [] # no written by
+    title, track_info = next(iter(tl.items()))
+    assert title == "Title 1"
+    assert track_info.performed_by == "Some Guy"
+    assert track_info.written_by == []
+    
+    title, track_info = next(iterator)
+    assert title == "Scusi"
+    assert track_info.performed_by == "Tom I Am & Tom I Am Not"
+    assert track_info.written_by == [] # no written by
+    
+    title, track_info = next(iterator)
+    assert title == "Title with, comma"
+    assert track_info.performed_by == "Porch Chops & Tom J"
+    assert track_info.written_by == [] # no written by
+    
+    title, track_info = next(iterator)
+    assert title == "We're Number 4"
+    assert track_info.performed_by == "Winken, Blinken, and Nod"
+    assert track_info.written_by == [] # no written by
+    
+    title, track_info = next(iterator)
+    assert title == "Penultimate Tune"
+    assert track_info.performed_by == "Unknown"
+    assert track_info.written_by == [] # no written by
+
+    title, track_info = next(iterator)
+    assert title == "Finally, \"right?\""
+    assert track_info.performed_by == "Anonymous"
+    assert track_info.written_by == [] # no written by
 
     assert s.st.has_tl_only_in_record == 1
 
@@ -116,35 +121,35 @@ def test_load_release_with_check_master(monkeypatch, discogs_connection):
     tl = cr.tracklist
     assert len(tl) == 6
     iterator = iter(tl.items())
-    track = next(iterator)
-    assert track[0] == "Title 1"
-    assert track[1][0] == "Some Guy and not Some Other Guy"
-    assert track[1][1] == [] # no written by
+    title, track_info = next(iterator)
+    assert title == "Title 1"
+    assert track_info.performed_by == "Some Guy and not Some Other Guy"
+    assert track_info.written_by == [] # no written by
     
-    track = next(iterator)
-    assert track[0] == "Scusi"
-    assert track[1][0] == "Tom I Am & Tom I Am Not"
-    assert track[1][1] == [] # no written by
+    title, track_info = next(iterator)
+    assert title == "Scusi"
+    assert track_info.performed_by == "Tom I Am & Tom I Am Not"
+    assert track_info.written_by == [] # no written by
     
-    track = next(iterator)
-    assert track[0] == "Title with, comma"
-    assert track[1][0] == "Porch Chops & Tom J"
-    assert track[1][1] == [] # no written by
+    title, track_info = next(iterator)
+    assert title == "Title with, comma"
+    assert track_info.performed_by == "Porch Chops & Tom J"
+    assert track_info.written_by == [] # no written by
     
-    track = next(iterator)
-    assert track[0] == "We're Number 4"
-    assert track[1][0] == "Winken, Blinken, and Nod"
-    assert track[1][1] == [] # no written by
+    title, track_info = next(iterator)
+    assert title == "We're Number 4"
+    assert track_info.performed_by == "Winken, Blinken, and Nod"
+    assert track_info.written_by == [] # no written by
     
-    track = next(iterator)
-    assert track[0] == "Penultimate Tune"
-    assert track[1][0] == "Unknown"
-    assert track[1][1] == [] # no written by
+    title, track_info = next(iterator)
+    assert title == "Penultimate Tune"
+    assert track_info.performed_by == "Unknown"
+    assert track_info.written_by == [] # no written by
 
-    track = next(iterator)
-    assert track[0] == "Finally, \"right?\""
-    assert track[1][0] == "Anonymous"
-    assert track[1][1] == [] # no written by
+    title, track_info = next(iterator)
+    assert title == "Finally, \"right?\""
+    assert track_info.performed_by == "Anonymous"
+    assert track_info.written_by == [] # no written by
 
     assert s.st.has_tl_only_in_record == 1
 
@@ -159,7 +164,7 @@ def test_load_release_with_master_tracklist(monkeypatch, discogs_connection):
     assert cr.id == 14
     assert cr.artists == "Porch Chops & Tom J"
     assert cr.title == "Release + Master, No Track List"
-    assert cr.formats == "LP [Album]"
+    assert cr.formats == "LP"
     assert cr.labels == "First Label [CAT-1]|Second Label [CAT-2]"
     assert cr.country == "UK"
     assert cr.year == 2005
@@ -169,38 +174,94 @@ def test_load_release_with_master_tracklist(monkeypatch, discogs_connection):
     tl = cr.tracklist
     assert len(tl) == 6
     iterator = iter(tl.items())
-    track = next(iterator)
-    assert track[0] == "Title 1"
-    assert track[1][0] == "Some Guy in the Master"
-    assert track[1][1] == [] # no written by
+    title, track_info = next(iterator)
+    assert title == "Title 1"
+    assert track_info.performed_by == "Some Guy in the Master"
+    assert track_info.written_by == [] # no written by
     
-    track = next(iterator)
-    assert track[0] == "Scusi"
-    assert track[1][0] == "Tom I Am & Tom I Am Not"
-    assert track[1][1] == [] # no written by
+    title, track_info = next(iterator)
+    assert title == "Scusi"
+    assert track_info.performed_by == "Tom I Am & Tom I Am Not"
+    assert track_info.written_by == [] # no written by
     
-    track = next(iterator)
-    assert track[0] == "Title with, comma"
-    assert track[1][0] == "Porch Chops & Tom J"
-    assert track[1][1] == [] # no written by
+    title, track_info = next(iterator)
+    assert title == "Title with, comma"
+    assert track_info.performed_by == "Porch Chops & Tom J"
+    assert track_info.written_by == [] # no written by
     
-    track = next(iterator)
-    assert track[0] == "We're Number 4"
-    assert track[1][0] == "Winken, Blinken, and Nod"
-    assert track[1][1] == [] # no written by
+    title, track_info = next(iterator)
+    assert title == "We're Number 4"
+    assert track_info.performed_by == "Winken, Blinken, and Nod"
+    assert track_info.written_by == [] # no written by
     
-    track = next(iterator)
-    assert track[0] == "Penultimate Tune"
-    assert track[1][0] == "Unknown"
-    assert track[1][1] == [] # no written by
+    title, track_info = next(iterator)
+    assert title == "Penultimate Tune"
+    assert track_info.performed_by == "Unknown"
+    assert track_info.written_by == [] # no written by
 
-    track = next(iterator)
-    assert track[0] == "Finally, \"right?\""
-    assert track[1][0] == "Anonymous"
-    assert track[1][1] == [] # no written by
+    title, track_info = next(iterator)
+    assert title == "Finally, \"right?\""
+    assert track_info.performed_by == "Anonymous"
+    assert track_info.written_by == [] # no written by
 
     assert s.st.has_tl_only_in_record == 0
     assert s.st.has_tl_only_in_master == 1
+
+# Top-level extra artists
+def test_record_extraartists(monkeypatch, discogs_connection):
+
+    # No extra artists
+    monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-cm", "-id", "15", "-ua", "testus" ])
+    d = discogs_connection
+    s = OtsDiscogsToCsv(d)
+    s.run()
+    cr = s.current_record
+    assert cr.id == 15
+    assert cr.artists == "Porch Chops & Tom J"
+    assert cr.title == "Release with Extra Artists"
+    assert cr.formats == "LP [Album]|Gramophone [Wax]"
+    assert cr.labels == "First Label [CAT-1]"
+    assert cr.country == "UK"
+    assert cr.year == 2005
+    assert cr.genres == "Deep Vibe|Shoe Gaze"
+    assert cr.styles == "Trad Classical"
+
+    tl = cr.tracklist
+    assert len(tl) == 6
+    iterator = iter(tl.items())
+    title, track_info = next(iterator)
+    assert title == "Title 1"
+    assert track_info.performed_by == "Some Guy"
+    assert track_info.written_by == ['Free Byrd'] 
+    
+    title, track_info = next(iterator)
+    assert title == "Scusa"
+    assert track_info.performed_by == "Tom I Aint, Tom I Am Not"
+    assert track_info.written_by == ['Free Byrd'] 
+    
+    title, track_info = next(iterator)
+    assert title == "Title with, comma"
+    assert track_info.performed_by == "Porch Chops & Tom J"
+    assert track_info.written_by == ['Free Byrd'] 
+    
+    title, track_info = next(iterator)
+    assert title == "We're Number 4"
+    assert track_info.performed_by == "Winken, Blinken, and Nod"
+    assert track_info.written_by == ['Free Byrd'] 
+    
+    title, track_info = next(iterator)
+    assert title == "Penultimate Tune"
+    assert track_info.performed_by == "Unknown"
+    assert track_info.written_by == ['Free Byrd'] 
+
+    title, track_info = next(iterator)
+    assert title == "Finally, \"right?\""
+    assert track_info.performed_by == "Anonymous"
+    assert track_info.written_by == ['Free Byrd'] 
+
+    assert s.st.has_ea_only_in_record == 1
+    assert s.st.has_tl_only_in_record == 1
+    assert s.st.has_tl_only_in_master == 0
 
 
 

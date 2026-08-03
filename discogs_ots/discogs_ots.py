@@ -29,6 +29,7 @@ API_EXTRAARTISTS = "extraartists"
 API_TYPE_ = "type_"
 API_TITLE = "title"
 API_NAME = "name"
+API_TRACKS = "tracks"
 API_TRACKLIST = "tracklist"
 API_TRACK_TYPE_TRACK = "track"
 API_TRACK_TYPE_INDEX = "index"
@@ -98,6 +99,12 @@ Each record has 4 extra artist lists (for now)
 """
 
 @dataclass
+class TrackInfo:
+    position: str = ''
+    performed_by: str = ''
+    written_by:  list = field(default_factory=list) 
+
+@dataclass
 class RecordInfo:
     id: int = 0
 
@@ -115,13 +122,19 @@ class RecordInfo:
     genres: str = ''
     styles: str = ''
 
-    tracklist:  dict = field(default_factory=dict) # name, performed by, written by
+    tracklist:  dict = field(default_factory=dict) # name : TrackInfo
 
     credits: dict = field(default_factory=dict)
 
     master_id: int = 0
 
     album_written_by:  list = field(default_factory=list) 
+
+    # if an album level extra artist contains a written by with
+    # a tracks element (so only particular tracks are written by
+    # that artist), store the position : artist name here so it
+    # can be checked with the track list is processed
+    album_written_by_tracks:  dict = field(default_factory=dict) 
 
 @dataclass
 class RecordStats:
@@ -331,7 +344,16 @@ class OtsDiscogsToCsv:
                             if record_id_i > 0:
                                 records_to_skip.append(record_id_i)
 
+            seen = {}
+            duplicates = []
             for r in my_releases:
+                if r.id in seen:
+                    self.writelog(f'Skipping duplicate record ID {r.id}')
+                    duplicates.append(r.id)
+                    continue
+                else:
+                    seen[r.id] = None
+
                 if r.id not in records_to_skip:
                     if self.get_record_data(r.id):
                         self.st.records += 1
@@ -373,6 +395,7 @@ class OtsDiscogsToCsv:
 
             # TODO: Only check master if no tracklist found?
             #       Need to remove the "both found" stats
+            # TODO: read master per/track extra artist if not found
             if self.check_master and self.release.master and not self.rs.tl_found_in_record:
                 masterRec = self.release.master
                 master = None
@@ -484,9 +507,11 @@ class OtsDiscogsToCsv:
             name = format.get(API_NAME, "").strip()
             qty = format.get(API_QTY, "1").strip()
             desc = ", ".join(format.get(API_DESCRIPTIONS, []))
+            if desc:
+                desc = f' [{desc}]'
             #format_entries.append(f"{qty}x {name}{desc}")
             # FIXME: is qty needed?
-            format_entries.append(f"{name} [{desc}]")
+            format_entries.append(f"{name}{desc}")
 
         self.current_record.formats = f"{CSV_ITEM_SEPARATOR1}".join(format_entries)
 
@@ -509,80 +534,11 @@ class OtsDiscogsToCsv:
 
         self.current_record.labels = f"{CSV_ITEM_SEPARATOR1}".join(label_entries)
 
-    def get_extraartists (self, record):
-        found_ea = False
-        eas = record.data.get(API_EXTRAARTISTS)
-        ea_names = ""
-
-        cur_dict = self.current_record.extraartists_in_record
-        if self.master:
-            cur_dict = self.current_record.extraartists_in_master
-
-        # just to see
-        self.tempea_written_by = []
-        self.tempeat_written_by = []
-
-        if eas == None:
-            if self.master:
-                pass
-        else:
-            if self.master:
-                self.writelog (f'Extraartists in master for record id={self.current_record.id}')
-            for ea in eas:
-                self.store_ea_info(ea, cur_dict)
-            found_ea = True
-
-        cur_dict = self.current_record.extraartists_per_track_in_record
-        if self.master:
-            cur_dict = self.current_record.extraartists_per_track_in_master
-
-        # check tracklist to see if extraartists exists
-        tls = record.tracklist
-        for tl in tls or []:
-            found_ea |= self.store_ea_info_per_track(tl, cur_dict)
-
-        if len(self.tempea_written_by) > 0 and len(self.tempeat_written_by) == 0:
-            self.writelog(f"Record {self.current_record.id} contains written-by only in ea")
-
-        if len(self.tempea_written_by) > 0 and len(self.tempeat_written_by) > 0 and (Counter(self.tempea_written_by) != Counter(self.tempeat_written_by)): 
-            self.writelog(f"Record {self.current_record.id} written-by doesn't match\n{self.tempea_written_by}\n{self.tempeat_written_by}")
-
-        return found_ea
-
     def fix_artist_name(self, artist_name):
         if artist_name == None:
             return ''
         pattern = r"\s*\(\d+\)\s*$"
         return re.sub(pattern, '', artist_name)
-
-    def store_ea_info(self, ea, ea_dict):
-        # ea_dict is artist : roles
-        artist_name = ea["name"]
-        if artist_name == None:
-            self.writelog(f'Error: name not found in extraartists entry')
-            return
-        artist_name = self.fix_artist_name(artist_name)
-        # adds artist name and list/dict of roles, returned in ea_entry
-        # see if role exists in discogs
-        role = ea[API_ROLE]
-        # TODO: store written by? Or is this always per track?
-        #if role and not self.ignore_role(role) and role != API_WRITTEN_BY:
-        if role and not self.ignore_role(role):
-            if self.is_written_by_in_role(role):
-            #if False: # temp
-                if artist_name not in self.tempea_written_by:
-                    self.tempea_written_by.append(artist_name)
-            else:
-                ea_entry = ea_dict.setdefault(artist_name, {})
-                current_tracks = ea_entry.setdefault(role,  {})
-                # adds role to ea_entry with a list/dict of tracks, returned in current_tracks
-                #current_tracks = roles.setdefault(role, {})
-                tracks = ea["tracks"]
-                if tracks:
-                    trackList = [t.strip() for t in ea["tracks"].split(',')]
-                    for t in trackList or []:
-                        current_tracks[t] = None
-                        #roles.update(dict.fromkeys(tracks))
 
     def is_written_by_in_role(self, role):
         if API_WRITTEN_BY.casefold() in role.casefold() or API_WRITTEN_BY_NO_DASH.casefold() in role.casefold():
@@ -590,31 +546,6 @@ class OtsDiscogsToCsv:
         if API_COMPOSED_BY.casefold() in role.casefold() or API_COMPOSED_BY_NO_DASH.casefold() in role.casefold():
             return True
         return False
-
-    def store_ea_info_per_track(self, tl, ea_dict):
-        eats = tl.data.get(API_EXTRAARTISTS)
-        track_pos = tl.data.get(API_POSITION)
-        track_type = tl.data.get(API_TYPE_)
-        track_title = tl.data.get(API_TITLE)
-        track_artist = tl.data.get(API_NAME)
-        if not track_artist:
-            track_artist = self.current_record.artists
-
-        if not track_type:
-            self.writelog(f"track_type not found for {self.current_record.id}-{track_title}, pos={track_pos}")
-
-        if track_type == API_TRACK_TYPE_INDEX:
-            sts = tl.data.get(API_TRACK_SUB_TRACKS, [])
-            for st in sts:
-                st_title = f'{track_title}-{st.get(API_TITLE)}'
-                st_track_pos = st.get(API_POSITION, track_pos)
-                st_track_artist = st.get(API_POSITION, track_artist)
-                self.store_track_info(eats, ea_dict, st_track_pos, st_title, st_track_artist)
-
-        elif track_type != API_TRACK_TYPE_TRACK:
-            self.writelog(f"Skipping track type \"{track_type}\" found for {self.current_record.id}-{track_title}, pos={track_pos}")
-            return False
-        return self.store_track_info(eats, ea_dict, track_pos, track_title, track_artist)
 
     def store_track_info(self, ea_dict, eats, track_pos, track_title, track_artists):
 
@@ -875,13 +806,17 @@ class OtsDiscogsToCsv:
             ea_name = self.fix_artist_name(ea.get(API_NAME))
             ea_role = ea.get(API_ROLE, '')
             if ea_role: 
-                #rolelist = [r.strip() for r in ea_role.split(',')]
                 rolelist = self.split_roles(ea_role)
                 for role in rolelist:
                     if self.is_written_by_in_role(role):
-                        self.writelog(f'Top-Level written-by/composed-by {role}')
-                        if ea_name not in self.current_record.album_written_by:
-                            self.current_record.album_written_by.append(ea_name)
+                        tracks = ea.get(API_TRACKS, None)
+                        # TODO: for now, just log album-level written-by 
+                        if tracks:
+                            self.writelog(f'Top-Level written-by/composed-by with track positions specified: {ea_name}, {role} : {tracks}')
+                        else:
+                            self.writelog(f'Top-Level written-by/composed-by {ea_name}: {role}')
+                            if ea_name not in self.current_record.album_written_by:
+                                self.current_record.album_written_by.append(ea_name)
                     if not self.ignore_role(role):
                         if role not in self.all_roles:
                             self.all_roles.append(role)
@@ -941,13 +876,12 @@ class OtsDiscogsToCsv:
             self.writelog(f"Track title not found")
             return False
 
-        written_by = []
-        self.current_record.tracklist[track_title] =  (track_artists, written_by)
+        ti = TrackInfo(position=track_pos, performed_by=track_artists)
+        self.current_record.tracklist[track_title] =  ti
         if not extraartists: 
-            #self.writelog(f"Extra artists not found for track {track_title}")
             if self.current_record.album_written_by:
                 self.writelog(f"Using album written by for track {track_title}: {self.current_record.album_written_by}")
-                written_by.extend(self.current_record.album_written_by)
+                ti.written_by.extend(self.current_record.album_written_by)
             return
 
         for ea in extraartists:
@@ -965,14 +899,14 @@ class OtsDiscogsToCsv:
                     if not self.ignore_role(role):
                         if self.is_written_by_in_role(role):
                             if ea_name not in written_by:
-                                written_by.append(ea_name)
+                                ti.written_by.append(ea_name)
                         else:
                             roles = self.current_record.credits.setdefault(ea_name, [])
                             if role not in roles:
                                 roles.append(role)
-        if not written_by:
+        if not ti.written_by:
             self.writelog(f"Using album written by for track {track_title}: {self.current_record.album_written_by}")
-            written_by.extend(self.current_record.album_written_by)
+            ti.written_by.extend(self.current_record.album_written_by)
 
     def csv_headers(self):
         return dict(headers)
@@ -1007,12 +941,12 @@ class OtsDiscogsToCsv:
         
     def csv_tracklist(self, tracklist) -> str:
         tracklist_str = ''
-        for title, (performed_by, written_by) in tracklist.items():
-            written_by_str = ",".join(f'{w}' for w in written_by)
+        for title, track_info in tracklist.items():
+            written_by_str = ",".join(f'{w}' for w in track_info.written_by)
             if written_by_str:
                 written_by_str = f'Written by {written_by_str}'
-            if performed_by:
-                performed_by_str = f'Performed by {performed_by}'
+            if track_info.performed_by:
+                performed_by_str = f'Performed by {track_info.performed_by}'
             else:
                 performed_by_str = ''
             if tracklist_str:
@@ -1033,6 +967,32 @@ class OtsDiscogsToCsv:
             credit_str += f'{artist}{roles_str}'
 
         return credit_str
+
+    # written_by: text like: "A1, A3-A5" (or A3 to A5)
+    def expand_tracks(self, tracks, track_list):
+
+        track_positions = [t.position for t in track_list.values()]
+        
+        expanded_positions = []
+        for pos in re.split(",|;", tracks):
+            pos = pos.strip()
+            pos_range = re.split("-|to", pos)
+            if len(pos_range) == 1:
+                if pos in track_positions and pos not in expanded_positions:
+                    expanded_positions.append(pos)
+            elif len(pos_range) == 2:
+                if pos_range[0] not in track_positions:
+                    return []
+                if pos_range[1] not in track_positions:
+                    return []
+                index_low = track_positions.index(pos_range[0])
+                index_high = track_positions.index(pos_range[1])
+                if index_low > index_high:
+                    return []
+                for index in range(index_low, index_high):
+                    expanded_positions = track_positions[index]
+
+        return expanded_positions
 
 
 if __name__ == "__main__":

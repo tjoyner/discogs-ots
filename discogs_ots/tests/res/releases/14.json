@@ -10,10 +10,7 @@
   "formats": [
     {
       "name": "LP",
-      "qty": "1",
-      "descriptions": [
-        "Album"
-      ]
+      "qty": "1"
     }
   ],
   "master_id": 1014,

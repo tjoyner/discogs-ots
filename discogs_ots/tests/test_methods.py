@@ -2,6 +2,7 @@ import pytest
 import re
 import sys
 from discogs_ots import OtsDiscogsToCsv
+from discogs_ots import TrackInfo
 
 # remove for now, not needed?
 def dont_test_sort(monkeypatch):
@@ -79,3 +80,22 @@ def test_split_roles(monkeypatch):
     assert s.split_roles("a, b[this is a longer list, with a comma], cdefg") == ["a", "b[this is a longer list, with a comma]", "cdefg"]
 
     assert s.split_roles("Photography By [Pages 11, 12]") == ["Photography By [Pages 11, 12]"]
+
+def test_expand_track_positions(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-id", "11111", "-ua", "testus"])
+    s = OtsDiscogsToCsv()
+    track_list = {
+            'track 1' : TrackInfo(position='a1'),
+            'track 2' : TrackInfo(position='a2'),
+            'track 3' : TrackInfo(position='b1'),
+            'track 4' : TrackInfo(position='b2'),
+            'track 5' : TrackInfo(position='b3'),
+            'track 6' : TrackInfo(position='6')
+            }
+    s.expand_tracks("a1, a2", track_list) == ["a1", "a2"]
+    s.expand_tracks("a1; a2", track_list) == ["a1", "a2"]
+    s.expand_tracks("a1 to a2", track_list) == ["a1", "a2"]
+    s.expand_tracks("a1 to b1", track_list) == ["a1", "a2", "b1"]
+    s.expand_tracks("a1 - b2", track_list) == ["a1", "a2", "b1", "b2"]
+    s.expand_tracks("a1-a2", track_list) == ["a1", "a2"]
+    s.expand_tracks("b2 to 6", track_list) == ["b2", "b3", "6"]
