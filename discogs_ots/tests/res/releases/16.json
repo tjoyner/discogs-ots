@@ -1,0 +1,239 @@
+{
+  "_comment": "Album Level Tracks",
+  "status": "Accepted",
+  "styles": [
+    "Trad Classical"
+  ],
+  "genres": [
+    "Deep Vibe",
+    "Shoe Gaze"
+  ],
+  "formats": [
+    {
+      "name": "LP",
+      "qty": "1",
+      "descriptions": [
+        "Album"
+      ]
+    },
+    {
+      "name": "Gramophone",
+      "qty": "1",
+      "descriptions": [
+        "Wax"
+      ]
+    }
+  ],
+ "extraartists": [
+    {
+      "name": "I P Freely",
+      "anv": "",
+      "join": "",
+      "role": "Guitar",
+      "tracks": "A1",
+      "id": 404498,
+      "resource_url": "https://api.discogs.com/artists/151"
+    },
+    {
+      "name": "John Dough",
+      "anv": "",
+      "join": "",
+      "role": "Engineer",
+      "tracks": "",
+      "id": 404499,
+      "resource_url": "https://api.discogs.com/artists/152"
+    },
+    {
+      "name": "Free Byrd",
+      "anv": "",
+      "join": "",
+      "role": "Written-By",
+      "tracks": "",
+      "id": 273922,
+      "resource_url": "https://api.discogs.com/artists/273922"
+    },
+    {
+      "name": "Song Writer Jr.",
+      "anv": "",
+      "join": "",
+      "role": "Written By",
+      "tracks": "A3",
+      "id": 273922,
+      "resource_url": "https://api.discogs.com/artists/273922"
+    },
+    {
+      "name": "Writer of A1 and A4",
+      "anv": "",
+      "join": "",
+      "role": "Written By",
+      "tracks": "A1, A4",
+      "id": 273922,
+      "resource_url": "https://api.discogs.com/artists/273922"
+    },
+    {
+      "name": "Co-Writer of A4",
+      "anv": "",
+      "join": "",
+      "role": "Written By",
+      "tracks": "A4",
+      "id": 273922,
+      "resource_url": "https://api.discogs.com/artists/273922"
+    },
+    {
+      "name": "Writer of A5-A6",
+      "anv": "",
+      "join": "",
+      "role": "Written By",
+      "tracks": "A5 to A6",
+      "id": 273922,
+      "resource_url": "https://api.discogs.com/artists/273922"
+    }
+  ],
+  "title": "Release with Extra Artists",
+  "released_formatted": "2015",
+  "labels": [
+    {
+      "name": "First Label",
+      "entity_type": "1",
+      "catno": "CAT-1",
+      "id": 1818,
+      "entity_type_name": "Label"
+    }
+  ],
+  "companies": [],
+  "artists": [
+    {
+      "join": "&",
+      "name": "Porch Chops",
+      "anv": "",
+      "tracks": "",
+      "role": "",
+      "id": 95780
+    },
+    {
+      "join": "",
+      "name": "Tom J",
+      "anv": "",
+      "tracks": "",
+      "role": "",
+      "id": 216524
+    }
+  ],
+  "released": "2015",
+  "country": "UK",
+  "year": 2015,
+  "tracklist": [
+    {
+      "duration": "5:30",
+      "position": "A1",
+      "type_": "track",
+      "artists": [
+        {
+          "join": "",
+          "name": "Some Guy",
+          "anv": "",
+          "tracks": "",
+          "role": "",
+          "id": 216524
+        }
+      ],
+      "title": "Title 1"
+    },
+    {
+      "duration": "5:46",
+      "position": "A2",
+      "type_": "track",
+      "artists": [
+        {
+          "join": ",",
+          "name": "Tom I Aint",
+          "anv": "",
+          "tracks": "",
+          "role": "",
+          "id": 95780
+        },
+        {
+          "join": "",
+          "name": "Tom I Am Not",
+          "anv": "",
+          "tracks": "",
+          "role": "",
+          "id": 95780
+        }
+      ],
+      "title": "Scusa"
+    },
+    {
+      "duration": "3:42",
+      "position": "A3",
+      "type_": "track",
+      "title": "Title with, comma"
+    },
+    {
+      "duration": "3:36",
+      "position": "A4",
+      "type_": "track",
+      "artists": [
+        {
+          "join": ",",
+          "name": "Winken",
+          "anv": "",
+          "tracks": "",
+          "role": "",
+          "id": 95780
+        },
+        {
+          "join": ", and",
+          "name": "Blinken",
+          "anv": "",
+          "tracks": "",
+          "role": "",
+          "id": 95780
+        },
+        {
+          "join": "",
+          "name": "Nod",
+          "anv": "",
+          "tracks": "",
+          "role": "",
+          "id": 95780
+        }
+      ],
+      "title": "We're Number 4"
+    },
+    {
+      "duration": "3:41",
+      "position": "A5",
+      "type_": "track",
+      "artists": [
+        {
+          "join": ",",
+          "name": "Unknown",
+          "anv": "",
+          "tracks": "",
+          "role": "",
+          "id": 95780
+        }
+      ],
+      "title": "Penultimate Tune"
+    },
+    {
+      "duration": "4:38",
+      "position": "A6",
+      "type_": "track",
+      "artists": [
+        {
+          "join": "",
+          "name": "Anonymous",
+          "anv": "",
+          "tracks": "",
+          "role": "",
+          "id": 95780
+        }
+      ],
+      "title": "Finally, \"right?\""
+    }
+  ],
+  "id": 16,
+  "data_quality": "Needs Vote"
+}

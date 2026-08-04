@@ -210,7 +210,6 @@ def test_load_release_with_master_tracklist(monkeypatch, discogs_connection):
 # Top-level extra artists
 def test_record_extraartists(monkeypatch, discogs_connection):
 
-    # No extra artists
     monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-cm", "-id", "15", "-ua", "testus" ])
     d = discogs_connection
     s = OtsDiscogsToCsv(d)
@@ -242,7 +241,7 @@ def test_record_extraartists(monkeypatch, discogs_connection):
     title, track_info = next(iterator)
     assert title == "Title with, comma"
     assert track_info.performed_by == "Porch Chops & Tom J"
-    assert track_info.written_by == ['Free Byrd'] 
+    assert track_info.written_by == ['Song Writer Jr.'] 
     
     title, track_info = next(iterator)
     assert title == "We're Number 4"
@@ -258,6 +257,63 @@ def test_record_extraartists(monkeypatch, discogs_connection):
     assert title == "Finally, \"right?\""
     assert track_info.performed_by == "Anonymous"
     assert track_info.written_by == ['Free Byrd'] 
+
+    assert s.csv_rows[15].strip() == '15,Porch Chops & Tom J,Release with Extra Artists,LP [Album]|Gramophone [Wax],First Label [CAT-1],UK,2005,Deep Vibe|Shoe Gaze,Trad Classical,"Title 1++Performed by Some Guy++Written by Free Byrd|Scusa++Performed by Tom I Aint, Tom I Am Not++Written by Free Byrd|Title with, comma++Performed by Porch Chops & Tom J++Written by Song Writer Jr.|We\'re Number 4++Performed by Winken, Blinken, and Nod++Written by Free Byrd|Penultimate Tune++Performed by Unknown++Written by Free Byrd|Finally, ""right?""++Performed by Anonymous++Written by Free Byrd",I P Freely[Guitar]|John Dough[Engineer]|Free Byrd[Written-By]|Song Writer Jr.[Written By]'
+
+    assert s.st.has_ea_only_in_record == 1
+    assert s.st.has_tl_only_in_record == 1
+    assert s.st.has_tl_only_in_master == 0
+
+# Top-level written-by with specific tracks
+def test_record_extraartists_with_tracks(monkeypatch, discogs_connection):
+
+    monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-cm", "-id", "16", "-ua", "testus" ])
+    d = discogs_connection
+    s = OtsDiscogsToCsv(d)
+    s.run()
+    cr = s.current_record
+    assert cr.id == 16
+    assert cr.artists == "Porch Chops & Tom J"
+    assert cr.title == "Release with Extra Artists"
+    assert cr.formats == "LP [Album]|Gramophone [Wax]"
+    assert cr.labels == "First Label [CAT-1]"
+    assert cr.country == "UK"
+    assert cr.year == 2015
+    assert cr.genres == "Deep Vibe|Shoe Gaze"
+    assert cr.styles == "Trad Classical"
+
+    tl = cr.tracklist
+    assert len(tl) == 6
+    iterator = iter(tl.items())
+    title, track_info = next(iterator)
+    assert title == "Title 1"
+    assert track_info.performed_by == "Some Guy"
+    assert track_info.written_by == ['Writer of A1 and A4'] 
+    
+    title, track_info = next(iterator)
+    assert title == "Scusa"
+    assert track_info.performed_by == "Tom I Aint, Tom I Am Not"
+    assert track_info.written_by == ['Free Byrd'] 
+    
+    title, track_info = next(iterator)
+    assert title == "Title with, comma"
+    assert track_info.performed_by == "Porch Chops & Tom J"
+    assert track_info.written_by == ['Song Writer Jr.'] 
+    
+    title, track_info = next(iterator)
+    assert title == "We're Number 4"
+    assert track_info.performed_by == "Winken, Blinken, and Nod"
+    assert track_info.written_by == ['Writer of A1 and A4', 'Co-Writer of A4'] 
+    
+    title, track_info = next(iterator)
+    assert title == "Penultimate Tune"
+    assert track_info.performed_by == "Unknown"
+    assert track_info.written_by == ['Writer of A5-A6'] 
+
+    title, track_info = next(iterator)
+    assert title == "Finally, \"right?\""
+    assert track_info.performed_by == "Anonymous"
+    assert track_info.written_by == ['Writer of A5-A6'] 
 
     assert s.st.has_ea_only_in_record == 1
     assert s.st.has_tl_only_in_record == 1
