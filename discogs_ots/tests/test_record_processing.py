@@ -1,6 +1,9 @@
 import pytest
 import sys
+import tempfile
+import textwrap
 import os
+from dataclasses import dataclass
 from discogs_ots import OtsDiscogsToCsv
 from discogs_client import Client
 from discogs_client.fetchers import LoggingDelegator, FilesystemFetcher
@@ -318,6 +321,114 @@ def test_record_extraartists_with_tracks(monkeypatch, discogs_connection):
     assert s.st.has_ea_only_in_record == 1
     assert s.st.has_tl_only_in_record == 1
     assert s.st.has_tl_only_in_master == 0
+
+def test_record_list(monkeypatch, discogs_connection):
+    with tempfile.NamedTemporaryFile(mode='w+t', suffix='.txt', delete=False) as temp_file:
+        try:
+            temp_file.write("14\n15")
+            temp_file.close() # Ensure data is written to disk
+            monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-cm", "-i", f"{temp_file.name}", "-ua", "testus" ])
+            d = discogs_connection
+            s = OtsDiscogsToCsv(d)
+            s.run()
+            assert 14 in s.csv_rows
+            assert 15 in s.csv_rows
+            assert 16 not in s.csv_rows
+        finally:
+            os.remove(temp_file.name)
+
+    # Same test with cfg file
+    with tempfile.NamedTemporaryFile(mode='w+t', suffix='.txt', delete=False) as temp_file, tempfile.NamedTemporaryFile(mode='w+t', suffix='.cfg', delete=False) as cfg_file:
+        try:
+            cfg = textwrap.dedent(f"""
+                [api]
+                user_token = 
+                user_agent = userage
+
+                [settings]
+                input_file = {temp_file.name}
+            """)
+
+            cfg_file.write(cfg)
+            cfg_file.close() # Ensure data is written to disk
+
+            temp_file.write("14\n16")
+            temp_file.close() # Ensure data is written to disk
+
+            monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-cm", "-i", f"{temp_file.name}", "-c", f"{cfg_file.name}"])
+            d = discogs_connection
+            s = OtsDiscogsToCsv(d)
+            s.run()
+            assert 14 in s.csv_rows
+            assert 15 not in s.csv_rows
+            assert 16 in s.csv_rows
+        finally:
+            os.remove(temp_file.name)
+            os.remove(cfg_file.name)
+
+@dataclass
+class MockRelease:
+    id: int
+
+def test_record_query(monkeypatch, discogs_connection):
+    monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-cm", "-qi", "-ua", "testus", "-ut", "1234567890" ])
+    d = discogs_connection
+    s = OtsDiscogsToCsv(d)
+    my_releases = [
+            MockRelease(15),
+            MockRelease(16),
+            ]
+
+    s.my_releases=my_releases
+    s.run()
+    assert 14 not in s.csv_rows
+    assert 15 in s.csv_rows
+    assert 16 in s.csv_rows
+
+def test_new_records_only(monkeypatch, discogs_connection):
+    with tempfile.NamedTemporaryFile(mode='w+t', suffix='.txt', delete=False) as input_file:
+        try:
+            input_file.write("14\n15")
+            input_file.close() # Ensure data is written to disk
+            monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-cm", "-nro", "-qi", "-i", f"{input_file.name}", "-ua", "testus", "--user-token", "1334343" ])
+            d = discogs_connection
+            s = OtsDiscogsToCsv(d)
+
+            my_releases = [
+                MockRelease(14),
+                MockRelease(15),
+                MockRelease(16),
+            ]
+            s.my_releases=my_releases
+
+            s.run()
+            assert 14 not in s.csv_rows
+            assert 15 not in s.csv_rows
+            assert 16 in s.csv_rows
+        finally:
+            os.remove(input_file.name)
+
+    with tempfile.NamedTemporaryFile(mode='w+t', suffix='.txt', delete=False) as input_file:
+        try:
+            input_file.write("14")
+            input_file.close() # Ensure data is written to disk
+            monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-cm", "-nro", "-qi", "-i", f"{input_file.name}", "-ua", "testus", "--user-token", "1334343" ])
+            d = discogs_connection
+            s = OtsDiscogsToCsv(d)
+
+            my_releases = [
+                MockRelease(14),
+                MockRelease(15),
+                MockRelease(16),
+            ]
+            s.my_releases=my_releases
+
+            s.run()
+            assert 14 not in s.csv_rows
+            assert 15 in s.csv_rows
+            assert 16 in s.csv_rows
+        finally:
+            os.remove(input_file.name)
 
 
 

@@ -93,18 +93,25 @@ def test_expand_track_positions(monkeypatch):
             'track 6' : TrackInfo(position='6')
             }
     track_positions = [t.position for t in track_list.values()]
-    assert s.expand_tracks("a1, a2", track_positions) == ["a1", "a2"]
-    assert s.expand_tracks("a1; a2", track_positions) == ["a1", "a2"]
-    assert s.expand_tracks("a1 to a2", track_positions) == ["a1", "a2"]
-    assert s.expand_tracks("a1 to b1", track_positions) == ["a1", "a2", "b1"]
-    assert s.expand_tracks("a1 - b2", track_positions) == ["a1", "a2", "b1", "b2"]
-    assert s.expand_tracks("a1-a2", track_positions) == ["a1", "a2"]
-    assert s.expand_tracks("b2 to 6", track_positions) == ["b2", "b3", "6"]
-    assert s.expand_tracks("b2 to b2", track_positions) == ["b2"]
+    assert s.expand_tracks("a1, a2", track_positions) == (["a1", "a2"], False)
+    assert s.expand_tracks("a1; a2", track_positions) == (["a1", "a2"], False)
+    assert s.expand_tracks("a1 to a2", track_positions) == (["a1", "a2"], True)
+    assert s.expand_tracks("a1 to b1", track_positions) == (["a1", "a2", "b1"], True)
+    assert s.expand_tracks("a1 - b2", track_positions) == (["a1", "a2", "b1", "b2"], True)
+    assert s.expand_tracks("a1-a2", track_positions) == (["a1", "a2"], True)
+    assert s.expand_tracks("b2 to 6", track_positions) == (["b2", "b3", "6"], True)
+    assert s.expand_tracks("b2 to b2", track_positions) == (["b2"], True)
 
-    assert s.expand_tracks("A5 to A6", ["A1", "A2", "A3", "A4", "A5", "A6"]) == ["A5", "A6"]
+    assert s.expand_tracks("A5 to A6", ["A1", "A2", "A3", "A4", "A5", "A6"]) == (["A5", "A6"], True)
     # Some invalid cases
-    assert s.expand_tracks("b2 to 7", track_positions) == []
-    assert s.expand_tracks("a2 to a1", track_positions) == []
-    assert s.expand_tracks("b1 to a2", track_positions) == []
-    assert s.expand_tracks("1 to 6", track_positions) == []
+    assert s.expand_tracks("b2 to 7", track_positions) == ([], True)
+    assert s.expand_tracks("a2 to a1", track_positions) == ([], True)
+    assert s.expand_tracks("b1 to a2", track_positions) == ([], True)
+    assert s.expand_tracks("1 to 6", track_positions) == ([], True)
+    assert s.expand_tracks("C1", track_positions) == ([], False)
+
+    # track positions contain dash
+    track_positions = ["1-1", "1-2", "1-3", "2-1"]
+    assert s.expand_tracks("1-1, 1-2", track_positions) == (["1-1", "1-2"], False)
+    assert s.expand_tracks("1-1 to 1-3", track_positions) == (["1-1", "1-2", "1-3"], True)
+

@@ -75,7 +75,7 @@ headers = {
 CFG_SETTINGS="settings"
 CFG_API="api"
 
-CFG_SINGLE_ID="single_id"
+CFG_RECORD_ID="record_id"
 CFG_INPUT_FILE="input_file"
 CFG_OUTPUT_FILE="output_file"
 CFG_LOG_FILE="log_file"
@@ -178,12 +178,13 @@ class OtsDiscogsToCsv:
     # test cases will pass a test client
     def __init__(self, discogs_test_client=None):
         self.requests=0
-        self.file=None
-        self.outfile = None
-        self.single_id = 0
+        self.record_id = 0
+        self.d = None
 
         # Use for testing
         self.test_case = False
+        self.my_releases = None
+
         # dict record id : csv row
         self.csv_rows = {}
 
@@ -216,16 +217,16 @@ class OtsDiscogsToCsv:
         elif config and config.has_option(CFG_SETTINGS,CFG_OUTPUT_FILE):
             output_file = config[CFG_SETTINGS][CFG_OUTPUT_FILE]
 
-        self.file = None
+        self.input_file = None
         if args.input_file:
-            self.file = args.input_file
+            self.input_file = args.input_file
         if config and config.has_option(CFG_SETTINGS,CFG_INPUT_FILE):
-            self.file = config[CFG_SETTINGS][CFG_INPUT_FILE]
+            self.input_file = config[CFG_SETTINGS][CFG_INPUT_FILE]
 
         if args.record_id:
-            self.single_id = args.record_id
+            self.record_id = args.record_id
         elif config and config.has_option(CFG_SETTINGS,CFG_OUTPUT_FILE):
-            self.single_id = config[CFG_SETTINGS][CFG_SINGLE_ID]
+            self.record_id = config[CFG_SETTINGS][CFG_RECORD_ID]
 
         log_file = None
         if args.log_file:
@@ -318,8 +319,12 @@ class OtsDiscogsToCsv:
             print ("A user token is required for the query option")
             sys.exit(1)
 
+        if not self.new_records_only and (self.query_for_ids and self.input_file):
+            print ("Only one of input-file and query-for-ids can be entered")
+            sys.exit(1)
+
         if self.new_records_only and (not self.query_for_ids or not self.input_file):
-            print ("New records requires an input record list and query-for-ids")
+            print ("New records also requires an input record list and query-for-ids")
             sys.exit(1)
 
 
@@ -331,20 +336,24 @@ class OtsDiscogsToCsv:
 
         self.st = AllStats()
 
-        if self.single_id:
-            self.get_record_data(self.single_id)
+        if self.record_id:
+            self.get_record_data(self.record_id)
             self.st.records = 1
             self.log_final_stats()
             return
 
 
+        my_releases = []
         if self.query_for_ids:
-            me = self.d.identity()
-            my_releases = me.collection_folders[0].releases
+            if self.test_case:
+                my_releases = self.my_releases
+            else:
+                me = self.d.identity()
+                my_releases = me.collection_folders[0].releases
 
             records_to_skip = [] 
             if self.new_records_only:
-                with open(self.file, mode='r', newline='', encoding='utf-8') as file:
+                with open(self.input_file, mode='r', newline='', encoding='utf-8') as file:
                     for row in file:
                         record_id = row.split(',', 1)[0]
                         if record_id:
@@ -367,7 +376,7 @@ class OtsDiscogsToCsv:
                     if self.get_record_data(r.id):
                         self.st.records += 1
         else:
-            with open(self.file, mode='r', newline='', encoding='utf-8') as file:
+            with open(self.input_file, mode='r', newline='', encoding='utf-8') as file:
                 # Iterate through each row
                 for row in file:
                     record_id = row.split(',', 1)[0]
@@ -515,7 +524,7 @@ class OtsDiscogsToCsv:
         for format in self.release.formats:
             name = format.get(API_NAME, "").strip()
             qty = format.get(API_QTY, "1").strip()
-            desc = ", ".join(format.get(API_DESCRIPTIONS, []))
+            desc = ", ".join(format.get(API_DESCRIPTIONS) or [])
             if desc:
                 desc = f' [{desc}]'
             #format_entries.append(f"{qty}x {name}{desc}")
@@ -565,21 +574,21 @@ class OtsDiscogsToCsv:
         )
 
         # Group for input options (Mutually exclusive means you must pick ONE)
-        input_group = parser.add_mutually_exclusive_group(required=True)
+        #input_group = parser.add_mutually_exclusive_group(required=True)
         
-        input_group.add_argument(
+        parser.add_argument(
             '-i', '--input-file', 
             type=str, 
             help="Path to the input file containing a list of Discogs IDs."
         )
         
-        input_group.add_argument(
+        parser.add_argument(
             '-id', '--record-id', 
             type=int, 
             help="A single Discogs Record/Release ID to process."
         )
         
-        input_group.add_argument(
+        parser.add_argument(
             '-qi', '--query-for-ids', 
             action='store_true',
             help="Query discogs for the record_ids. user_token must be specified"
@@ -625,13 +634,13 @@ class OtsDiscogsToCsv:
         parser.add_argument(
             '-lar', '--log-all-roles', 
             action='store_true', 
-            help="Log all roles encountered, not including ignored roles"
+            help="Log all roles encountered, not including ignored roles."
         )
 
         parser.add_argument(
             '-nro', '--new-records-only', 
             action='store_true', 
-            help="Only get records that aren't in the input list. Requires --query-for-ids"
+            help="Only get records that aren't in the input list. Requires --query-for-ids and --input-file."
         )
 
         parser.add_argument(
@@ -867,7 +876,7 @@ class OtsDiscogsToCsv:
                     for role in rolelist:
                         if not self.ignore_role(role):
                             if self.is_written_by_in_role(role):
-                                if ea_name not in written_by:
+                                if ea_name not in ti.written_by:
                                     ti.written_by.append(ea_name)
                             else:
                                 roles = self.current_record.credits.setdefault(ea_name, [])
@@ -887,10 +896,12 @@ class OtsDiscogsToCsv:
         if self.current_record.album_written_by_tracks:
             # convert artists -> track_positions to track_positions -> artists
             for artist, tracks in self.current_record.album_written_by_tracks.items():
-                expanded_positions = self.expand_tracks(tracks, track_positions)
+                (expanded_positions, range_found) = self.expand_tracks(tracks, track_positions)
                 if not expanded_positions:
-                    self.writelog(f"Could not expand tracks ({tracks}) for {artist}")
+                    self.writelog(f"Could not expand tracks ({tracks}) for {artist}. Track positions={track_positions}")
                 else:
+                    if range_found:
+                        self.writelog(f"Expanded ({tracks}) for {artist} to {expanded_positions}")
                     for p in expanded_positions:
                         written_by = track_pos_to_artists.setdefault(p, [])
                         written_by.append(artist)
@@ -983,27 +994,36 @@ class OtsDiscogsToCsv:
     # written_by: text like: "A1, A3-A5" (or A3 to A5)
     def expand_tracks(self, tracks, track_positions):
 
+        # Some albums label tracks with a dash. If so, don't assume it's a range
+        dash_in_track_position = any("-" in tp for tp in track_positions)
+        range_chars = "-|to"
+        if dash_in_track_position: 
+            range_chars = "to"
+
         expanded_positions = []
+        range_found = False
         for pos in re.split(",|;", tracks):
             pos = pos.strip()
-            pos_range = re.split("-|to", pos)
+            pos_range = re.split(range_chars, pos)
             if len(pos_range) == 1:
                 if pos in track_positions and pos not in expanded_positions:
                     expanded_positions.append(pos)
             elif len(pos_range) == 2:
+                range_found = True
                 r1 = pos_range[0].strip()
                 r2 = pos_range[1].strip()
                 if r1 not in track_positions:
-                    return []
+                    return ([], range_found)
                 if r2 not in track_positions:
-                    return []
+                    return ([], range_found)
                 index_low = track_positions.index(r1)
                 index_high = track_positions.index(r2)
                 if index_low > index_high:
-                    return []
+                    return ([], range_found)
+
                 expanded_positions.extend(track_positions[index_low : index_high+1])
 
-        return expanded_positions
+        return expanded_positions, range_found
 
 
 if __name__ == "__main__":
