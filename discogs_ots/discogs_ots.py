@@ -113,9 +113,9 @@ class RecordInfo:
 
     title: str = ''
 
-    formats: str = ''
+    formats:  list = field(default_factory=list) 
 
-    labels: str = ''
+    labels:  list = field(default_factory=list) 
 
     country: str = ''
     year: str = ''
@@ -530,41 +530,32 @@ class OtsDiscogsToCsv:
 
 
     def store_formats(self):
-        if not self.release.formats:
-            return
-
-        format_entries = []
 
         for format in self.release.formats:
             name = format.get(API_NAME, "").strip()
-            qty = format.get(API_QTY, "1").strip()
+            qty = format.get(API_QTY, "").strip()
+            if qty == "1":
+                qty = ""
+            elif qty:
+                qty = f"{qty} "
             desc = ", ".join(format.get(API_DESCRIPTIONS) or [])
             if desc:
                 desc = f' [{desc}]'
             #format_entries.append(f"{qty}x {name}{desc}")
-            # FIXME: is qty needed?
-            format_entries.append(f"{name}{desc}")
+            self.current_record.formats.append(f"{qty}{name}{desc}")
 
-        self.current_record.formats = f"{CSV_ITEM_SEPARATOR1}".join(format_entries)
+        #self.current_record.formats = f"{CSV_ITEM_SEPARATOR1}".join(format_entries)
 
     def store_labels(self):
-        if not self.release.labels:
-            return
-
-        label_entries = []
 
         for label in self.release.labels:
             name = label.name.strip()
             #name = label.get(API_NAME, "").strip()
-            catno = label.catno.strip()
+            #catno = label.catno.strip()
     
             # Format as "Label Name [Catalog Number]"
-            if catno and catno.lower() != "none":
-                label_entries.append(f"{name} [{catno}]")
-            elif name:
-                label_entries.append(name)
+            self.current_record.labels.append(name)
 
-        self.current_record.labels = f"{CSV_ITEM_SEPARATOR1}".join(label_entries)
 
     def fix_artist_name(self, artist_name):
         if artist_name == None:
@@ -960,8 +951,15 @@ class OtsDiscogsToCsv:
         row[CSV_RELEASE_ID] = f'{r.id}'
         row[CSV_ARTIST] = r.artists
         row[CSV_TITLE] = r.title
-        row[CSV_FORMATS] = r.formats
-        row[CSV_LABELS] = r.labels
+        formats = ''
+        if r.formats:
+            formats = f"{CSV_ITEM_SEPARATOR1}".join(r.formats)
+        row[CSV_FORMATS] = formats
+        labels = ''
+        print (f'tom: {r.labels}')
+        if r.labels:
+            labels = f"{CSV_ITEM_SEPARATOR1}".join(r.labels)
+        row[CSV_LABELS] = labels
         row[CSV_COUNTRY] = r.country
         row[CSV_YEAR] = r.year
         row[CSV_GENRES] = r.genres

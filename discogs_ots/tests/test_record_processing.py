@@ -31,9 +31,9 @@ def test_load_release(monkeypatch, discogs_connection):
     assert cr.id == 12345
     assert cr.artists == "Steve Earle"
     assert cr.title == "Transcendental Blues"
-    assert cr.formats == "CD [HDCD, Album]"
+    assert cr.formats == ["CD [HDCD, Album]"]
     #assert cr.label == "E-Squared, Artemis Records"
-    assert cr.labels ==  "E-Squared [751033-2]|Artemis Records [751033-2]"
+    assert cr.labels ==  ["E-Squared", "Artemis Records"]
     assert cr.country == "US"
     assert cr.year == 2000
     assert cr.genres == "Rock|Folk, World, & Country"
@@ -55,8 +55,8 @@ def test_load_release(monkeypatch, discogs_connection):
     assert cr.id == 12
     assert cr.artists == "Porch Chops & Tom J"
     assert cr.title == "No Extra Artists"
-    assert cr.formats == "LP [MP3, Album]"
-    assert cr.labels == "First Label [CAT-1]"
+    assert cr.formats == ["LP [MP3, Album]"]
+    assert cr.labels == ["First Label"]
     assert cr.country == "UK"
     assert cr.year == 2005
     assert cr.genres == "Electronic|Shoe Gaze"
@@ -114,8 +114,8 @@ def test_load_release_with_check_master(monkeypatch, discogs_connection):
     assert cr.id == 13
     assert cr.artists == "Porch Chops & Tom J"
     assert cr.title == "Release + Master, No Extra Artists"
-    assert cr.formats == "LP [Album]"
-    assert cr.labels == "First Label [CAT-1]|Second Label [CAT-2]"
+    assert cr.formats == ["LP [Album]"]
+    assert cr.labels == ["First Label", "Second Label"]
     assert cr.country == "UK"
     assert cr.year == 2005
     assert cr.genres == "Acid Shoe Gaze"
@@ -167,8 +167,8 @@ def test_load_release_with_master_tracklist(monkeypatch, discogs_connection):
     assert cr.id == 14
     assert cr.artists == "Porch Chops & Tom J"
     assert cr.title == "Release + Master, No Track List"
-    assert cr.formats == "LP"
-    assert cr.labels == "First Label [CAT-1]|Second Label [CAT-2]"
+    assert cr.formats == ["LP"]
+    assert cr.labels == ["First Label", "Second Label"]
     assert cr.country == "UK"
     assert cr.year == 2005
     assert cr.genres == "Acid Shoe Gaze"
@@ -221,8 +221,8 @@ def test_record_extraartists(monkeypatch, discogs_connection):
     assert cr.id == 15
     assert cr.artists == "Porch Chops & Tom J"
     assert cr.title == "Release with Extra Artists"
-    assert cr.formats == "LP [Album]|Gramophone [Wax]"
-    assert cr.labels == "First Label [CAT-1]"
+    assert cr.formats == ["LP [Album]", "Gramophone [Wax]"]
+    assert cr.labels == ["First Label"]
     assert cr.country == "UK"
     assert cr.year == 2005
     assert cr.genres == "Deep Vibe|Shoe Gaze"
@@ -261,7 +261,7 @@ def test_record_extraartists(monkeypatch, discogs_connection):
     assert track_info.performed_by == "Anonymous"
     assert track_info.written_by == ['Free Byrd'] 
 
-    assert s.csv_rows[15].strip() == '15,Porch Chops & Tom J,Release with Extra Artists,LP [Album]|Gramophone [Wax],First Label [CAT-1],UK,2005,Deep Vibe|Shoe Gaze,Trad Classical,"Title 1++Performed by Some Guy++Written by Free Byrd|Scusa++Performed by Tom I Aint, Tom I Am Not++Written by Free Byrd|Title with, comma++Performed by Porch Chops & Tom J++Written by Song Writer Jr.|We\'re Number 4++Performed by Winken, Blinken, and Nod++Written by Free Byrd|Penultimate Tune++Performed by Unknown++Written by Free Byrd|Finally, ""right?""++Performed by Anonymous++Written by Free Byrd",I P Freely[Guitar]|John Dough[Engineer]|Free Byrd[Written-By]|Song Writer Jr.[Written By]'
+    assert s.csv_rows[15].strip() == '15,Porch Chops & Tom J,Release with Extra Artists,LP [Album]|Gramophone [Wax],First Label,UK,2005,Deep Vibe|Shoe Gaze,Trad Classical,"Title 1++Performed by Some Guy++Written by Free Byrd|Scusa++Performed by Tom I Aint, Tom I Am Not++Written by Free Byrd|Title with, comma++Performed by Porch Chops & Tom J++Written by Song Writer Jr.|We\'re Number 4++Performed by Winken, Blinken, and Nod++Written by Free Byrd|Penultimate Tune++Performed by Unknown++Written by Free Byrd|Finally, ""right?""++Performed by Anonymous++Written by Free Byrd",I P Freely[Guitar]|John Dough[Engineer]|Free Byrd[Written-By]|Song Writer Jr.[Written By]'
 
     assert s.st.has_ea_only_in_record == 1
     assert s.st.has_tl_only_in_record == 1
@@ -278,8 +278,8 @@ def test_record_extraartists_with_tracks(monkeypatch, discogs_connection):
     assert cr.id == 16
     assert cr.artists == "Porch Chops & Tom J"
     assert cr.title == "Release with Extra Artists"
-    assert cr.formats == "LP [Album]|Gramophone [Wax]"
-    assert cr.labels == "First Label [CAT-1]"
+    assert cr.formats == ["LP [Album]", "Gramophone [Wax]"]
+    assert cr.labels == ["First Label"]
     assert cr.country == "UK"
     assert cr.year == 2015
     assert cr.genres == "Deep Vibe|Shoe Gaze"
