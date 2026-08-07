@@ -366,6 +366,24 @@ def test_record_list(monkeypatch, discogs_connection):
             os.remove(temp_file.name)
             os.remove(cfg_file.name)
 
+# If the input file is a (previously generated) csv, make sure extra data is ignored (only extract record ids)
+def test_record_list_from_csv(monkeypatch, discogs_connection):
+    with tempfile.NamedTemporaryFile(mode='w+t', suffix='.txt', delete=False) as temp_file:
+        try:
+            temp_file.write("record_id,\ntitle\n")
+            temp_file.write('14,"This is a title"\n')
+            temp_file.write('15 "This is another title with whitespace separator"\n')
+            temp_file.close() # Ensure data is written to disk
+            monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-cm", "-i", f"{temp_file.name}", "-ua", "testus" ])
+            d = discogs_connection
+            s = OtsDiscogsToCsv(d)
+            s.run()
+            assert 14 in s.csv_rows
+            assert 15 in s.csv_rows
+            assert 16 not in s.csv_rows
+        finally:
+            os.remove(temp_file.name)
+
 @dataclass
 class MockRelease:
     id: int

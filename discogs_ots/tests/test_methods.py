@@ -115,3 +115,12 @@ def test_expand_track_positions(monkeypatch):
     assert s.expand_tracks("1-1, 1-2", track_positions) == (["1-1", "1-2"], False)
     assert s.expand_tracks("1-1 to 1-3", track_positions) == (["1-1", "1-2", "1-3"], True)
 
+def test_fix_year(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-id", "11111", "-ua", "testus", "--ignore-roles", 'rolea, role b'])
+    s = OtsDiscogsToCsv()
+    assert s.fix_year("2016") == 2016
+    assert s.fix_year("2016.0") == 2016
+    assert s.fix_year("") == 0
+    assert s.fix_year("0") == 0
+    assert s.fix_year("0.0") == 0
+    assert s.fix_year("not") == 0

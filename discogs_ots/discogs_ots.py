@@ -319,14 +319,25 @@ class OtsDiscogsToCsv:
             print ("A user token is required for the query option")
             sys.exit(1)
 
-        if not self.new_records_only and (self.query_for_ids and self.input_file):
-            print ("Only one of input-file and query-for-ids can be entered")
-            sys.exit(1)
+        if self.new_records_only:
+            if not self.query_for_ids or not self.input_file:
+                print ("new-records-only also requires input-file and query-for-ids")
+                sys.exit(1)
+        else:
+            entered = 0
+            if self.query_for_ids:
+                entered += 1 
+            if self.input_file:
+                entered += 1 
+            if self.record_id:
+                entered += 1 
+            if entered > 1:
+                print ("Only one of input-file, query-for-ids, or record-id can be entered")
+                sys.exit(1)
 
-        if self.new_records_only and (not self.query_for_ids or not self.input_file):
-            print ("New records also requires an input record list and query-for-ids")
-            sys.exit(1)
-
+            if not self.record_id and not self.query_for_ids and not self.input_file:
+                print ("Enter input-file, query-for-ids or record-id")
+                sys.exit(1)
 
     def run(self):
         if not self.d:
@@ -355,12 +366,9 @@ class OtsDiscogsToCsv:
             if self.new_records_only:
                 with open(self.input_file, mode='r', newline='', encoding='utf-8') as file:
                     for row in file:
-                        record_id = row.split(',', 1)[0]
-                        if record_id:
-                            record_id = record_id.strip()
-                            record_id_i = self.to_int(record_id)
-                            if record_id_i > 0:
-                                records_to_skip.append(record_id_i)
+                        record_id_i = self.extract_record_id(row)
+                        if record_id_i and record_id_i > 0:
+                            records_to_skip.append(record_id_i)
 
             seen = {}
             duplicates = []
@@ -379,14 +387,20 @@ class OtsDiscogsToCsv:
             with open(self.input_file, mode='r', newline='', encoding='utf-8') as file:
                 # Iterate through each row
                 for row in file:
-                    record_id = row.split(',', 1)[0]
-                    if record_id:
-                        record_id = record_id.strip()
-        
-                    if self.get_record_data(record_id):
-                        self.st.records += 1
+                    record_id_i = self.extract_record_id(row)
+                    if record_id_i and record_id_i > 0:
+                        if self.get_record_data(f'{record_id_i}'):
+                            self.st.records += 1
 
         self.log_final_stats()
+
+    # read ID from first position in file, ignore anything that comes after.
+    def extract_record_id(self, row):
+        record_id = None
+        match = re.match(r"^\s*(\d+)", row)
+        if match:
+            record_id = int(match.group(1))
+        return record_id
 
     def get_record_data(self, record_id):
         try:
@@ -598,13 +612,13 @@ class OtsDiscogsToCsv:
         parser.add_argument(
             '-o', '--output-file', 
             type=str, 
-            help="Path to the output text/CSV file where results will be saved."
+            help="Path to the output text/CSV file where retrieved discogs information will be saved."
         )
 
         parser.add_argument(
             '-l', '--log-file', 
             type=str, 
-            help="Path to the file where log messages will be saved."
+            help="Path to the file where log messages will be saved. If not specified, the log file is 'output-file'.log"
         )
         
         parser.add_argument(
@@ -622,7 +636,7 @@ class OtsDiscogsToCsv:
         parser.add_argument(
             '-ut', '--user-token', 
             type=str, 
-            help="User-Agent to use for authenicated API request"
+            help="User-Agent to use for authenticated API request"
         )
 
         parser.add_argument(
@@ -710,7 +724,9 @@ class OtsDiscogsToCsv:
 
             self.current_record.country = self.release.country or ''
 
-            self.current_record.year = self.release.year or ''
+            year = self.release.year or ''
+
+            self.current_record.year = self.fix_year(year)
 
             self.current_record.genres = f"{CSV_ITEM_SEPARATOR1}".join(self.release.genres or [])
 
@@ -726,6 +742,12 @@ class OtsDiscogsToCsv:
             self.writelog(f'Exception {e} occurred for {self.current_record}\n{traceback.format_exc()}')
 
         return False
+
+    def fix_year(self, year) -> int:
+        try:
+            return int(float(year))
+        except ValueError:
+            return 0
 
     def store_master_data(self, master) -> bool:
         try:
@@ -960,7 +982,91 @@ class OtsDiscogsToCsv:
         # Write the single row
         writer.writerow(row)
         self.csv_rows[id] = rowB.getvalue()
+
+    def write_mrk(self):
+        r = self.current_record
+        mrk_lines = []
+
+        # 035 Control Number
+        mrk_lines.append(f"=035  \\\\$aTODO")
     
+        # Leader & Control Fields
+        #mrk_lines.append("=LDR  00000njm a2200000Ia 4500")
+        
+        # 100 Main Entry (Artist)
+        mrk_lines.append(f"=100  1\\\\$a{r.artists}")
+            
+        # 245 Title
+
+        ind2 = "4" if title.lower().startswith("the ") else "0"
+        mrk_lines.append(f"=245  1{ind2}$a{r.title}")
+
+        # 264 Label + year
+        mrk_lines.append(f"=264  3\\\\$b{r.labels}$c{r.year}")
+
+        mrk_lines.append(f"=245  1{ind2}$a{title}")
+        # 300 Physical Description ($a format, $f packaging/gatefold)
+        fmt = data.get("format_desc", "")
+        pkg = f"$f{data['packaging']}" if data.get("packaging") else ""
+        mrk_lines.append(f"=300  \\\\$a{fmt}{pkg}")
+        
+        
+        # 505 Contents Note (One separate tag per track)
+        self.mrk_tracklist(mrk_lines, tracklist)
+
+        self.mrk_credits(mrk_lines, tracklist)
+            
+        # 650 Subject Headings (One tag per style)
+        for style in release.get("styles", []):
+            mrk_lines.append(f"=650  \\0$a{style}")
+            
+        # Standard MARC records in .mrk files are separated by a blank line
+        #return "\n".join(mrk_lines) + "\n\n"
+        mrk_lines = []
+        
+        # 035 System Control Number
+        if data.get("control_number"):
+            mrk_lines.append(f"=035  \\\\$a{data['control_number']}")
+            
+        # 100 Main Creator / Artist (Ind 1: 1 = Single Surname/Primary Name)
+        if data.get("artist"):
+            mrk_lines.append(f"=100  1\\\\$a{data['artist']}")
+            
+        # 245 Title (Ind 1: 1 = Added Entry, Ind 2: 4 = Non-filing chars for "The ")
+        if data.get("title"):
+            title = data["title"]
+            ind2 = "4" if title.lower().startswith("the ") else "0"
+            mrk_lines.append(f"=245  1{ind2}$a{title}")
+            
+        # 264 Publisher / Year
+        label = data.get("label", "")
+        year = data.get("year", "")
+        mrk_lines.append(f"=264  3\\\\$b{label}$c{year}")
+        
+        # 300 Physical Description ($a format, $f packaging/gatefold)
+        fmt = data.get("format_desc", "")
+        pkg = f"$f{data['packaging']}" if data.get("packaging") else ""
+        mrk_lines.append(f"=300  \\\\$a{fmt}{pkg}")
+        
+        # 505 Tracklist Note ($t Title, $r Performed by, $g Written by)
+        for track in data.get("tracklist", []):
+            line = f"=505  0\\\\$t{track['title']}"
+            if track.get("performed_by"):
+                line += f"$rPerformed by {track['performed_by']}"
+            if track.get("written_by"):
+                line += f"$gWritten by {track['written_by']}"
+            mrk_lines.append(line)
+            
+        # 511 Performer Note
+        if data.get("performers"):
+            mrk_lines.append(f"=511  0\\\\$a{data['performers']}")
+            
+        # 655 Genre / Form
+        if data.get("genre"):
+            mrk_lines.append(f"=655  \\4$a{data['genre']['term']}$x{data['genre']['subdivision']}")
+
+        # MarcEdit records are separated by a double newline at the end of each record
+        return "\n".join(mrk_lines) + "\n\n"
 
     def csv_tracklist(self, tracklist) -> str:
         tracklist_str = ''
@@ -977,6 +1083,19 @@ class OtsDiscogsToCsv:
             tracklist_str += f'{title}{CSV_ITEM_SEPARATOR2}{performed_by_str}{CSV_ITEM_SEPARATOR2}{written_by_str}'
 
         return tracklist_str
+    
+
+    def mrk_tracklist(self, tracklist, mrk_lines):
+        for title, track_info in tracklist.items():
+            written_by_str = ",".join(f'{w}' for w in track_info.written_by)
+            if written_by_str:
+                written_by_str = f'Written by {written_by_str}'
+            if track_info.performed_by:
+                performed_by_str = f'Performed by {track_info.performed_by}'
+            else:
+                performed_by_str = ''
+            mrk505_str = f'{title}$r{performed_by_str}$g{written_by_str}'
+            mrk_lines.append(mrk505_str)
 
     def csv_credits(self, credits) -> str:
         credit_str = ''
@@ -988,6 +1107,19 @@ class OtsDiscogsToCsv:
             if credit_str:
                 credit_str += f'{CSV_ITEM_SEPARATOR1}'
             credit_str += f'{artist}{roles_str}'
+
+        return credit_str
+
+    def mrk_credits(self, credits) -> str:
+        credit_str = ''
+        for artist, roles in credits.items():
+            roles_str = ",".join(f'{r}' for r in roles)
+            # What if artist is listed w/o any roles?
+            if roles_str:
+                roles_str = f'[{roles_str}]'
+            if credit_str:
+                credit_str += f'{CSV_ITEM_SEPARATOR1}'
+            credit_str += f'$a{artist}{roles_str}'
 
         return credit_str
 
