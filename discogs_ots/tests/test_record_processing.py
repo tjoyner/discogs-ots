@@ -36,8 +36,8 @@ def test_load_release(monkeypatch, discogs_connection):
     assert cr.labels ==  ["E-Squared", "Artemis Records"]
     assert cr.country == "US"
     assert cr.year == 2000
-    assert cr.genres == "Rock|Folk, World, & Country"
-    assert cr.styles == "Country Rock|Country"
+    assert cr.genres == ["Rock", "Folk, World, & Country"]
+    assert cr.styles == ["Country Rock", "Country"]
     tl = cr.tracklist
     assert len(tl) == 15
     title, track_info = next(iter(tl.items()))
@@ -59,8 +59,8 @@ def test_load_release(monkeypatch, discogs_connection):
     assert cr.labels == ["First Label"]
     assert cr.country == "UK"
     assert cr.year == 2005
-    assert cr.genres == "Electronic|Shoe Gaze"
-    assert cr.styles == "Modern Classical|Chipmonk|Ambient"
+    assert cr.genres == ["Electronic", "Shoe Gaze"]
+    assert cr.styles == ["Modern Classical", "Chipmonk", "Ambient"]
 
     tl = cr.tracklist
     assert len(tl) == 6
@@ -118,8 +118,8 @@ def test_load_release_with_check_master(monkeypatch, discogs_connection):
     assert cr.labels == ["First Label", "Second Label"]
     assert cr.country == "UK"
     assert cr.year == 2005
-    assert cr.genres == "Acid Shoe Gaze"
-    assert cr.styles == "Modern Classical"
+    assert cr.genres == ["Acid Shoe Gaze"]
+    assert cr.styles == ["Modern Classical"]
 
     tl = cr.tracklist
     assert len(tl) == 6
@@ -171,8 +171,8 @@ def test_load_release_with_master_tracklist(monkeypatch, discogs_connection):
     assert cr.labels == ["First Label", "Second Label"]
     assert cr.country == "UK"
     assert cr.year == 2005
-    assert cr.genres == "Acid Shoe Gaze"
-    assert cr.styles == "Modern Classical"
+    assert cr.genres == ["Acid Shoe Gaze"]
+    assert cr.styles == ["Modern Classical"]
 
     tl = cr.tracklist
     assert len(tl) == 6
@@ -225,8 +225,8 @@ def test_record_extraartists(monkeypatch, discogs_connection):
     assert cr.labels == ["First Label"]
     assert cr.country == "UK"
     assert cr.year == 2005
-    assert cr.genres == "Deep Vibe|Shoe Gaze"
-    assert cr.styles == "Trad Classical"
+    assert cr.genres == ["Deep Vibe", "Shoe Gaze"]
+    assert cr.styles == ["Trad Classical"]
 
     tl = cr.tracklist
     assert len(tl) == 6
@@ -282,8 +282,8 @@ def test_record_extraartists_with_tracks(monkeypatch, discogs_connection):
     assert cr.labels == ["First Label"]
     assert cr.country == "UK"
     assert cr.year == 2015
-    assert cr.genres == "Deep Vibe|Shoe Gaze"
-    assert cr.styles == "Trad Classical"
+    assert cr.genres == ["Deep Vibe", "Shoe Gaze"]
+    assert cr.styles == ["Trad Classical"]
 
     tl = cr.tracklist
     assert len(tl) == 6

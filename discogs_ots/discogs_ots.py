@@ -86,6 +86,8 @@ CFG_USER_TOKEN="user_token"
 CFG_LOG_ALL_ROLES="log_all_roles"
 CFG_NEW_RECORDS_ONLY="new_records_only"
 CFG_CHECK_MASTER="check_master"
+CFG_DUMP_JSON="dump_json"
+CFG_WRITE_MRK="write_mrk"
 
 """ 
 Read the artist and role into a list of tuples. 
@@ -120,8 +122,9 @@ class RecordInfo:
     country: str = ''
     year: str = ''
 
-    genres: str = ''
-    styles: str = ''
+    genres:  list = field(default_factory=list) 
+
+    styles:  list = field(default_factory=list) 
 
     tracklist:  dict = field(default_factory=dict) # name : TrackInfo
 
@@ -276,6 +279,30 @@ class OtsDiscogsToCsv:
         elif config and config.has_option(CFG_SETTINGS,CFG_CHECK_MASTER):
             self.check_master = config[CFG_SETTINGS][CFG_CHECK_MASTER]
 
+        self.write_mrk = False
+        if args.write_mrk:
+            self.write_mrk = True
+        elif config and config.has_option(CFG_SETTINGS,CFG_WRITE_MRK):
+            self.write_mrk = config[CFG_SETTINGS][CFG_WRITE_MRK]
+
+        self.dump_json = False
+        if args.dump_json:
+            self.dump_json = True
+        elif config and config.has_option(CFG_SETTINGS,CFG_DUMP_JSON):
+            self.dump_json = config[CFG_SETTINGS][CFG_DUMP_JSON]
+
+        self.json_out = None
+        if self.dump_json:
+            json_file = Path(output_file).with_suffix('.json')
+            try:
+                self.json_out = open(json_file, mode='x', encoding='utf-8')
+            except FileExistsError:
+                print (f'{json_file} already exists')
+                sys.exit(1)
+        else:
+            sys.stdout.reconfigure(encoding='utf-8') # Keep PowerShell happy!
+            self.json_out = sys.stdout
+
         if ignore_roles:
             for r in ignore_roles.split(','):
                 rs = r.strip()
@@ -283,15 +310,25 @@ class OtsDiscogsToCsv:
                     self.ignore_roles.append(rs)
 
         self.out = None
+        self.mrk_out = None
         if output_file:
             try:
                 self.out = open(output_file, mode='x', encoding='utf-8')
             except FileExistsError:
                 print (f'{output_file} already exists')
                 sys.exit(1)
+            if self.write_mrk:
+                mrk_file = Path(output_file).with_suffix('.mrk')
+                try:
+                    self.mrk_out = open(mrk_file, mode='x', encoding='utf-8')
+                except FileExistsError:
+                    print (f'{mrk_file} already exists')
+                    sys.exit(1)
         else:
             sys.stdout.reconfigure(encoding='utf-8') # Keep PowerShell happy!
             self.out = sys.stdout
+            if self.write_mrk:
+                self.mrk_out = self.out
 
         self.log_out = None
         if log_file:
@@ -415,6 +452,10 @@ class OtsDiscogsToCsv:
             self.release = self.d.release(record_id)
             self.release.refresh()
 
+            if self.dump_json:
+                formatted_json = json.dumps(self.release.data, indent=4, sort_keys=True)
+                self.json_out.write(f"{record_id_i}\n{formatted_json}\n")
+
             self.requests += 1
 
             self.current_record = RecordInfo()
@@ -438,6 +479,8 @@ class OtsDiscogsToCsv:
                 self.store_master_data(master)
 
             self.write_csv()
+            if self.write_mrk:
+                self.write_mrk_record()
 
             #if master.main_release and master.main_release.id != record_id:
             #    self.main_release = True
@@ -654,6 +697,18 @@ class OtsDiscogsToCsv:
             help="Check the master record if one exists"
         )
 
+        parser.add_argument(
+            '-dj', '--dump-json', 
+            action='store_true', 
+            help="Dump the json records into 'output-file'.json"
+        )
+
+        parser.add_argument(
+            '-mrk', '--write-mrk', 
+            action='store_true', 
+            help="Write MARC .mrk file instead of a csv file"
+        )
+
         # Parse the arguments from the command line
         return parser.parse_args()
 
@@ -670,6 +725,9 @@ class OtsDiscogsToCsv:
 
     def writeln(self, text=""):
         self.out.write(f"{text}\n")
+
+    def writemrk(self, text=""):
+        self.mrk_out.write(text)
 
     def writelog(self, text=""):
         id = self.current_record.id if self.current_record else ''
@@ -719,9 +777,9 @@ class OtsDiscogsToCsv:
 
             self.current_record.year = self.fix_year(year)
 
-            self.current_record.genres = f"{CSV_ITEM_SEPARATOR1}".join(self.release.genres or [])
+            self.current_record.genres = self.release.genres or []
 
-            self.current_record.styles = f"{CSV_ITEM_SEPARATOR1}".join(self.release.styles or [])
+            self.current_record.styles = self.release.styles or []
 
             self.store_credits(self.release)
 
@@ -956,15 +1014,21 @@ class OtsDiscogsToCsv:
             formats = f"{CSV_ITEM_SEPARATOR1}".join(r.formats)
         row[CSV_FORMATS] = formats
         labels = ''
-        print (f'tom: {r.labels}')
         if r.labels:
             labels = f"{CSV_ITEM_SEPARATOR1}".join(r.labels)
         row[CSV_LABELS] = labels
         row[CSV_COUNTRY] = r.country
         row[CSV_YEAR] = r.year
-        row[CSV_GENRES] = r.genres
-        row[CSV_STYLES] = r.styles
-        #row = self.csv_headers()
+        genres = ''
+        if r.genres:
+            genres = f"{CSV_ITEM_SEPARATOR1}".join(r.genres)
+        row[CSV_GENRES] = genres
+
+        styles = ''
+        if r.styles:
+            styles = f"{CSV_ITEM_SEPARATOR1}".join(r.styles or [])
+        row[CSV_STYLES] = styles
+
         row[CSV_TRACKLIST] = self.csv_tracklist(r.tracklist)
         row[CSV_CREDITS] = self.csv_credits(r.credits)
         self.csv_writer.writerow(row)
@@ -980,8 +1044,16 @@ class OtsDiscogsToCsv:
         # Write the single row
         writer.writerow(row)
         self.csv_rows[id] = rowB.getvalue()
+        rowB.close()
+        
+    def store_mrk_for_test_case(self, id, mrk_record):
+        # Temporary buffer for a single row
+        mrkB = io.StringIO()
+        mrkB.write(mrk_record)
+        self.mrk_records[id] = mrkB.getValue()
+        mrkB.close()
 
-    def write_mrk(self):
+    def write_mrk_record(self):
         r = self.current_record
         mrk_lines = []
 
@@ -992,79 +1064,88 @@ class OtsDiscogsToCsv:
         #mrk_lines.append("=LDR  00000njm a2200000Ia 4500")
         
         # 100 Main Entry (Artist)
-        mrk_lines.append(f"=100  1\\\\$a{r.artists}")
+        mrk_lines.append(f"=100  1\\$a{r.artists}")
             
         # 245 Title
-
-        ind2 = "4" if title.lower().startswith("the ") else "0"
-        mrk_lines.append(f"=245  1{ind2}$a{r.title}")
+        ind = self.calculate_245_indicators(r.title)
+        mrk_lines.append(f"=245  {ind}$a{r.title}")
 
         # 264 Label + year
-        mrk_lines.append(f"=264  3\\\\$b{r.labels}$c{r.year}")
+        labels = f";".join(r.labels)
+        mrk_lines.append(f"=264  3\\$b{labels}$c{r.year}")
 
-        mrk_lines.append(f"=245  1{ind2}$a{title}")
         # 300 Physical Description ($a format, $f packaging/gatefold)
-        fmt = data.get("format_desc", "")
-        pkg = f"$f{data['packaging']}" if data.get("packaging") else ""
-        mrk_lines.append(f"=300  \\\\$a{fmt}{pkg}")
-        
+        # TODO: multiple 300s for each format?
+        for f in r.formats:
+            mrk_lines.append(f"=300  \\\\$a{f}")
         
         # 505 Contents Note (One separate tag per track)
-        self.mrk_tracklist(mrk_lines, tracklist)
+        self.mrk_tracklist(mrk_lines, r.tracklist)
 
-        self.mrk_credits(mrk_lines, tracklist)
+        mrk_credits = self.mrk_credits(r.credits)
+        mrk_lines.append(f"=511  \\\\$a{mrk_credits}")
+
+        self.mrk_genres_and_styles(mrk_lines, r.genres, r.styles)
+
             
-        # 650 Subject Headings (One tag per style)
-        for style in release.get("styles", []):
-            mrk_lines.append(f"=650  \\0$a{style}")
-            
-        # Standard MARC records in .mrk files are separated by a blank line
-        #return "\n".join(mrk_lines) + "\n\n"
-        mrk_lines = []
-        
-        # 035 System Control Number
-        if data.get("control_number"):
-            mrk_lines.append(f"=035  \\\\$a{data['control_number']}")
-            
-        # 100 Main Creator / Artist (Ind 1: 1 = Single Surname/Primary Name)
-        if data.get("artist"):
-            mrk_lines.append(f"=100  1\\\\$a{data['artist']}")
-            
-        # 245 Title (Ind 1: 1 = Added Entry, Ind 2: 4 = Non-filing chars for "The ")
-        if data.get("title"):
-            title = data["title"]
-            ind2 = "4" if title.lower().startswith("the ") else "0"
-            mrk_lines.append(f"=245  1{ind2}$a{title}")
-            
-        # 264 Publisher / Year
-        label = data.get("label", "")
-        year = data.get("year", "")
-        mrk_lines.append(f"=264  3\\\\$b{label}$c{year}")
-        
-        # 300 Physical Description ($a format, $f packaging/gatefold)
-        fmt = data.get("format_desc", "")
-        pkg = f"$f{data['packaging']}" if data.get("packaging") else ""
-        mrk_lines.append(f"=300  \\\\$a{fmt}{pkg}")
-        
-        # 505 Tracklist Note ($t Title, $r Performed by, $g Written by)
-        for track in data.get("tracklist", []):
-            line = f"=505  0\\\\$t{track['title']}"
-            if track.get("performed_by"):
-                line += f"$rPerformed by {track['performed_by']}"
-            if track.get("written_by"):
-                line += f"$gWritten by {track['written_by']}"
-            mrk_lines.append(line)
-            
-        # 511 Performer Note
-        if data.get("performers"):
-            mrk_lines.append(f"=511  0\\\\$a{data['performers']}")
-            
+        # Records are separated by a double newline at the end of each record
+        mrk_record = "\n".join(mrk_lines) + "\n\n"
+        self.writemrk(mrk_record)
+        if self.test_case:
+            self.store_mrk_for_test_case(r.id, mrk_record)
+
+
+
+    # Gemini generated. Is this needed? Should other languages be supported?
+    def calculate_245_indicators(self, title, has_main_entry=False):
+        """Calculates the 1st and 2nd indicators for a MARC 245 title field.
+
+        Parameters:
+        - title (str): The full title of the album.
+        - has_main_entry (bool): True if there is a 1XX field (e.g., 100 Artist).
+                                 False if entered directly under title.
+                                 (used?)
+
+        Returns:
+        - list: A list of two strings containing [indicator_1, indicator_2].
+        """
+        # 1. Determine First Indicator (Title Added Entry)
+        # Rule: '0' if entered under author/artist main entry; '1' if entered under title
+        ind1 = "0" if has_main_entry else "1"
+
+        # 2. Determine Second Indicator (Non-filing characters)
+        ind2 = "0"  # Default fallback if no articles match
+
+        # Clean leading whitespace and punctuation like quotes/brackets for matching
+        cleaned_title = title.lstrip(' "\'[{')
+
+        # Mapping of common English articles to their exact character counts
+        # This regex ensures we only match full words at the very beginning
+        articles = [
+            (r"^the\s+", 4),  # "The " = 4 chars
+            (r"^an\s+", 3),  # "An "  = 3 chars
+            (r"^a\s+", 2),  # "A "   = 2 chars
+        ]
+
+        for pattern, count in articles:
+            if re.match(pattern, cleaned_title, re.IGNORECASE):
+                # Calculate any initial stripped punctuation variance
+                punctuation_offset = len(title) - len(cleaned_title)
+                ind2 = str(count + punctuation_offset)
+                break
+
+        return f'{ind1}{ind2}'
+
+    def mrk_genres_and_styles(self, mrk_lines, genres, styles):
+        combined = []
+        for g_s in genres + styles:
+            if g_s.casefold() not in (c.casefold() for c in combined):
+                combined.append(g_s)
         # 655 Genre / Form
-        if data.get("genre"):
-            mrk_lines.append(f"=655  \\4$a{data['genre']['term']}$x{data['genre']['subdivision']}")
+        if combined:
+            for c in combined:
+                mrk_lines.append(f"=655  \\4$a{c}")
 
-        # MarcEdit records are separated by a double newline at the end of each record
-        return "\n".join(mrk_lines) + "\n\n"
 
     def csv_tracklist(self, tracklist) -> str:
         tracklist_str = ''
@@ -1083,7 +1164,7 @@ class OtsDiscogsToCsv:
         return tracklist_str
     
 
-    def mrk_tracklist(self, tracklist, mrk_lines):
+    def mrk_tracklist(self, mrk_lines, tracklist):
         for title, track_info in tracklist.items():
             written_by_str = ",".join(f'{w}' for w in track_info.written_by)
             if written_by_str:
@@ -1092,7 +1173,7 @@ class OtsDiscogsToCsv:
                 performed_by_str = f'Performed by {track_info.performed_by}'
             else:
                 performed_by_str = ''
-            mrk505_str = f'{title}$r{performed_by_str}$g{written_by_str}'
+            mrk505_str = f'=505  \\\\$t{title}$r{performed_by_str}$g{written_by_str}'
             mrk_lines.append(mrk505_str)
 
     def csv_credits(self, credits) -> str:
@@ -1116,9 +1197,8 @@ class OtsDiscogsToCsv:
             if roles_str:
                 roles_str = f'[{roles_str}]'
             if credit_str:
-                credit_str += f'{CSV_ITEM_SEPARATOR1}'
-            credit_str += f'$a{artist}{roles_str}'
-
+                credit_str += ','
+            credit_str += f'{artist}{roles_str}'
         return credit_str
 
     # written_by: text like: "A1, A3-A5" (or A3 to A5)
