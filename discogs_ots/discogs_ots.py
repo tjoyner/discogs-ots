@@ -1056,12 +1056,12 @@ class OtsDiscogsToCsv:
     def write_mrk_record(self):
         r = self.current_record
         mrk_lines = []
+    
+        # Leader
+        mrk_lines.append("=LDR  00000njm a2200000Ia 4500")
 
         # 035 Control Number
         mrk_lines.append(f"=035  \\\\$aTODO")
-    
-        # Leader & Control Fields
-        #mrk_lines.append("=LDR  00000njm a2200000Ia 4500")
         
         # 100 Main Entry (Artist)
         mrk_lines.append(f"=100  1\\$a{r.artists}")
@@ -1072,7 +1072,10 @@ class OtsDiscogsToCsv:
 
         # 264 Label + year
         labels = f";".join(r.labels)
-        mrk_lines.append(f"=264  3\\$b{labels}$c{r.year}")
+        year = ''
+        if r.year > 1800:
+            year = f'$c{r.year}'
+        mrk_lines.append(f"=264  1\\$b{labels}{year}")
 
         # 300 Physical Description ($a format, $f packaging/gatefold)
         # TODO: multiple 300s for each format?
@@ -1173,7 +1176,7 @@ class OtsDiscogsToCsv:
                 performed_by_str = f'Performed by {track_info.performed_by}'
             else:
                 performed_by_str = ''
-            mrk505_str = f'=505  \\\\$t{title}$r{performed_by_str}$g{written_by_str}'
+            mrk505_str = f'=505  0\\$t{title}$r{performed_by_str}$g{written_by_str}'
             mrk_lines.append(mrk505_str)
 
     def csv_credits(self, credits) -> str:
