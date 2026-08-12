@@ -224,7 +224,7 @@ class OtsDiscogsToCsv:
         self.input_file = None
         if args.input_file:
             self.input_file = args.input_file
-        if config and config.has_option(CFG_SETTINGS,CFG_INPUT_FILE):
+        elif config and config.has_option(CFG_SETTINGS,CFG_INPUT_FILE):
             self.input_file = config[CFG_SETTINGS][CFG_INPUT_FILE]
 
         if args.record_id:
@@ -1133,7 +1133,8 @@ class OtsDiscogsToCsv:
         self.mrk_tracklist(mrk_lines, r.tracklist)
 
         mrk_credits = self.mrk_credits(r.credits)
-        mrk_lines.append(f"=511  0\\$a{mrk_credits}")
+        if mrk_credits:
+            mrk_lines.append(f"=511  0\\$a{mrk_credits}")
 
         self.mrk_genres_and_styles(mrk_lines, r.genres, r.styles)
 
