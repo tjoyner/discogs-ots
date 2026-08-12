@@ -1,5 +1,5 @@
 {
-  "_comment": "Master for Record 14",
+  "_comment": "Master for Record 17, Main Release is 17",
   "status": "Accepted",
   "styles": [
     "Not Modern Classical"
@@ -17,7 +17,7 @@
     }
   ],
   "extraartists": [],
-  "title": "Master With Track List",
+  "title": "Master With Main Release",
   "released_formatted": "2005",
   "labels": [
     {
@@ -72,27 +72,7 @@
           "id": 216524
         }
       ],
-      "title": "Title 1",
-      "extraartists": [
-        {
-          "name": "Master Blaster",
-          "anv": "",
-          "join": "",
-          "role": "Drums",
-          "tracks": "",
-          "id": 404498,
-          "resource_url": "https://api.discogs.com/artists/151"
-        },
-        {
-          "name": "John B Buoy",
-          "anv": "",
-          "join": "",
-          "role": "Written-By",
-          "tracks": "",
-          "id": 404499,
-          "resource_url": "https://api.discogs.com/artists/152"
-        }
-       ]
+      "title": "Title 1"
     },
     {
       "duration": "5:46",
@@ -116,36 +96,7 @@
           "id": 95780
         }
       ],
-      "title": "Scusi",
-      "extraartists": [
-        {
-          "name": "Master Blaster",
-          "anv": "",
-          "join": "",
-          "role": "More Drums",
-          "tracks": "",
-          "id": 404498,
-          "resource_url": "https://api.discogs.com/artists/151"
-        },
-        {
-          "name": "Tortured Artist",
-          "anv": "",
-          "join": "",
-          "role": "Written-By",
-          "tracks": "",
-          "id": 404499,
-          "resource_url": "https://api.discogs.com/artists/152"
-        },
-        {
-          "name": "Smooth Player",
-          "anv": "",
-          "join": "",
-          "role": "Tasty Licks",
-          "tracks": "",
-          "id": 404499,
-          "resource_url": "https://api.discogs.com/artists/152"
-        }
-       ]
+      "title": "Scusi"
     },
     {
       "duration": "3:42",
@@ -215,29 +166,10 @@
           "id": 95780
         }
       ],
-      "title": "Finally, \"right?\"",
-      "extraartists": [
-        {
-          "name": "Master Blaster",
-          "anv": "",
-          "join": "",
-          "role": "Even More Drums",
-          "tracks": "",
-          "id": 404498,
-          "resource_url": "https://api.discogs.com/artists/151"
-        },
-        {
-          "name": "Evan Tully",
-          "anv": "",
-          "join": "",
-          "role": "Written-By",
-          "tracks": "",
-          "id": 404499,
-          "resource_url": "https://api.discogs.com/artists/152"
-        }
-       ]
+      "title": "Finally, \"right?\""
     }
   ],
-  "id": 12,
+  "id": 1017,
+  "main_release": 18,
   "data_quality": "Needs Vote"
 }

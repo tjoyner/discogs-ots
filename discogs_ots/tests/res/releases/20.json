@@ -1,34 +1,36 @@
 {
-  "_comment": "Master for Record 14",
+  "_comment": "Release with duplicate titles in different positions",
   "status": "Accepted",
   "styles": [
-    "Not Modern Classical"
+    "Modern Classical"
   ],
   "genres": [
-    "Not Shoe Gaze"
+    "Acid Shoe Gaze"
   ],
   "formats": [
     {
       "name": "LP",
       "qty": "1",
       "descriptions": [
-        "Not Album"
+        "Album"
       ]
     }
   ],
+  "master_id": 1020,
+  "master_url": "https://api.example.com/masters/1020",
   "extraartists": [],
-  "title": "Master With Track List",
+  "title": "Release + Master, No Extra Artists",
   "released_formatted": "2005",
   "labels": [
     {
-      "name": "Not First Label",
+      "name": "First Label",
       "entity_type": "1",
       "catno": "CAT-1",
       "id": 1818,
       "entity_type_name": "Label"
     },
     {
-      "name": "Not Second Label",
+      "name": "Second Label",
       "entity_type": "1",
       "catno": "CAT-2",
       "id": 1819,
@@ -47,7 +49,7 @@
     },
     {
       "join": "",
-      "name": "Not Tom J",
+      "name": "Tom J",
       "anv": "",
       "tracks": "",
       "role": "",
@@ -64,35 +66,23 @@
       "type_": "track",
       "artists": [
         {
+          "join": "and not",
+          "name": "Some Guy",
+          "anv": "",
+          "tracks": "",
+          "role": "",
+          "id": 216524
+        },
+        {
           "join": "",
-          "name": "Some Guy in the Master",
+          "name": "Some Other Guy",
           "anv": "",
           "tracks": "",
           "role": "",
           "id": 216524
         }
       ],
-      "title": "Title 1",
-      "extraartists": [
-        {
-          "name": "Master Blaster",
-          "anv": "",
-          "join": "",
-          "role": "Drums",
-          "tracks": "",
-          "id": 404498,
-          "resource_url": "https://api.discogs.com/artists/151"
-        },
-        {
-          "name": "John B Buoy",
-          "anv": "",
-          "join": "",
-          "role": "Written-By",
-          "tracks": "",
-          "id": 404499,
-          "resource_url": "https://api.discogs.com/artists/152"
-        }
-       ]
+      "title": "Title 1"
     },
     {
       "duration": "5:46",
@@ -116,36 +106,7 @@
           "id": 95780
         }
       ],
-      "title": "Scusi",
-      "extraartists": [
-        {
-          "name": "Master Blaster",
-          "anv": "",
-          "join": "",
-          "role": "More Drums",
-          "tracks": "",
-          "id": 404498,
-          "resource_url": "https://api.discogs.com/artists/151"
-        },
-        {
-          "name": "Tortured Artist",
-          "anv": "",
-          "join": "",
-          "role": "Written-By",
-          "tracks": "",
-          "id": 404499,
-          "resource_url": "https://api.discogs.com/artists/152"
-        },
-        {
-          "name": "Smooth Player",
-          "anv": "",
-          "join": "",
-          "role": "Tasty Licks",
-          "tracks": "",
-          "id": 404499,
-          "resource_url": "https://api.discogs.com/artists/152"
-        }
-       ]
+      "title": "Scusi"
     },
     {
       "duration": "3:42",
@@ -183,7 +144,7 @@
           "id": 95780
         }
       ],
-      "title": "We're Number 4"
+      "title": "Title 1"
     },
     {
       "duration": "3:41",
@@ -215,27 +176,7 @@
           "id": 95780
         }
       ],
-      "title": "Finally, \"right?\"",
-      "extraartists": [
-        {
-          "name": "Master Blaster",
-          "anv": "",
-          "join": "",
-          "role": "Even More Drums",
-          "tracks": "",
-          "id": 404498,
-          "resource_url": "https://api.discogs.com/artists/151"
-        },
-        {
-          "name": "Evan Tully",
-          "anv": "",
-          "join": "",
-          "role": "Written-By",
-          "tracks": "",
-          "id": 404499,
-          "resource_url": "https://api.discogs.com/artists/152"
-        }
-       ]
+      "title": "Finally, \"right?\""
     }
   ],
   "id": 12,

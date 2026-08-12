@@ -38,7 +38,34 @@
       "name": "John Dough",
       "anv": "",
       "join": "",
+      "role": "Engineer, Kazoo",
+      "tracks": "",
+      "id": 404499,
+      "resource_url": "https://api.discogs.com/artists/152"
+    },
+    {
+      "name": "The Third Man",
+      "anv": "",
+      "join": "",
+      "role": "Zither, Viola",
+      "tracks": "",
+      "id": 404499,
+      "resource_url": "https://api.discogs.com/artists/152"
+    },
+    {
+      "name": "Just an Engineer",
+      "anv": "",
+      "join": "",
       "role": "Engineer",
+      "tracks": "",
+      "id": 404499,
+      "resource_url": "https://api.discogs.com/artists/152"
+    },
+    {
+      "name": "Not Just a Gofer",
+      "anv": "",
+      "join": "",
+      "role": "Harp, Gofer",
       "tracks": "",
       "id": 404499,
       "resource_url": "https://api.discogs.com/artists/152"
@@ -83,7 +110,7 @@
       "name": "Writer of A5-A6",
       "anv": "",
       "join": "",
-      "role": "Written By",
+      "role": "Composed By",
       "tracks": "A5 to A6",
       "id": 273922,
       "resource_url": "https://api.discogs.com/artists/273922"

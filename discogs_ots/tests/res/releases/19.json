@@ -1,37 +1,72 @@
 {
-  "_comment": "Master for Record 14",
+  "_comment": "Release with per/track extra artists",
   "status": "Accepted",
-  "styles": [
-    "Not Modern Classical"
-  ],
   "genres": [
-    "Not Shoe Gaze"
+    "Deep Vibe",
+    "Shoe Gaze"
   ],
   "formats": [
     {
       "name": "LP",
       "qty": "1",
       "descriptions": [
-        "Not Album"
+        "Album"
+      ]
+    },
+    {
+      "name": "Gramophone",
+      "qty": "1",
+      "descriptions": [
+        "Wax"
       ]
     }
   ],
-  "extraartists": [],
-  "title": "Master With Track List",
+ "extraartists": [
+    {
+      "name": "I P Freely",
+      "anv": "",
+      "join": "",
+      "role": "Guitar",
+      "tracks": "A1",
+      "id": 404498,
+      "resource_url": "https://api.discogs.com/artists/151"
+    },
+    {
+      "name": "John Dough",
+      "anv": "",
+      "join": "",
+      "role": "Engineer",
+      "tracks": "",
+      "id": 404499,
+      "resource_url": "https://api.discogs.com/artists/152"
+    },
+    {
+      "name": "Free Byrd",
+      "anv": "",
+      "join": "",
+      "role": "Written-By",
+      "tracks": "",
+      "id": 273922,
+      "resource_url": "https://api.discogs.com/artists/273922"
+    },
+    {
+      "name": "Song Writer Jr.",
+      "anv": "",
+      "join": "",
+      "role": "Written By",
+      "tracks": "A3",
+      "id": 273922,
+      "resource_url": "https://api.discogs.com/artists/273922"
+    }
+  ],
+  "title": "Release with Per Track Extra Artists",
   "released_formatted": "2005",
   "labels": [
     {
-      "name": "Not First Label",
+      "name": "First Label",
       "entity_type": "1",
       "catno": "CAT-1",
       "id": 1818,
-      "entity_type_name": "Label"
-    },
-    {
-      "name": "Not Second Label",
-      "entity_type": "1",
-      "catno": "CAT-2",
-      "id": 1819,
       "entity_type_name": "Label"
     }
   ],
@@ -47,7 +82,7 @@
     },
     {
       "join": "",
-      "name": "Not Tom J",
+      "name": "Tom J",
       "anv": "",
       "tracks": "",
       "role": "",
@@ -55,17 +90,17 @@
     }
   ],
   "released": "2005",
-  "country": "UK",
-  "year": 2005,
+  "country": "Canada",
+  "year": 2026,
   "tracklist": [
     {
       "duration": "5:30",
-      "position": "1",
+      "position": "A1",
       "type_": "track",
       "artists": [
         {
           "join": "",
-          "name": "Some Guy in the Master",
+          "name": "Some Guy",
           "anv": "",
           "tracks": "",
           "role": "",
@@ -75,16 +110,16 @@
       "title": "Title 1",
       "extraartists": [
         {
-          "name": "Master Blaster",
+          "name": "I P Freely",
           "anv": "",
           "join": "",
-          "role": "Drums",
+          "role": "Bass Guitar, Pedal Steel, Washboard",
           "tracks": "",
           "id": 404498,
           "resource_url": "https://api.discogs.com/artists/151"
         },
         {
-          "name": "John B Buoy",
+          "name": "John Buoy",
           "anv": "",
           "join": "",
           "role": "Written-By",
@@ -96,12 +131,12 @@
     },
     {
       "duration": "5:46",
-      "position": "2",
+      "position": "A2",
       "type_": "track",
       "artists": [
         {
           "join": "&",
-          "name": "Tom I Am",
+          "name": "Tom I Aint",
           "anv": "",
           "tracks": "",
           "role": "",
@@ -116,31 +151,31 @@
           "id": 95780
         }
       ],
-      "title": "Scusi",
+      "title": "Scusa",
       "extraartists": [
         {
-          "name": "Master Blaster",
+          "name": "I P Freely",
           "anv": "",
           "join": "",
-          "role": "More Drums",
+          "role": "Organ",
           "tracks": "",
           "id": 404498,
           "resource_url": "https://api.discogs.com/artists/151"
         },
         {
-          "name": "Tortured Artist",
+          "name": "John Marching",
           "anv": "",
           "join": "",
-          "role": "Written-By",
+          "role": "Spoons",
           "tracks": "",
           "id": 404499,
           "resource_url": "https://api.discogs.com/artists/152"
         },
         {
-          "name": "Smooth Player",
+          "name": "John John",
           "anv": "",
           "join": "",
-          "role": "Tasty Licks",
+          "role": "Written-By",
           "tracks": "",
           "id": 404499,
           "resource_url": "https://api.discogs.com/artists/152"
@@ -149,13 +184,13 @@
     },
     {
       "duration": "3:42",
-      "position": "3",
+      "position": "A3",
       "type_": "track",
       "title": "Title with, comma"
     },
     {
       "duration": "3:36",
-      "position": "4",
+      "position": "A4",
       "type_": "track",
       "artists": [
         {
@@ -187,7 +222,7 @@
     },
     {
       "duration": "3:41",
-      "position": "5",
+      "position": "A5",
       "type_": "track",
       "artists": [
         {
@@ -203,7 +238,7 @@
     },
     {
       "duration": "4:38",
-      "position": "6",
+      "position": "A6",
       "type_": "track",
       "artists": [
         {
@@ -215,29 +250,9 @@
           "id": 95780
         }
       ],
-      "title": "Finally, \"right?\"",
-      "extraartists": [
-        {
-          "name": "Master Blaster",
-          "anv": "",
-          "join": "",
-          "role": "Even More Drums",
-          "tracks": "",
-          "id": 404498,
-          "resource_url": "https://api.discogs.com/artists/151"
-        },
-        {
-          "name": "Evan Tully",
-          "anv": "",
-          "join": "",
-          "role": "Written-By",
-          "tracks": "",
-          "id": 404499,
-          "resource_url": "https://api.discogs.com/artists/152"
-        }
-       ]
+      "title": "Finally, \"right?\""
     }
   ],
-  "id": 12,
+  "id": 19,
   "data_quality": "Needs Vote"
 }

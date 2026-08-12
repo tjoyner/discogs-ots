@@ -9,6 +9,7 @@ import os
 import io
 import re
 import contextlib
+import html
 import datetime
 from dataclasses import dataclass, field
 import pprint
@@ -86,6 +87,7 @@ CFG_USER_TOKEN="user_token"
 CFG_LOG_ALL_ROLES="log_all_roles"
 CFG_NEW_RECORDS_ONLY="new_records_only"
 CFG_CHECK_MASTER="check_master"
+CFG_CHECK_MAIN_RELEASE="check_main_release"
 CFG_DUMP_JSON="dump_json"
 CFG_WRITE_MRK="write_mrk"
 
@@ -103,7 +105,6 @@ Each record has 4 extra artist lists (for now)
 
 @dataclass
 class TrackInfo:
-    position: str = ''
     performed_by: str = ''
     written_by:  list = field(default_factory=list) 
 
@@ -126,7 +127,7 @@ class RecordInfo:
 
     styles:  list = field(default_factory=list) 
 
-    tracklist:  dict = field(default_factory=dict) # name : TrackInfo
+    tracklist:  dict = field(default_factory=dict) # (title, position) : TrackInfo
 
     credits: dict = field(default_factory=dict)
 
@@ -148,11 +149,11 @@ class RecordStats:
 
     tl_found_in_record = False
     tl_found_in_master = False
-    tl_found_in_main_release = False
+    #tl_found_in_main_release = False
 
     tl_ea_found_in_record = False
     tl_ea_found_in_master = False
-    tl_ea_found_in_main_release = False
+    #tl_ea_found_in_main_release = False
 
 @dataclass
 class AllStats:
@@ -164,13 +165,13 @@ class AllStats:
 
     has_tl_only_in_record = 0
     has_tl_only_in_master = 0
-    has_tl_only_in_main_release = 0
+    #has_tl_only_in_main_release = 0
     has_tl_in_record_and_master = 0
     no_tl = 0
 
     has_tl_ea_only_in_record = 0
     has_tl_ea_only_in_master = 0
-    has_tl_ea_only_in_main_release = 0
+    #has_tl_ea_only_in_main_release = 0
     has_tl_ea_in_record_and_master = 0
     no_tl_ea = 0
 
@@ -279,6 +280,12 @@ class OtsDiscogsToCsv:
         elif config and config.has_option(CFG_SETTINGS,CFG_CHECK_MASTER):
             self.check_master = config[CFG_SETTINGS][CFG_CHECK_MASTER]
 
+        self.check_main_release = False
+        if args.check_main_release:
+            self.check_main_release = True
+        elif config and config.has_option(CFG_SETTINGS,CFG_CHECK_MAIN_RELEASE):
+            self.check_main_release = config[CFG_SETTINGS][CFG_MAIN_RELEASE]
+
         self.write_mrk = False
         if args.write_mrk:
             self.write_mrk = True
@@ -293,15 +300,16 @@ class OtsDiscogsToCsv:
 
         self.json_out = None
         if self.dump_json:
-            json_file = Path(output_file).with_suffix('.json')
-            try:
-                self.json_out = open(json_file, mode='x', encoding='utf-8')
-            except FileExistsError:
-                print (f'{json_file} already exists')
-                sys.exit(1)
-        else:
-            sys.stdout.reconfigure(encoding='utf-8') # Keep PowerShell happy!
-            self.json_out = sys.stdout
+            if output_file:
+                json_file = Path(output_file).with_suffix('.json')
+                try:
+                    self.json_out = open(json_file, mode='x', encoding='utf-8')
+                except FileExistsError:
+                    print (f'{json_file} already exists')
+                    sys.exit(1)
+            else:
+                sys.stdout.reconfigure(encoding='utf-8') # Keep PowerShell happy!
+                self.json_out = sys.stdout
 
         if ignore_roles:
             for r in ignore_roles.split(','):
@@ -454,7 +462,8 @@ class OtsDiscogsToCsv:
 
             if self.dump_json:
                 formatted_json = json.dumps(self.release.data, indent=4, sort_keys=True)
-                self.json_out.write(f"{record_id_i}\n{formatted_json}\n")
+                header = f' Record {record_id_i} '.center(72, '#')
+                self.json_out.write(f"{header}\n{formatted_json}\n\n")
 
             self.requests += 1
 
@@ -466,17 +475,51 @@ class OtsDiscogsToCsv:
 
             self.store_record_data()
 
-            # TODO: Only check master if no tracklist found?
-            #       Need to remove the "both found" stats
-            # TODO: read master per/track extra artist if not found
+            # read the tracklist from the master if not found in release
+            master_record = None
             if self.check_master and self.release.master and not self.rs.tl_found_in_record:
-                masterRec = self.release.master
-                master = None
-
                 self.master = True
-                master = self.d.master(masterRec.id)
-                master.refresh()
-                self.store_master_data(master)
+                master_record = self.d.master(self.release.master.id)
+                master_record.refresh()
+                if self.dump_json:
+                    formatted_json = json.dumps(master_record.data, indent=4, sort_keys=True)
+                    header = f' Master record {self.release.master.id} of record {record_id} '.center(72, '#')
+                    self.json_out.write(f"{header}\n{formatted_json}\n\n")
+                self.store_master_data(master_record)
+
+            # if the record-level extraartists wasn't found in the record, check the main release (if different)
+            if self.check_main_release and not self.rs.ea_found_in_record: 
+                if not master_record and self.release.master:
+                    # read the master (if not read above), only to get the main release ID.
+                    master_record = self.d.master(self.release.master.id)
+                    master_record.refresh()
+                    if master_record.main_release.id != record_id:
+                        self.writelog(f"Extra artists not found in record and main release is different than record id ({master_record.main_release.id} != {record_id})")
+                        m_release = self.d.release(master_record.main_release.id)
+                        m_release.refresh()
+                        if self.dump_json:
+                            formatted_json = json.dumps(m_release.data, indent=4, sort_keys=True)
+                            header = f' Main release {master_record.main_release.id} of record {record_id} '.center(72, '#')
+                            self.json_out.write(f"{header}\n{formatted_json}\n\n")
+                        ea = m_release.data.get(API_EXTRAARTISTS)
+                        if ea:
+                            self.writelog(f"Extra artists found in main release ({master_record.main_release.id}).")
+                            self.main_release = True
+                            self.store_credits(m_release)
+            # After the tracks are processed, we need to make sure the written-by is set
+            # for the case where there was a "tracks" element in the album-level extraartists
+            #for track_info in self.current_record.tracklist.values:
+            self.check_written_by()
+
+                # check main release if different 
+                # TODO (if this is helpful): make this an option, fix stats
+                # if not helpful, remove all main release references
+                #if not self.rs.tl_found_in_master and master.main_release and master.main_release.id != record_id:
+                #    self.writelog(f"Tracklist not found in master and main release is different than record id ({master.main_release.id} != {record_id})")
+                #    main_release = self.d.release(master.main_release.id)
+                #    main_release.refresh()
+                #    self.main_release = True
+                #    self.store_master_data(main_release)
 
             self.write_csv()
             if self.write_mrk:
@@ -505,8 +548,8 @@ class OtsDiscogsToCsv:
                 self.st.has_tl_only_in_record += 1
             elif self.rs.tl_found_in_master:
                 self.st.has_tl_only_in_master += 1
-            elif not self.rs.tl_found_in_master and not self.rs.tl_found_in_record and self.rs.tl_found_in_main_release:
-                self.st.rs.has_tl_only_in_main_release += 1
+            #elif not self.rs.tl_found_in_master and not self.rs.tl_found_in_record and self.rs.tl_found_in_main_release:
+            #    self.st.rs.has_tl_only_in_main_release += 1
             else:
                 self.st.no_tl += 1
 
@@ -516,8 +559,8 @@ class OtsDiscogsToCsv:
                 self.st.has_tl_ea_only_in_record += 1
             elif self.rs.tl_ea_found_in_master:
                 self.st.has_tl_ea_only_in_master += 1
-            elif not self.rs.tl_ea_found_in_master and not self.rs.tl_ea_found_in_record and self.rs.tl_ea_found_in_main_release:
-                self.st.rs.has_tl_ea_only_in_main_release += 1
+            #elif not self.rs.tl_ea_found_in_master and not self.rs.tl_ea_found_in_record and self.rs.tl_ea_found_in_main_release:
+            #    self.st.rs.has_tl_ea_only_in_main_release += 1
             else:
                 self.st.no_tl_ea += 1
 
@@ -694,7 +737,13 @@ class OtsDiscogsToCsv:
         parser.add_argument(
             '-cm', '--check-master', 
             action='store_true', 
-            help="Check the master record if one exists"
+            help="Check the master record (if one exists) for a track list if not found in the record."
+        )
+
+        parser.add_argument(
+            '-cmr', '--check-main-release', 
+            action='store_true', 
+            help="Check the main release record (if it exists and is different) for extra artists"
         )
 
         parser.add_argument(
@@ -718,8 +767,8 @@ class OtsDiscogsToCsv:
 
         self.writelog(f'Total Records={self.st.records}\n')
         self.writelog(f'Extra Artists:\n    Found in record and master={self.st.has_ea_in_record_and_master}\n    Found in Record only={self.st.has_ea_only_in_record}  Master only={self.st.has_ea_only_in_master}\n    Not found={self.st.no_ea}\n    Main release only={self.st.has_ea_only_in_main_release}')
-        self.writelog(f'Track lists:\n    Found in record and master={self.st.has_tl_in_record_and_master}\n    Found in Record only={self.st.has_tl_only_in_record} Master only={self.st.has_tl_only_in_master}\n    Not found={self.st.no_tl}\n    Main release only={self.st.has_tl_only_in_main_release}')
-        self.writelog(f'Extra Artists in Track lists:\n    Found in record and master={self.st.has_tl_ea_in_record_and_master}\n    Found in Record only={self.st.has_tl_ea_only_in_record} Master only={self.st.has_tl_ea_only_in_master}\n    Not found={self.st.no_tl_ea}\n    Main release only={self.st.has_tl_ea_only_in_main_release}')
+        self.writelog(f'Track lists:\n    Found in record and master={self.st.has_tl_in_record_and_master}\n    Found in Record only={self.st.has_tl_only_in_record} Master only={self.st.has_tl_only_in_master}\n    Not found={self.st.no_tl}') #\n    Main release only={self.st.has_tl_only_in_main_release}')
+        self.writelog(f'Extra Artists in Track lists:\n    Found in record and master={self.st.has_tl_ea_in_record_and_master}\n    Found in Record only={self.st.has_tl_ea_only_in_record} Master only={self.st.has_tl_ea_only_in_master}\n    Not found={self.st.no_tl_ea}') #\n    Main release only={self.st.has_tl_ea_only_in_main_release}')
         time_difference = datetime.datetime.now() - self.start
         self.writelog(f'Total time: {time_difference}')
 
@@ -840,6 +889,8 @@ class OtsDiscogsToCsv:
 
         if self.master:
             self.rs.ea_found_in_master = True
+        elif self.main_release:
+            self.rs.ea_found_in_main_release = True
         else:
             self.rs.ea_found_in_record = True
 
@@ -860,7 +911,8 @@ class OtsDiscogsToCsv:
                             self.writelog(f'Top-Level written-by/composed-by {ea_name}: {role}')
                             if ea_name not in self.current_record.album_written_by:
                                 self.current_record.album_written_by.append(ea_name)
-                    if not self.ignore_role(role):
+
+                    elif not self.ignore_role(role):
                         if role not in self.all_roles:
                             self.all_roles.append(role)
                         roles = self.current_record.credits.setdefault(ea_name, [])
@@ -875,16 +927,13 @@ class OtsDiscogsToCsv:
 
         if self.master:
             self.rs.tl_found_in_master = True
+        #elif self.main_release:
+        #    self.rs.tl_found_in_main_release = True
         else:
             self.rs.tl_found_in_record = True
 
         for track in tracklist:
             self.store_track(track)
-
-        # After the tracks are processed, we need to make sure the written-by is set
-        # for the case where there was a "tracks" element in the album-level extraartists
-        #for track_info in self.current_record.tracklist.values:
-        self.check_written_by()
 
     def store_track(self, track):
 
@@ -924,13 +973,8 @@ class OtsDiscogsToCsv:
             self.writelog(f"Track title not found")
             return False
 
-        ti = TrackInfo(position=track_pos, performed_by=track_artists)
-        self.current_record.tracklist[track_title] =  ti
-        #if not extraartists: 
-        #    if self.current_record.album_written_by:
-        #        self.writelog(f"Using album written by for track {track_title}: {self.current_record.album_written_by}")
-        #        ti.written_by.extend(self.current_record.album_written_by)
-        #    return
+        ti = TrackInfo(performed_by=track_artists)
+        self.current_record.tracklist[(track_title, track_pos)] =  ti
 
         if extraartists: 
             for ea in extraartists:
@@ -960,7 +1004,7 @@ class OtsDiscogsToCsv:
     def check_written_by(self):
 
         # Positions of existing tracks
-        track_positions = [t.position for t in self.current_record.tracklist.values()]
+        track_positions = [t[1] for t in self.current_record.tracklist.keys()]
 
 
         track_pos_to_artists= {}
@@ -977,12 +1021,12 @@ class OtsDiscogsToCsv:
                         written_by = track_pos_to_artists.setdefault(p, [])
                         written_by.append(artist)
 
-        for track_title, track_info in self.current_record.tracklist.items():
+        for (track_title, track_pos), track_info in self.current_record.tracklist.items():
             if track_info.written_by:
                 continue
-            written_by = track_pos_to_artists.get(track_info.position)
+            written_by = track_pos_to_artists.get(track_pos)
             if written_by:
-                self.writelog(f"For track {track_title} {track_info.position} using album-level tracks written-by: {written_by}")
+                self.writelog(f"For track {track_title} {track_pos} using album-level tracks written-by: {written_by}")
                 track_info.written_by = written_by
                 continue;
             if self.current_record.album_written_by:
@@ -1061,21 +1105,24 @@ class OtsDiscogsToCsv:
         mrk_lines.append("=LDR  00000njm a2200000Ia 4500")
 
         # 035 Control Number
-        mrk_lines.append(f"=035  \\\\$aTODO")
+        mrk_lines.append(f"=035  \\\\$a(Discogs){r.id}")
         
         # 100 Main Entry (Artist)
-        mrk_lines.append(f"=100  1\\$a{r.artists}")
+        artists = self.fix_mrk_text(r.artists)
+        mrk_lines.append(f"=100  1\\$a{artists}")
             
         # 245 Title
-        ind = self.calculate_245_indicators(r.title)
-        mrk_lines.append(f"=245  {ind}$a{r.title}")
+        title = self.fix_mrk_text(r.title)
+        ind = self.calculate_245_indicators(title)
+        mrk_lines.append(f"=245  {ind}$a{title}")
 
         # 264 Label + year
-        labels = f";".join(r.labels)
+        fixed_labels = [self.fix_mrk_text(self.fix_mrk_text(l)) for l in r.labels]
+        labels = f";".join(fixed_labels)
         year = ''
-        if r.year > 1800:
+        if r.year > 0:
             year = f'$c{r.year}'
-        mrk_lines.append(f"=264  1\\$b{labels}{year}")
+        mrk_lines.append(f"=264  \\1$b{labels}{year}")
 
         # 300 Physical Description ($a format, $f packaging/gatefold)
         # TODO: multiple 300s for each format?
@@ -1086,7 +1133,7 @@ class OtsDiscogsToCsv:
         self.mrk_tracklist(mrk_lines, r.tracklist)
 
         mrk_credits = self.mrk_credits(r.credits)
-        mrk_lines.append(f"=511  \\\\$a{mrk_credits}")
+        mrk_lines.append(f"=511  0\\$a{mrk_credits}")
 
         self.mrk_genres_and_styles(mrk_lines, r.genres, r.styles)
 
@@ -1097,7 +1144,32 @@ class OtsDiscogsToCsv:
         if self.test_case:
             self.store_mrk_for_test_case(r.id, mrk_record)
 
+    # Per gemini (I saw dollar-sign problem)
+    def fix_mrk_text(self, text):
+        if not text:
+            return ""
 
+        # 1. Convert to string and unescape HTML entities (&amp; -> &, &#39; -> ')
+        cleaned = html.unescape(str(text))
+
+        # 2. Replace embedded newlines with spaces (keeps MARC fields on 1 line)
+        cleaned = (
+            cleaned.replace("\r\n", " ").replace("\n", " ").replace("\r", " ")
+        )
+
+        # 4. Replace literal curly braces so MarcEdit doesn't treat them as mnemonics
+        cleaned = cleaned.replace("{", "(").replace("}", ")")
+
+        # 3. Escape literal dollar signs for MarcEdit
+        cleaned = cleaned.replace("$", "{dollar}")
+
+        # 5. Remove non-printable control characters (ASCII 0-31 and 127-159)
+        cleaned = re.sub(r"[\x00-\x1f\x7f-\x9f]", "", cleaned)
+
+        # 6. Collapse multiple whitespace spaces into a single space
+        cleaned = re.sub(r"\s+", " ", cleaned).strip()
+
+        return cleaned
 
     # Gemini generated. Is this needed? Should other languages be supported?
     def calculate_245_indicators(self, title, has_main_entry=False):
@@ -1152,7 +1224,7 @@ class OtsDiscogsToCsv:
 
     def csv_tracklist(self, tracklist) -> str:
         tracklist_str = ''
-        for title, track_info in tracklist.items():
+        for (title, track_pos), track_info in tracklist.items():
             written_by_str = ",".join(f'{w}' for w in track_info.written_by)
             if written_by_str:
                 written_by_str = f'Written by {written_by_str}'
@@ -1168,7 +1240,7 @@ class OtsDiscogsToCsv:
     
 
     def mrk_tracklist(self, mrk_lines, tracklist):
-        for title, track_info in tracklist.items():
+        for (title, track_pos), track_info in tracklist.items():
             written_by_str = ",".join(f'{w}' for w in track_info.written_by)
             if written_by_str:
                 written_by_str = f'Written by {written_by_str}'
@@ -1176,6 +1248,7 @@ class OtsDiscogsToCsv:
                 performed_by_str = f'Performed by {track_info.performed_by}'
             else:
                 performed_by_str = ''
+            title = self.fix_mrk_text(title)
             mrk505_str = f'=505  0\\$t{title}$r{performed_by_str}$g{written_by_str}'
             mrk_lines.append(mrk505_str)
 
@@ -1201,6 +1274,7 @@ class OtsDiscogsToCsv:
                 roles_str = f'[{roles_str}]'
             if credit_str:
                 credit_str += ','
+            artist = self.fix_mrk_text(artist)
             credit_str += f'{artist}{roles_str}'
         return credit_str
 

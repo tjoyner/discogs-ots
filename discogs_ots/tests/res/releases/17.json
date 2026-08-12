@@ -1,34 +1,33 @@
 {
-  "_comment": "Master for Record 14",
+  "_comment": "Release with no extra artists, but main release (18) has it",
   "status": "Accepted",
   "styles": [
-    "Not Modern Classical"
+    "Modern Classical"
   ],
   "genres": [
-    "Not Shoe Gaze"
+    "Acid Shoe Gaze"
   ],
   "formats": [
     {
       "name": "LP",
-      "qty": "1",
-      "descriptions": [
-        "Not Album"
-      ]
+      "qty": "1"
     }
   ],
+  "master_id": 1017,
+  "master_url": "https://api.example.com/masters/1017",
   "extraartists": [],
-  "title": "Master With Track List",
+  "title": "Release + Main Release, No Extra Artists in Release",
   "released_formatted": "2005",
   "labels": [
     {
-      "name": "Not First Label",
+      "name": "First Label",
       "entity_type": "1",
       "catno": "CAT-1",
       "id": 1818,
       "entity_type_name": "Label"
     },
     {
-      "name": "Not Second Label",
+      "name": "Second Label",
       "entity_type": "1",
       "catno": "CAT-2",
       "id": 1819,
@@ -47,61 +46,38 @@
     },
     {
       "join": "",
-      "name": "Not Tom J",
+      "name": "Tom J",
       "anv": "",
       "tracks": "",
       "role": "",
       "id": 216524
     }
   ],
-  "released": "2005",
-  "country": "UK",
-  "year": 2005,
   "tracklist": [
     {
       "duration": "5:30",
-      "position": "1",
+      "position": "A1",
       "type_": "track",
       "artists": [
         {
           "join": "",
-          "name": "Some Guy in the Master",
+          "name": "A Clown with a Kazoo",
           "anv": "",
           "tracks": "",
           "role": "",
           "id": 216524
         }
       ],
-      "title": "Title 1",
-      "extraartists": [
-        {
-          "name": "Master Blaster",
-          "anv": "",
-          "join": "",
-          "role": "Drums",
-          "tracks": "",
-          "id": 404498,
-          "resource_url": "https://api.discogs.com/artists/151"
-        },
-        {
-          "name": "John B Buoy",
-          "anv": "",
-          "join": "",
-          "role": "Written-By",
-          "tracks": "",
-          "id": 404499,
-          "resource_url": "https://api.discogs.com/artists/152"
-        }
-       ]
+      "title": "Title 1"
     },
     {
       "duration": "5:46",
-      "position": "2",
+      "position": "A2",
       "type_": "track",
       "artists": [
         {
           "join": "&",
-          "name": "Tom I Am",
+          "name": "Tom I Aint",
           "anv": "",
           "tracks": "",
           "role": "",
@@ -116,46 +92,17 @@
           "id": 95780
         }
       ],
-      "title": "Scusi",
-      "extraartists": [
-        {
-          "name": "Master Blaster",
-          "anv": "",
-          "join": "",
-          "role": "More Drums",
-          "tracks": "",
-          "id": 404498,
-          "resource_url": "https://api.discogs.com/artists/151"
-        },
-        {
-          "name": "Tortured Artist",
-          "anv": "",
-          "join": "",
-          "role": "Written-By",
-          "tracks": "",
-          "id": 404499,
-          "resource_url": "https://api.discogs.com/artists/152"
-        },
-        {
-          "name": "Smooth Player",
-          "anv": "",
-          "join": "",
-          "role": "Tasty Licks",
-          "tracks": "",
-          "id": 404499,
-          "resource_url": "https://api.discogs.com/artists/152"
-        }
-       ]
+      "title": "Scusa"
     },
     {
       "duration": "3:42",
-      "position": "3",
+      "position": "A3",
       "type_": "track",
       "title": "Title with, comma"
     },
     {
       "duration": "3:36",
-      "position": "4",
+      "position": "A4",
       "type_": "track",
       "artists": [
         {
@@ -187,7 +134,7 @@
     },
     {
       "duration": "3:41",
-      "position": "5",
+      "position": "A5",
       "type_": "track",
       "artists": [
         {
@@ -203,7 +150,7 @@
     },
     {
       "duration": "4:38",
-      "position": "6",
+      "position": "A6",
       "type_": "track",
       "artists": [
         {
@@ -215,29 +162,33 @@
           "id": 95780
         }
       ],
-      "title": "Finally, \"right?\"",
-      "extraartists": [
+      "title": "Finally, right?"
+    },
+    {
+    "duration": "6:15",
+    "position": "",
+    "sub_tracks": [
         {
-          "name": "Master Blaster",
-          "anv": "",
-          "join": "",
-          "role": "Even More Drums",
-          "tracks": "",
-          "id": 404498,
-          "resource_url": "https://api.discogs.com/artists/151"
+            "duration": "1:38",
+            "position": "A7.1",
+            "title": "First Bonus",
+            "type_": "track"
         },
         {
-          "name": "Evan Tully",
-          "anv": "",
-          "join": "",
-          "role": "Written-By",
-          "tracks": "",
-          "id": 404499,
-          "resource_url": "https://api.discogs.com/artists/152"
+            "duration": "2:05",
+            "position": "A7.2",
+            "title": "Second Bonus",
+            "type_": "track"
         }
-       ]
-    }
+    ],
+    "title": "Bonus Tracks",
+    "type_": "index"
+   }
   ],
-  "id": 12,
+  
+  "released": "2005",
+  "country": "Cameroon",
+  "year": 2005,
+  "id": 17,
   "data_quality": "Needs Vote"
 }

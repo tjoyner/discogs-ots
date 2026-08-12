@@ -85,14 +85,14 @@ def test_expand_track_positions(monkeypatch):
     monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-id", "11111", "-ua", "testus"])
     s = OtsDiscogsToCsv()
     track_list = {
-            'track 1' : TrackInfo(position='a1'),
-            'track 2' : TrackInfo(position='a2'),
-            'track 3' : TrackInfo(position='b1'),
-            'track 4' : TrackInfo(position='b2'),
-            'track 5' : TrackInfo(position='b3'),
-            'track 6' : TrackInfo(position='6')
+            ('track 1', 'a1') : TrackInfo(),
+            ('track 2', 'a2') : TrackInfo(),
+            ('track 3', 'b1') : TrackInfo(),
+            ('track 4', 'b2') : TrackInfo(),
+            ('track 5', 'b3') : TrackInfo(),
+            ('track 6', '6') : TrackInfo()
             }
-    track_positions = [t.position for t in track_list.values()]
+    track_positions = [t[1] for t in track_list.keys()]
     assert s.expand_tracks("a1, a2", track_positions) == (["a1", "a2"], False)
     assert s.expand_tracks("a1; a2", track_positions) == (["a1", "a2"], False)
     assert s.expand_tracks("a1 to a2", track_positions) == (["a1", "a2"], True)

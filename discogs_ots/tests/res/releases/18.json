@@ -1,0 +1,98 @@
+{
+  "_comment": "Release with no extra artists, but main release (18) has it",
+  "status": "Accepted",
+  "styles": [
+    "Modern Classical"
+  ],
+  "genres": [
+    "Acid Shoe Gaze"
+  ],
+  "formats": [
+    {
+      "name": "LP",
+      "qty": "1"
+    }
+  ],
+  "master_id": 1017,
+  "master_url": "https://api.example.com/masters/1017",
+  "extraartists": [
+    {
+      "name": "Sam I Am",
+      "anv": "",
+      "join": "",
+      "role": "Guitar",
+      "tracks": "A1",
+      "id": 404498,
+      "resource_url": "https://api.discogs.com/artists/151"
+    },
+    {
+      "name": "John Boy",
+      "anv": "",
+      "join": "",
+      "role": "Engineer",
+      "tracks": "",
+      "id": 404499,
+      "resource_url": "https://api.discogs.com/artists/152"
+    },
+    {
+      "name": "Larry Free Byrd",
+      "anv": "",
+      "join": "",
+      "role": "Written-By",
+      "tracks": "",
+      "id": 273922,
+      "resource_url": "https://api.discogs.com/artists/273922"
+    },
+    {
+      "name": "I Wroteaverse",
+      "anv": "",
+      "join": "",
+      "role": "Written By",
+      "tracks": "A3, A7.2",
+      "id": 273922,
+      "resource_url": "https://api.discogs.com/artists/273922"
+    }
+  ],
+  "title": "Release + Main Release, Extra Artists in Main Release",
+  "released_formatted": "2005",
+  "labels": [
+    {
+      "name": "First Label",
+      "entity_type": "1",
+      "catno": "CAT-1",
+      "id": 1818,
+      "entity_type_name": "Label"
+    },
+    {
+      "name": "Second Label",
+      "entity_type": "1",
+      "catno": "CAT-2",
+      "id": 1819,
+      "entity_type_name": "Label"
+    }
+  ],
+  "companies": [],
+  "artists": [
+    {
+      "join": "&",
+      "name": "Porch Chops",
+      "anv": "",
+      "tracks": "",
+      "role": "",
+      "id": 95780
+    },
+    {
+      "join": "",
+      "name": "Tom J",
+      "anv": "",
+      "tracks": "",
+      "role": "",
+      "id": 216524
+    }
+  ],
+  "released": "2005",
+  "country": "Cameroon",
+  "year": 2005,
+  "id": 18,
+  "data_quality": "Needs Vote"
+}
