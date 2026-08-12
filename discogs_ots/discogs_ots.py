@@ -1303,7 +1303,12 @@ class OtsDiscogsToCsv:
                 if r1 not in track_positions:
                     return ([], range_found)
                 if r2 not in track_positions:
-                    return ([], range_found)
+                    if len(r1) == 2 and len(r2) == 1: # handle "B1-2" case as "B1-B2"
+                        r2 = f'{r1[0]}{r2}'
+                        if r2 not in track_positions: # still invalid, give up
+                            return ([], range_found)
+                    else:
+                        return ([], range_found)
                 index_low = track_positions.index(r1)
                 index_high = track_positions.index(r2)
                 if index_low > index_high:

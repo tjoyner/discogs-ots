@@ -104,6 +104,7 @@ def test_expand_track_positions(monkeypatch):
 
     assert s.expand_tracks("A5 to A6", ["A1", "A2", "A3", "A4", "A5", "A6"]) == (["A5", "A6"], True)
     # Some invalid cases
+    assert s.expand_tracks("A5 to A7", ["A1", "A2", "A3", "A4", "A5", "A6"]) == ([], True)
     assert s.expand_tracks("b2 to 7", track_positions) == ([], True)
     assert s.expand_tracks("a2 to a1", track_positions) == ([], True)
     assert s.expand_tracks("b1 to a2", track_positions) == ([], True)
@@ -114,6 +115,12 @@ def test_expand_track_positions(monkeypatch):
     track_positions = ["1-1", "1-2", "1-3", "2-1"]
     assert s.expand_tracks("1-1, 1-2", track_positions) == (["1-1", "1-2"], False)
     assert s.expand_tracks("1-1 to 1-3", track_positions) == (["1-1", "1-2", "1-3"], True)
+
+    # Second track in range is implied:
+    track_positions = ["A1", "A2", "A3", "A4"]
+    assert s.expand_tracks("A1-2", track_positions) == (["A1", "A2"], True)
+    assert s.expand_tracks("A1-3", track_positions) == (["A1", "A2", "A3"], True)
+    assert s.expand_tracks("A1-5", track_positions) == ([], True)
 
 def test_fix_year(monkeypatch):
     monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-id", "11111", "-ua", "testus", "--ignore-roles", 'rolea, role b'])
