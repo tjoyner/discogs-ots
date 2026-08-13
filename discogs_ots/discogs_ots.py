@@ -400,11 +400,15 @@ class OtsDiscogsToCsv:
 
             records_to_skip = [] 
             if self.new_records_only:
-                with open(self.input_file, mode='r', newline='', encoding='utf-8') as file:
-                    for row in file:
-                        record_id_i = self.extract_record_id(row)
-                        if record_id_i and record_id_i > 0:
-                            records_to_skip.append(record_id_i)
+                try: 
+                    with open(self.input_file, mode='r', newline='', encoding='utf-8') as file:
+                        for row in file:
+                            record_id_i = self.extract_record_id(row)
+                            if record_id_i and record_id_i > 0:
+                                records_to_skip.append(record_id_i)
+                except OSError:
+                    print (f'{self.input_file} could not be opened.')
+                    sys.exit(1)
 
             seen = {}
             duplicates = []
@@ -420,13 +424,17 @@ class OtsDiscogsToCsv:
                     if self.get_record_data(r.id):
                         self.st.records += 1
         else:
-            with open(self.input_file, mode='r', newline='', encoding='utf-8') as file:
-                # Iterate through each row
-                for row in file:
-                    record_id_i = self.extract_record_id(row)
-                    if record_id_i and record_id_i > 0:
-                        if self.get_record_data(f'{record_id_i}'):
-                            self.st.records += 1
+            try:
+                with open(self.input_file, mode='r', newline='', encoding='utf-8') as file:
+                    # Iterate through each row
+                    for row in file:
+                        record_id_i = self.extract_record_id(row)
+                        if record_id_i and record_id_i > 0:
+                            if self.get_record_data(f'{record_id_i}'):
+                                self.st.records += 1
+            except OSError:
+                print (f'{self.input_file} could not be opened.')
+                sys.exit(1)
 
         self.log_final_stats()
 
