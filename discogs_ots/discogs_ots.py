@@ -18,9 +18,6 @@ import json
 import traceback
 from collections import Counter
 
-# temp fix for encoding: $env:PYTHONIOENCODING="utf-8"
-#                        or set pythonencoding="utf-8"
-# or: python your_script.py | Out-File -Encoding utf8 output.txt
 API_ROLE = "role"
 API_WRITTEN_BY = "Written-By"
 API_WRITTEN_BY_NO_DASH = "Written By"
@@ -92,15 +89,7 @@ CFG_DUMP_JSON="dump_json"
 CFG_WRITE_MRK="write_mrk"
 
 """ 
-Read the artist and role into a list of tuples. 
-Initially, convert to a cvs column. Generate 7 column csv file:
-    - record id, title, master id, ea (record), ea per song (record), ea (master), ea per song (master)
-    - Later, get track list
-Left off (6/23/26: Roles can be overall or per/track, for instance, an artist can be a producer and also play
-     on certain tracks)
-Each record has 4 extra artist lists (for now)
-    Each list is a dictionary with the artist name as a key, with a dictionary of roles
-    Each role has a dictionary of tracks, which may be empty
+Read the discogs record information and format it into a .csv (or .mrk) record.
 """
 
 @dataclass
@@ -129,10 +118,17 @@ class RecordInfo:
 
     tracklist:  dict = field(default_factory=dict) # (title, position) : TrackInfo
 
-    credits: dict = field(default_factory=dict)
+    # This collects the list of roles for each "extra artist" found
+    # in the record. It does not include written-by/composed-by since
+    # those are handled per track.
+    credits: dict = field(default_factory=dict) # extraartist : role
 
-    master_id: int = 0
-
+    # if a "written-by" is encountered for the entire album, it is
+    # used as the default if a written-by is not encountered for a track
+    # or for particular tracks. The precedence is:
+    #  1. Written-By found in the extraartists for a track in the tracklist
+    #  2. Written-By found in the album-level extra-artists with a list of tracks
+    #  3. Written-By found in the album-level extra-artists with a list of tracks
     album_written_by:  list = field(default_factory=list) 
 
     # if an album level extra artist contains a written by with
@@ -149,11 +145,9 @@ class RecordStats:
 
     tl_found_in_record = False
     tl_found_in_master = False
-    #tl_found_in_main_release = False
 
     tl_ea_found_in_record = False
     tl_ea_found_in_master = False
-    #tl_ea_found_in_main_release = False
 
 @dataclass
 class AllStats:
@@ -165,13 +159,11 @@ class AllStats:
 
     has_tl_only_in_record = 0
     has_tl_only_in_master = 0
-    #has_tl_only_in_main_release = 0
     has_tl_in_record_and_master = 0
     no_tl = 0
 
     has_tl_ea_only_in_record = 0
     has_tl_ea_only_in_master = 0
-    #has_tl_ea_only_in_main_release = 0
     has_tl_ea_in_record_and_master = 0
     no_tl_ea = 0
 
@@ -191,7 +183,6 @@ class OtsDiscogsToCsv:
 
         # dict record id : csv row
         self.csv_rows = {}
-
 
         if discogs_test_client:
             self.d = discogs_test_client
@@ -284,7 +275,7 @@ class OtsDiscogsToCsv:
         if args.check_main_release:
             self.check_main_release = True
         elif config and config.has_option(CFG_SETTINGS,CFG_CHECK_MAIN_RELEASE):
-            self.check_main_release = config[CFG_SETTINGS][CFG_MAIN_RELEASE]
+            self.check_main_release = config[CFG_SETTINGS][CFG_CHECK_MAIN_RELEASE]
 
         self.write_mrk = False
         if args.write_mrk:
@@ -511,25 +502,9 @@ class OtsDiscogsToCsv:
             #for track_info in self.current_record.tracklist.values:
             self.check_written_by()
 
-                # check main release if different 
-                # TODO (if this is helpful): make this an option, fix stats
-                # if not helpful, remove all main release references
-                #if not self.rs.tl_found_in_master and master.main_release and master.main_release.id != record_id:
-                #    self.writelog(f"Tracklist not found in master and main release is different than record id ({master.main_release.id} != {record_id})")
-                #    main_release = self.d.release(master.main_release.id)
-                #    main_release.refresh()
-                #    self.main_release = True
-                #    self.store_master_data(main_release)
-
             self.write_csv()
             if self.write_mrk:
                 self.write_mrk_record()
-
-            #if master.main_release and master.main_release.id != record_id:
-            #    self.main_release = True
-            #    main_release = self.d.release(master.main_release.id)
-            #    main_release.refresh()
-            #    ea_found_in_main_release  = self.get_extraartists(main_release)
 
             if self.rs.ea_found_in_record and self.rs.ea_found_in_master:
                 self.st.has_ea_in_record_and_master += 1
@@ -548,8 +523,6 @@ class OtsDiscogsToCsv:
                 self.st.has_tl_only_in_record += 1
             elif self.rs.tl_found_in_master:
                 self.st.has_tl_only_in_master += 1
-            #elif not self.rs.tl_found_in_master and not self.rs.tl_found_in_record and self.rs.tl_found_in_main_release:
-            #    self.st.rs.has_tl_only_in_main_release += 1
             else:
                 self.st.no_tl += 1
 
@@ -559,8 +532,6 @@ class OtsDiscogsToCsv:
                 self.st.has_tl_ea_only_in_record += 1
             elif self.rs.tl_ea_found_in_master:
                 self.st.has_tl_ea_only_in_master += 1
-            #elif not self.rs.tl_ea_found_in_master and not self.rs.tl_ea_found_in_record and self.rs.tl_ea_found_in_main_release:
-            #    self.st.rs.has_tl_ea_only_in_main_release += 1
             else:
                 self.st.no_tl_ea += 1
 
@@ -636,13 +607,14 @@ class OtsDiscogsToCsv:
 
         for label in self.release.labels:
             name = label.name.strip()
-            #name = label.get(API_NAME, "").strip()
             #catno = label.catno.strip()
     
             # Format as "Label Name [Catalog Number]"
+            # TODO: removed catalog number, restore if needed
             self.current_record.labels.append(name)
 
-
+    # Duplicate artist names in discogs have a number after them (e.g. "John Doe (2)").
+    # This removes the parententical number
     def fix_artist_name(self, artist_name):
         if artist_name == None:
             return ''
@@ -664,9 +636,6 @@ class OtsDiscogsToCsv:
             description="Fetch record data from Discogs API and save to a file."
         )
 
-        # Group for input options (Mutually exclusive means you must pick ONE)
-        #input_group = parser.add_mutually_exclusive_group(required=True)
-        
         parser.add_argument(
             '-i', '--input-file', 
             type=str, 
@@ -860,27 +829,6 @@ class OtsDiscogsToCsv:
 
         return False
 
-    # get the overall ea:
-    #  store the credits per artist
-    #    skip if excluded
-    #    store Written By if found
-    #    check for per/track written by???
-    #  Go through the tracklist
-    #    If written-by isn't specified, use overall??
-    #    if index track, find subtracks
-    #    go through extra artists in track
-    #       add writtenby/composed by to track list
-    #       add other per/track roles to credits
-    #    if writtenby not found (or no ea), use overall if exists?
-    #  if "use master if no tracklist" go through master
-    #  if "always use master if no tracklist" go through master if no tracklist
-    #  if "always check master" go through master and add to roles/written by as above
-    #
-    #  if "use main record if no tracklist" go through mainrecord only if record and master don't have it, and main
-    #  record is unique
-    #  if "always check main record" go through main record (if different) and add to roles/written by as above
-    #  
-
     def store_credits(self, record) -> bool:
         extraartists = record.data.get(API_EXTRAARTISTS)
         if not extraartists:
@@ -894,6 +842,9 @@ class OtsDiscogsToCsv:
         else:
             self.rs.ea_found_in_record = True
 
+        # Check the album level extra artists. Store the roles for
+        # each artist (if not in ignore_roles list). Written-By roles
+        # are handled per track, all others are per record.
         for ea in extraartists:
             ea_name = self.fix_artist_name(ea.get(API_NAME))
             ea_role = ea.get(API_ROLE, '')
@@ -927,8 +878,6 @@ class OtsDiscogsToCsv:
 
         if self.master:
             self.rs.tl_found_in_master = True
-        #elif self.main_release:
-        #    self.rs.tl_found_in_main_release = True
         else:
             self.rs.tl_found_in_record = True
 
@@ -986,7 +935,6 @@ class OtsDiscogsToCsv:
                     else:
                         self.rs.tl_ea_found_in_record = True
 
-                    #rolelist = [r.strip() for r in ea_role.split(',')]
                     rolelist = self.split_roles(ea_role)
                     for role in rolelist:
                         if not self.ignore_role(role):
@@ -997,10 +945,6 @@ class OtsDiscogsToCsv:
                                 roles = self.current_record.credits.setdefault(ea_name, [])
                                 if role not in roles:
                                     roles.append(role)
-        #if not ti.written_by:
-        #    self.writelog(f"Using album written by for track {track_title}: {self.current_record.album_written_by}")
-        #    ti.written_by.extend(self.current_record.album_written_by)
-
     def check_written_by(self):
 
         # Positions of existing tracks
@@ -1158,10 +1102,10 @@ class OtsDiscogsToCsv:
             cleaned.replace("\r\n", " ").replace("\n", " ").replace("\r", " ")
         )
 
-        # 4. Replace literal curly braces so MarcEdit doesn't treat them as mnemonics
+        # 3. Replace literal curly braces so MarcEdit doesn't treat them as mnemonics
         cleaned = cleaned.replace("{", "(").replace("}", ")")
 
-        # 3. Escape literal dollar signs for MarcEdit
+        # 4. Escape literal dollar signs for MarcEdit
         cleaned = cleaned.replace("$", "{dollar}")
 
         # 5. Remove non-printable control characters (ASCII 0-31 and 127-159)
@@ -1279,7 +1223,8 @@ class OtsDiscogsToCsv:
             credit_str += f'{artist}{roles_str}'
         return credit_str
 
-    # written_by: text like: "A1, A3-A5" (or A3 to A5)
+    # written_by: expand text like: "A1, A3-A5" (or A3 to A5) to individual tracks
+    # Individual tracks are validated against the track list positions for the album.
     def expand_tracks(self, tracks, track_positions):
 
         # Some albums label tracks with a dash. If so, don't assume it's a range
