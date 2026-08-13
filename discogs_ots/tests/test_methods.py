@@ -51,25 +51,27 @@ def test_fix_artist(monkeypatch):
     assert s.fix_artist_name("Joe Guitar  (4) ") == "Joe Guitar"
 
 def test_ignore_role(monkeypatch):
-    monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-id", "11111", "-ua", "testus", "--ignore-roles", 'rolea, role b'])
+    monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-id", "11111", "-ua", "testus", "--ignore-roles", 'rolea, role b, role C'])
     s = OtsDiscogsToCsv()
     assert s.ignore_role("rolec") is False
-    assert s.ignore_role("rolea")
+    assert s.ignore_role("rolea") is True
     assert s.ignore_role("role") is False
-    assert s.ignore_role("role b")
-    assert s.ignore_role("role b plus") # ignore role is contained in role
+    assert s.ignore_role("role b") is True
+    assert s.ignore_role("role B") is True
+    assert s.ignore_role("role c") is True
+    assert s.ignore_role("role b plus") is True # ignore role is contained in role
 
 def test_written_by_in_role(monkeypatch):
     monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-id", "11111", "-ua", "testus"])
     s = OtsDiscogsToCsv()
     assert s.is_written_by_in_role('not in here') is False
-    assert s.is_written_by_in_role('Written By')
-    assert s.is_written_by_in_role('written-By')
-    assert s.is_written_by_in_role('composed by')
-    assert s.is_written_by_in_role('composed-by')
-    assert s.is_written_by_in_role('is composed-by')
-    assert s.is_written_by_in_role('is written-by i think')
-    assert s.is_written_by_in_role(' written by')
+    assert s.is_written_by_in_role('Written By') is True
+    assert s.is_written_by_in_role('written-By') is True
+    assert s.is_written_by_in_role('composed by') is True
+    assert s.is_written_by_in_role('composed-by') is True
+    assert s.is_written_by_in_role('is composed-by') is True
+    assert s.is_written_by_in_role('is written-by i think') is True
+    assert s.is_written_by_in_role(' written by') is True
 
 def test_split_roles(monkeypatch):
     monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-id", "11111", "-ua", "testus"])
