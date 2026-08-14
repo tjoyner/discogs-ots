@@ -917,8 +917,8 @@ class OtsDiscogsToCsv:
 
         elif track_type != API_TRACK_TYPE_TRACK:
             self.writelog(f"Skipping track type \"{track_type}\" found for {self.current_record.id}-{track_title}, pos={track_pos}")
-            return False
-        return self.store_track_info(extraartists, track_pos, track_title, track_artists)
+        else:
+            self.store_track_info(extraartists, track_pos, track_title, track_artists)
 
     def store_track_info(self, extraartists, track_pos, track_title, track_artists):
 
