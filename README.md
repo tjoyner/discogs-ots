@@ -1,7 +1,5 @@
-```markdown
 # Discogs Information Retrieval Application
-
-A Python application designed to extract the information from Discogs need for creation of library records.
+A Python application designed to extract the information from Discogs needed to create library records.
 
 ---
 
@@ -45,7 +43,8 @@ python ./discogs_ots.py -c ../../ots.ini  -o ../../ots_0815.csv -qi
 
 Run the test cases:
 ```bash
-python pytest
+python -m pytest
+Add -s to see the program output
 
 ```
 
