@@ -73,7 +73,7 @@ headers = {
 CFG_SETTINGS="settings"
 CFG_API="api"
 
-CFG_RECORD_ID="record_id"
+CFG_RELEASE_ID="release_id"
 CFG_INPUT_FILE="input_file"
 CFG_OUTPUT_FILE="output_file"
 CFG_LOG_FILE="log_file"
@@ -174,7 +174,7 @@ class OtsDiscogsToCsv:
     # test cases will pass a test client
     def __init__(self, discogs_test_client=None):
         self.requests=0
-        self.record_id = 0
+        self.release_id = 0
         self.d = None
 
         # Use for testing
@@ -218,10 +218,10 @@ class OtsDiscogsToCsv:
         elif config and config.has_option(CFG_SETTINGS,CFG_INPUT_FILE):
             self.input_file = config[CFG_SETTINGS][CFG_INPUT_FILE]
 
-        if args.record_id:
-            self.record_id = args.record_id
-        elif config and config.has_option(CFG_SETTINGS,CFG_OUTPUT_FILE):
-            self.record_id = config[CFG_SETTINGS][CFG_RECORD_ID]
+        if args.release_id:
+            self.release_id = args.release_id
+        elif config and config.has_option(CFG_SETTINGS,CFG_RELEASE_ID):
+            self.release_id = config[CFG_SETTINGS][CFG_RELEASE_ID]
 
         log_file = None
         if args.log_file:
@@ -365,14 +365,14 @@ class OtsDiscogsToCsv:
                 entered += 1 
             if self.input_file:
                 entered += 1 
-            if self.record_id:
+            if self.release_id:
                 entered += 1 
             if entered > 1:
-                print ("Only one of input-file, query-for-ids, or record-id can be entered")
+                print ("Only one of input-file, query-for-ids, or release-id can be entered")
                 sys.exit(1)
 
-            if not self.record_id and not self.query_for_ids and not self.input_file:
-                print ("Enter input-file, query-for-ids or record-id")
+            if not self.release_id and not self.query_for_ids and not self.input_file:
+                print ("Enter input-file, query-for-ids or release-id")
                 sys.exit(1)
 
     def run(self):
@@ -383,8 +383,8 @@ class OtsDiscogsToCsv:
 
         self.st = AllStats()
 
-        if self.record_id:
-            self.get_record_data(self.record_id)
+        if self.release_id:
+            self.get_record_data(self.release_id)
             self.st.records = 1
             self.log_final_stats()
             return
@@ -403,9 +403,9 @@ class OtsDiscogsToCsv:
                 try: 
                     with open(self.input_file, mode='r', newline='', encoding='utf-8') as file:
                         for row in file:
-                            record_id_i = self.extract_record_id(row)
-                            if record_id_i and record_id_i > 0:
-                                records_to_skip.append(record_id_i)
+                            release_id_i = self.extract_release_id(row)
+                            if release_id_i and release_id_i > 0:
+                                records_to_skip.append(release_id_i)
                 except OSError:
                     print (f'{self.input_file} could not be opened.')
                     sys.exit(1)
@@ -428,9 +428,9 @@ class OtsDiscogsToCsv:
                 with open(self.input_file, mode='r', newline='', encoding='utf-8') as file:
                     # Iterate through each row
                     for row in file:
-                        record_id_i = self.extract_record_id(row)
-                        if record_id_i and record_id_i > 0:
-                            if self.get_record_data(f'{record_id_i}'):
+                        release_id_i = self.extract_release_id(row)
+                        if release_id_i and release_id_i > 0:
+                            if self.get_record_data(f'{release_id_i}'):
                                 self.st.records += 1
             except OSError:
                 print (f'{self.input_file} could not be opened.')
@@ -439,35 +439,35 @@ class OtsDiscogsToCsv:
         self.log_final_stats()
 
     # read ID from first position in file, ignore anything that comes after.
-    def extract_record_id(self, row):
-        record_id = None
+    def extract_release_id(self, row):
+        release_id = None
         match = re.match(r"^\s*(\d+)", row)
         if match:
-            record_id = int(match.group(1))
-        return record_id
+            release_id = int(match.group(1))
+        return release_id
 
-    def get_record_data(self, record_id):
+    def get_record_data(self, release_id):
         try:
-            record_id_i = self.to_int(record_id)
+            release_id_i = self.to_int(release_id)
 
-            if record_id_i == 0:
-                self.writelog(f'Skipping invalid record ID {record_id}')
+            if release_id_i == 0:
+                self.writelog(f'Skipping invalid record ID {release_id}')
                 return False
 
             self.rs = RecordStats()
 
-            self.release = self.d.release(record_id)
+            self.release = self.d.release(release_id)
             self.release.refresh()
 
             if self.dump_json:
                 formatted_json = json.dumps(self.release.data, indent=4, sort_keys=True)
-                header = f' Record {record_id_i} '.center(72, '#')
+                header = f' Record {release_id_i} '.center(72, '#')
                 self.json_out.write(f"{header}\n{formatted_json}\n\n")
 
             self.requests += 1
 
             self.current_record = RecordInfo()
-            self.current_record.id = record_id_i
+            self.current_record.id = release_id_i
             self.current_record.title = self.release.title
             self.master = False
             self.main_release = False
@@ -482,7 +482,7 @@ class OtsDiscogsToCsv:
                 master_record.refresh()
                 if self.dump_json:
                     formatted_json = json.dumps(master_record.data, indent=4, sort_keys=True)
-                    header = f' Master record {self.release.master.id} of record {record_id} '.center(72, '#')
+                    header = f' Master record {self.release.master.id} of record {release_id} '.center(72, '#')
                     self.json_out.write(f"{header}\n{formatted_json}\n\n")
                 self.store_master_data(master_record)
 
@@ -492,13 +492,13 @@ class OtsDiscogsToCsv:
                     # read the master (if not read above), only to get the main release ID.
                     master_record = self.d.master(self.release.master.id)
                     master_record.refresh()
-                    if master_record.main_release.id != record_id:
-                        self.writelog(f"Extra artists not found in record and main release is different than record id ({master_record.main_release.id} != {record_id})")
+                    if master_record.main_release.id != release_id:
+                        self.writelog(f"Extra artists not found in record and main release is different than record id ({master_record.main_release.id} != {release_id})")
                         m_release = self.d.release(master_record.main_release.id)
                         m_release.refresh()
                         if self.dump_json:
                             formatted_json = json.dumps(m_release.data, indent=4, sort_keys=True)
-                            header = f' Main release {master_record.main_release.id} of record {record_id} '.center(72, '#')
+                            header = f' Main release {master_record.main_release.id} of record {release_id} '.center(72, '#')
                             self.json_out.write(f"{header}\n{formatted_json}\n\n")
                         ea = m_release.data.get(API_EXTRAARTISTS)
                         if ea:
@@ -550,9 +550,9 @@ class OtsDiscogsToCsv:
             # Check if the error message or status inside the exception indicates a 404
             if e.status_code == 404:
                 if self.master:
-                    self.writelog(f"Master of record ID {record_id} was NOT found (404 Error).")
+                    self.writelog(f"Master of record ID {release_id} was NOT found (404 Error).")
                     return False
-                self.writelog(f"Record ID {record_id} was NOT found (404 Error).")
+                self.writelog(f"Record ID {release_id} was NOT found (404 Error).")
             else:
                 self.writelog(f"A different API error occurred: {e}")
             return False
@@ -641,32 +641,32 @@ class OtsDiscogsToCsv:
         Handles command-line arguments for the Discogs script.
         """
         parser = argparse.ArgumentParser(
-            description="Fetch record data from Discogs API and save to a file."
+            description="Fetch record data from Discogs API."
         )
 
         parser.add_argument(
             '-i', '--input-file', 
             type=str, 
-            help="Path to the input file containing a list of Discogs IDs."
+            help="Path to the input file containing a list of Discogs release IDs, one per line. Anything after the ID is ignored."
         )
         
         parser.add_argument(
-            '-id', '--record-id', 
+            '-id', '--release-id', 
             type=int, 
-            help="A single Discogs Record/Release ID to process."
+            help="Process a single Discogs Release ID."
         )
         
         parser.add_argument(
             '-qi', '--query-for-ids', 
             action='store_true',
-            help="Query discogs for the record_ids. user_token must be specified"
+            help="Query the Discogs collection for the release IDs. user-token must also be specified"
         )
 
         # Argument for the output file destination
         parser.add_argument(
             '-o', '--output-file', 
             type=str, 
-            help="Path to the output text/CSV file where retrieved discogs information will be saved."
+            help="The output CSV file."
         )
 
         parser.add_argument(
@@ -678,37 +678,37 @@ class OtsDiscogsToCsv:
         parser.add_argument(
             '-c', '--config', 
             type=str, 
-            help="Input configuration .ini file"
+            help="Path to an .ini configuration file"
         )
         
         parser.add_argument(
             '-ua', '--user-agent', 
             type=str, 
-            help="User-Agent to use for API request"
+            help="User-Agent to use for Discogs API requests"
         )
         
         parser.add_argument(
             '-ut', '--user-token', 
             type=str, 
-            help="User-Agent to use for authenticated API request"
+            help="User token (generated at Discogs site) to use for authenticated API requests"
         )
 
         parser.add_argument(
             '-ir', '--ignore-roles', 
             type=str, 
-            help="A list of comma-separated roles to ignore"
+            help="Comma-separated list of artist roles to skip (e.g., Engineer)."
         )
 
         parser.add_argument(
             '-lar', '--log-all-roles', 
             action='store_true', 
-            help="Log all roles encountered, not including ignored roles."
+            help="Log all artist roles encountered (not including configured ignored roles)."
         )
 
         parser.add_argument(
             '-nro', '--new-records-only', 
             action='store_true', 
-            help="Only get records that aren't in the input list. Requires --query-for-ids and --input-file."
+            help="Query the user's Discogs collection for release IDs that aren't in the input list. Requires --query-for-ids and --input-file."
         )
 
         parser.add_argument(
@@ -720,19 +720,19 @@ class OtsDiscogsToCsv:
         parser.add_argument(
             '-cmr', '--check-main-release', 
             action='store_true', 
-            help="Check the main release record (if it exists and is different) for extra artists"
+            help="Check the main release record (if it exists and is different from the release ID for extra artists"
         )
 
         parser.add_argument(
             '-dj', '--dump-json', 
             action='store_true', 
-            help="Dump the json records into 'output-file'.json"
+            help="Dump the raw Discogs json response into output-file'.json"
         )
 
         parser.add_argument(
             '-mrk', '--write-mrk', 
             action='store_true', 
-            help="Write MARC .mrk file instead of a csv file"
+            help="Write a MARC .mrk file in addition to the csv file."
         )
 
         # Parse the arguments from the command line
@@ -1046,7 +1046,7 @@ class OtsDiscogsToCsv:
         # Temporary buffer for a single row
         mrkB = io.StringIO()
         mrkB.write(mrk_record)
-        self.mrk_records[id] = mrkB.getValue()
+        self.mrk_records[id] = mrkB.getvalue()
         mrkB.close()
 
     def write_mrk_record(self):
@@ -1061,15 +1061,19 @@ class OtsDiscogsToCsv:
         
         # 100 Main Entry (Artist)
         artists = self.fix_mrk_text(r.artists)
-        mrk_lines.append(f"=100  1\\$a{artists}")
+        has_100 = False
+        if artists:
+            has_100 = True
+            mrk_lines.append(f"=100  1\\$a{artists}")
             
         # 245 Title
         title = self.fix_mrk_text(r.title)
-        ind = self.calculate_245_indicators(title)
+
+        ind = self.calculate_245_indicators(title, has_main_entry=has_100)
         mrk_lines.append(f"=245  {ind}$a{title}")
 
         # 264 Label + year
-        fixed_labels = [self.fix_mrk_text(self.fix_mrk_text(l)) for l in r.labels]
+        fixed_labels = [self.fix_mrk_text(l) for l in r.labels]
         labels = f";".join(fixed_labels)
         year = ''
         if r.year > 0:
@@ -1202,7 +1206,11 @@ class OtsDiscogsToCsv:
             else:
                 performed_by_str = ''
             title = self.fix_mrk_text(title)
-            mrk505_str = f'=505  0\\$t{title}$r{performed_by_str}$g{written_by_str}'
+            mrk505_str = f'=505  0\\$t{title}'
+            if performed_by_str:
+                mrk505_str += f'$r{performed_by_str}'
+            if written_by_str:
+                mrk505_str += f'$g{written_by_str}'
             mrk_lines.append(mrk505_str)
 
     def csv_credits(self, credits) -> str:

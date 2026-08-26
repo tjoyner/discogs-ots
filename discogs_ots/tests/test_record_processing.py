@@ -557,11 +557,11 @@ def test_record_list(monkeypatch, discogs_connection):
             os.remove(temp_file.name)
             os.remove(cfg_file.name)
 
-# If the input file is a (previously generated) csv, make sure extra data is ignored (only extract record ids)
+# If the input file is a (previously generated) csv, make sure extra data is ignored (only extract release ids)
 def test_record_list_from_csv(monkeypatch, discogs_connection):
     with tempfile.NamedTemporaryFile(mode='w+t', suffix='.txt', delete=False) as temp_file:
         try:
-            temp_file.write("record_id,\ntitle\n")
+            temp_file.write("release_id,\ntitle\n")
             temp_file.write('14,"This is a title"\n')
             temp_file.write('15 "This is another title with whitespace separator"\n')
             temp_file.close() # Ensure data is written to disk
