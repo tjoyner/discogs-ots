@@ -79,7 +79,7 @@ You can configure options using a standard INI configuration file instead of pas
 ```ini
 [api]
 user_agent = MyCatalogApp/1.0
-user_token = YOUR_DISCOGS_USER_TOKEN
+user_token = YOUR_DISCOGS_USER_TOKEN (see https://www.discogs.com/settings/developers)
 
 [settings]
 input_file = input_ids.txt
