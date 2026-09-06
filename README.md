@@ -10,7 +10,7 @@ A Python application designed to extract the information from Discogs needed to 
   * Checks track-level extraartists for written-by credits.
   * Falls back to album level extraartists for written-by credits per track.
   * Falls back to album level extraartists for written-by credits for the entire album 
-* **If track or extraartist information is missing, it can optionally search the master record or the main release entry (if different than the record
+* **Additional Record Search:** If track or extraartist information is missing, it can optionally search the master record or the main release entry (if different than the record
   being processed).
 * **Track Range Expansion:** Automatically parses top-level track-writing assignments (e.g., converting `"A1, A3 to A5"` or `"B1-2"` into explicit track positions mapped to individual track records). If expansion is not possible, an error is logged.
 * **Flexible Fetching Modes:** Process individual release IDs, batch process list files, or query a user's entire Discogs collection folder.
