@@ -72,7 +72,7 @@ Add -s to see the program output
 
 ---
 
-## Configuration (`config.ini`)
+## Configuration (`*.ini`)
 
 You can configure options using a standard INI configuration file instead of passing command-line arguments:
 
