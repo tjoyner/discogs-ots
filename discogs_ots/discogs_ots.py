@@ -447,115 +447,135 @@ class OtsDiscogsToCsv:
         return release_id
 
     def get_record_data(self, release_id):
-        try:
-            release_id_i = self.to_int(release_id)
+        release_id_i = self.to_int(release_id)
 
-            if release_id_i == 0:
-                self.writelog(f'Skipping invalid record ID {release_id}')
-                return False
+        if release_id_i == 0:
+            self.writelog(f'Skipping invalid record ID {release_id}')
+            return False
 
-            self.rs = RecordStats()
+        self.rs = RecordStats()
 
-            self.release = self.d.release(release_id)
-            self.release.refresh()
+        if not self.setup_release(release_id):
+            return False
 
+        if self.dump_json:
+            formatted_json = json.dumps(self.release.data, indent=4, sort_keys=True)
+            header = f' Record {release_id_i} '.center(72, '#')
+            self.json_out.write(f"{header}\n{formatted_json}\n\n")
+
+        self.requests += 1
+
+        self.current_record = RecordInfo()
+        self.current_record.id = release_id_i
+        self.current_record.title = self.release.title
+        self.master = False
+        self.main_release = False
+
+        self.store_record_data()
+
+        # read the tracklist from the master if not found in release
+        master_record = None
+        if self.check_master and self.release.master and not self.rs.tl_found_in_record:
+            self.master = True
+            master_record = self.d.master(self.release.master.id)
+            master_record.refresh()
             if self.dump_json:
-                formatted_json = json.dumps(self.release.data, indent=4, sort_keys=True)
-                header = f' Record {release_id_i} '.center(72, '#')
+                formatted_json = json.dumps(master_record.data, indent=4, sort_keys=True)
+                header = f' Master record {self.release.master.id} of record {release_id} '.center(72, '#')
                 self.json_out.write(f"{header}\n{formatted_json}\n\n")
+            self.store_master_data(master_record)
 
-            self.requests += 1
-
-            self.current_record = RecordInfo()
-            self.current_record.id = release_id_i
-            self.current_record.title = self.release.title
-            self.master = False
-            self.main_release = False
-
-            self.store_record_data()
-
-            # read the tracklist from the master if not found in release
-            master_record = None
-            if self.check_master and self.release.master and not self.rs.tl_found_in_record:
-                self.master = True
+        # if the record-level extraartists wasn't found in the record, check the main release (if different)
+        if self.check_main_release and not self.rs.ea_found_in_record: 
+            if not master_record and self.release.master:
+                # read the master (if not read above), only to get the main release ID.
                 master_record = self.d.master(self.release.master.id)
                 master_record.refresh()
-                if self.dump_json:
-                    formatted_json = json.dumps(master_record.data, indent=4, sort_keys=True)
-                    header = f' Master record {self.release.master.id} of record {release_id} '.center(72, '#')
-                    self.json_out.write(f"{header}\n{formatted_json}\n\n")
-                self.store_master_data(master_record)
+                if master_record.main_release.id != release_id:
+                    self.writelog(f"Extra artists not found in record and main release is different than record id ({master_record.main_release.id} != {release_id})")
+                    m_release = self.d.release(master_record.main_release.id)
+                    m_release.refresh()
+                    if self.dump_json:
+                        formatted_json = json.dumps(m_release.data, indent=4, sort_keys=True)
+                        header = f' Main release {master_record.main_release.id} of record {release_id} '.center(72, '#')
+                        self.json_out.write(f"{header}\n{formatted_json}\n\n")
+                    ea = m_release.data.get(API_EXTRAARTISTS)
+                    if ea:
+                        self.writelog(f"Extra artists found in main release ({master_record.main_release.id}).")
+                        self.main_release = True
+                        self.store_credits(m_release)
+        # After the tracks are processed, we need to make sure the written-by is set
+        # for the case where there was a "tracks" element in the album-level extraartists
+        #for track_info in self.current_record.tracklist.values:
+        self.check_written_by()
 
-            # if the record-level extraartists wasn't found in the record, check the main release (if different)
-            if self.check_main_release and not self.rs.ea_found_in_record: 
-                if not master_record and self.release.master:
-                    # read the master (if not read above), only to get the main release ID.
-                    master_record = self.d.master(self.release.master.id)
-                    master_record.refresh()
-                    if master_record.main_release.id != release_id:
-                        self.writelog(f"Extra artists not found in record and main release is different than record id ({master_record.main_release.id} != {release_id})")
-                        m_release = self.d.release(master_record.main_release.id)
-                        m_release.refresh()
-                        if self.dump_json:
-                            formatted_json = json.dumps(m_release.data, indent=4, sort_keys=True)
-                            header = f' Main release {master_record.main_release.id} of record {release_id} '.center(72, '#')
-                            self.json_out.write(f"{header}\n{formatted_json}\n\n")
-                        ea = m_release.data.get(API_EXTRAARTISTS)
-                        if ea:
-                            self.writelog(f"Extra artists found in main release ({master_record.main_release.id}).")
-                            self.main_release = True
-                            self.store_credits(m_release)
-            # After the tracks are processed, we need to make sure the written-by is set
-            # for the case where there was a "tracks" element in the album-level extraartists
-            #for track_info in self.current_record.tracklist.values:
-            self.check_written_by()
+        self.write_csv()
+        if self.write_mrk:
+            self.write_mrk_record()
 
-            self.write_csv()
-            if self.write_mrk:
-                self.write_mrk_record()
+        if self.rs.ea_found_in_record and self.rs.ea_found_in_master:
+            self.st.has_ea_in_record_and_master += 1
+        elif self.rs.ea_found_in_record:
+            self.st.has_ea_only_in_record += 1
+        elif self.rs.ea_found_in_master:
+            self.st.has_ea_only_in_master += 1
+        elif not self.rs.ea_found_in_master and not self.rs.ea_found_in_record and self.rs.ea_found_in_main_release:
+            self.st.has_ea_only_in_main_release += 1
+        else:
+            self.st.no_ea += 1
 
-            if self.rs.ea_found_in_record and self.rs.ea_found_in_master:
-                self.st.has_ea_in_record_and_master += 1
-            elif self.rs.ea_found_in_record:
-                self.st.has_ea_only_in_record += 1
-            elif self.rs.ea_found_in_master:
-                self.st.has_ea_only_in_master += 1
-            elif not self.rs.ea_found_in_master and not self.rs.ea_found_in_record and self.rs.ea_found_in_main_release:
-                self.st.has_ea_only_in_main_release += 1
-            else:
-                self.st.no_ea += 1
+        if self.rs.tl_found_in_record and self.rs.tl_found_in_master:
+            self.st.has_tl_in_record_and_master += 1
+        elif self.rs.tl_found_in_record:
+            self.st.has_tl_only_in_record += 1
+        elif self.rs.tl_found_in_master:
+            self.st.has_tl_only_in_master += 1
+        else:
+            self.st.no_tl += 1
 
-            if self.rs.tl_found_in_record and self.rs.tl_found_in_master:
-                self.st.has_tl_in_record_and_master += 1
-            elif self.rs.tl_found_in_record:
-                self.st.has_tl_only_in_record += 1
-            elif self.rs.tl_found_in_master:
-                self.st.has_tl_only_in_master += 1
-            else:
-                self.st.no_tl += 1
+        if self.rs.tl_ea_found_in_record and self.rs.tl_ea_found_in_master:
+            self.st.has_tl_ea_in_record_and_master += 1
+        elif self.rs.tl_ea_found_in_record:
+            self.st.has_tl_ea_only_in_record += 1
+        elif self.rs.tl_ea_found_in_master:
+            self.st.has_tl_ea_only_in_master += 1
+        else:
+            self.st.no_tl_ea += 1
 
-            if self.rs.tl_ea_found_in_record and self.rs.tl_ea_found_in_master:
-                self.st.has_tl_ea_in_record_and_master += 1
-            elif self.rs.tl_ea_found_in_record:
-                self.st.has_tl_ea_only_in_record += 1
-            elif self.rs.tl_ea_found_in_master:
-                self.st.has_tl_ea_only_in_master += 1
-            else:
-                self.st.no_tl_ea += 1
+        return True
 
-            return True
-                
+    # Separate error/retry handling to simplify the code
+    def setup_release(self, release_id):
 
-        except HTTPError as e:
-            # Check if the error message or status inside the exception indicates a 404
-            if e.status_code == 404:
-                if self.master:
-                    self.writelog(f"Master of record ID {release_id} was NOT found (404 Error).")
+        max_retries = 5
+        retry_delay = 2
+
+        for attempt in range (1, max_retries + 1):
+            try:
+                self.release = self.d.release(release_id)
+                self.release.refresh()
+                break;
+
+            except (HTTPError, JSONDecodeError) as e:
+
+                if isinstance(e, HTTPError) and getattr(e, "status_code", None) == 404:
+                    self.writelog(
+                        f"Record ID {release_id} returned 404 (Not Found). Skipping."
+                    )
                     return False
-                self.writelog(f"Record ID {release_id} was NOT found (404 Error).")
+
+                    self.writelog(
+                        f"Attempt {attempt}/{max_retries} failed for ID {release_id} ({e}). Retrying in {retry_delay} seconds."
+                    )
+                    time.sleep(retry_delay)
+                    retry_delay *= 2  # Exponential backoff: 2s -> 4s -> 8s -> 16s -> 32s, up to 1 minute
             else:
-                self.writelog(f"A different API error occurred: {e}")
-            return False
+                self.writelog(
+                    f"Persistent error for record ID {release_id} after {max_retries} attempts: {e}. Skipping record."
+                )
+                return False
+        return True
+                
 
     def store_album_artists(self):
         artists = self.release.data.get(API_ARTISTS)
