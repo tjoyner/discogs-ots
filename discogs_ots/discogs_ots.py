@@ -554,7 +554,7 @@ class OtsDiscogsToCsv:
             try:
                 self.release = self.d.release(release_id)
                 self.release.refresh()
-                break;
+                return True
 
             except (HTTPError, JSONDecodeError) as e:
 
@@ -574,7 +574,6 @@ class OtsDiscogsToCsv:
                     f"Persistent error for record ID {release_id} after {max_retries} attempts: {e}. Skipping record."
                 )
                 return False
-        return True
                 
 
     def store_album_artists(self):
