@@ -423,6 +423,8 @@ class OtsDiscogsToCsv:
                 if r.id not in records_to_skip:
                     if self.get_record_data(r.id):
                         self.st.records += 1
+                    if not self.test_case:
+                        time.sleep(1)
         else:
             try:
                 with open(self.input_file, mode='r', newline='', encoding='utf-8') as file:
@@ -432,6 +434,8 @@ class OtsDiscogsToCsv:
                         if release_id_i and release_id_i > 0:
                             if self.get_record_data(f'{release_id_i}'):
                                 self.st.records += 1
+                            if not self.test_case:
+                                time.sleep(1)
             except OSError:
                 print (f'{self.input_file} could not be opened.')
                 sys.exit(1)
