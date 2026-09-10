@@ -49,6 +49,7 @@ Add -s to see the program output
 ```
 
 **Depending on the python istallation, the commands to use may be python3 and pip3.**
+
 **The Discogs API is rate-limited, so large collections will take some time to complete. For example, 1000 records could take 30
 minutes to complete**
 
