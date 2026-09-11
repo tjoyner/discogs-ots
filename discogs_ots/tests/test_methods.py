@@ -83,6 +83,17 @@ def test_split_roles(monkeypatch):
 
     assert s.split_roles("Photography By [Pages 11, 12]") == ["Photography By [Pages 11, 12]"]
 
+def test_clean_role(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-id", "11111", "-ua", "testus"])
+    s = OtsDiscogsToCsv()
+
+    assert s.clean_role_name("Drums") == "Drums"
+    assert s.clean_role_name("Guitar [Acoustic]") == "Guitar"
+    assert s.clean_role_name("Bass[Acoustic]") == "Bass"
+    assert s.clean_role_name("Guitar[Acoustic] ") == "Guitar"
+    assert s.clean_role_name("Guitar[Electric], Vocals ") == "Guitar, Vocals"
+    assert s.clean_role_name("Guitar[Electric], Vocals[Falsettos] ") == "Guitar, Vocals"
+
 def test_expand_track_positions(monkeypatch):
     monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-id", "11111", "-ua", "testus"])
     s = OtsDiscogsToCsv()

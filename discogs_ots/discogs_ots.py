@@ -882,6 +882,8 @@ class OtsDiscogsToCsv:
             if ea_role: 
                 rolelist = self.split_roles(ea_role)
                 for role in rolelist:
+                    role = self.clean_role_name(role)
+                    
                     if self.is_written_by_in_role(role):
                         tracks = ea.get(API_TRACKS, None)
                         if tracks:
@@ -968,6 +970,7 @@ class OtsDiscogsToCsv:
 
                     rolelist = self.split_roles(ea_role)
                     for role in rolelist:
+                        role = self.clean_role_name(role)
                         if not self.ignore_role(role):
                             if self.is_written_by_in_role(role):
                                 if ea_name not in ti.written_by:
@@ -1302,6 +1305,13 @@ class OtsDiscogsToCsv:
 
         return expanded_positions, range_found
 
+    def clean_role_name(self, role):
+        if not role:
+            return ""
+
+        cleaned = re.sub(r"\s*\[.*?\]", "", str(role))
+
+        return cleaned.strip()
 
 if __name__ == "__main__":
     tpb = OtsDiscogsToCsv()
