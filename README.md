@@ -67,6 +67,7 @@ minutes to complete.
 | `--user-agent` | `-ua` | User-Agent to use for Discogs API requests |
 | `--user-token` | `-ut` | User token (generated at Discogs site) to use for authenticated API requests |
 | `--ignore-roles` | `-ir` | Comma-separated list of artist roles to skip (e.g., `Design, Cover`). |
+| `--added-after-date` | `-aa` | Only process albums added to a collection on or after this date (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS). |
 | `--check-master` | `-cm` | Check the master record (if one exists) for a track list if not found in the record. |
 | `--check-main-release` | `-cmr` | Check the main release record (if it exists and is different from the release ID) for extra artists. |
 | `--write-mrk` | `-mrk` | (Experimental) Write a MARC .mrk file in addition to the csv file. |
