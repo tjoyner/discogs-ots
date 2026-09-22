@@ -50,6 +50,7 @@ CSV_GENRES="genres"
 CSV_STYLES="styles"
 CSV_TRACKLIST="tracklist"
 CSV_CREDITS="credits"
+CSV_URL="url"
 
 CSV_COL_SEPARATOR=","
 CSV_ITEM_SEPARATOR1="|"
@@ -67,7 +68,8 @@ headers = {
    CSV_STYLES : '',
    #"barcode" : 
    CSV_TRACKLIST : {},
-   CSV_CREDITS : ''
+   CSV_CREDITS : '',
+   CSV_URL : ''
    }
 
 CFG_SETTINGS="settings"
@@ -978,6 +980,8 @@ class OtsDiscogsToCsv:
                             else:
                                 roles = self.current_record.credits.setdefault(ea_name, [])
                                 if role not in roles:
+                                    if role not in self.all_roles:
+                                        self.all_roles.append(role)
                                     roles.append(role)
     def check_written_by(self):
 
@@ -1041,6 +1045,7 @@ class OtsDiscogsToCsv:
         row[CSV_LABELS] = labels
         row[CSV_COUNTRY] = r.country
         row[CSV_YEAR] = r.year
+        row[CSV_URL] = f"https://www.discogs.com/release/{r.id}"
         genres = ''
         if r.genres:
             genres = f"{CSV_ITEM_SEPARATOR1}".join(r.genres)
@@ -1120,6 +1125,9 @@ class OtsDiscogsToCsv:
 
         self.mrk_genres_and_styles(mrk_lines, r.genres, r.styles)
 
+        # Add discogs URL
+        discogs_url = f"https://www.discogs.com/release/{r.id}"
+        mrk_lines.append(f"=856 40$u{discogs_url}$zDiscogs Release Page")
             
         # Records are separated by a double newline at the end of each record
         mrk_record = "\n".join(mrk_lines) + "\n\n"

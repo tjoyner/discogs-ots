@@ -265,7 +265,7 @@ def test_record_extraartists(monkeypatch, discogs_connection):
     assert track_info.performed_by == "Anonymous"
     assert track_info.written_by == ['Free Byrd'] 
 
-    assert s.csv_rows[15].strip() == '15,Porch Chops & Tom J,Release with Extra Artists,LP [Album]|Gramophone [Wax],First Label,UK,2005,Deep Vibe|Shoe Gaze,Trad Classical,"Title 1++Performed by Some Guy++Written by Free Byrd|Scusa++Performed by Tom I Aint, Tom I Am Not++Written by Free Byrd|Title with, comma++Performed by Porch Chops & Tom J++Written by Song Writer Jr.|We\'re Number 4++Performed by Winken, Blinken, and Nod++Written by Free Byrd|Penultimate Tune++Performed by Unknown++Written by Free Byrd|Finally, ""right?""++Performed by Anonymous++Written by Free Byrd",I P Freely[Guitar]|John Dough[Engineer]'
+    assert s.csv_rows[15].strip() == '15,Porch Chops & Tom J,Release with Extra Artists,LP [Album]|Gramophone [Wax],First Label,UK,2005,Deep Vibe|Shoe Gaze,Trad Classical,"Title 1++Performed by Some Guy++Written by Free Byrd|Scusa++Performed by Tom I Aint, Tom I Am Not++Written by Free Byrd|Title with, comma++Performed by Porch Chops & Tom J++Written by Song Writer Jr.|We\'re Number 4++Performed by Winken, Blinken, and Nod++Written by Free Byrd|Penultimate Tune++Performed by Unknown++Written by Free Byrd|Finally, ""right?""++Performed by Anonymous++Written by Free Byrd",I P Freely[Guitar]|John Dough[Engineer],https://www.discogs.com/release/15'
 
     assert s.st.has_ea_only_in_record == 1
     assert s.st.has_tl_only_in_record == 1
