@@ -83,6 +83,7 @@ CFG_QUERY_FOR_IDS="query_for_ids"
 CFG_IGNORE_ROLES="ignore_roles"
 CFG_USER_AGENT="user_agent"
 CFG_USER_TOKEN="user_token"
+CFG_ADDED_AFTER_DATE="added_after_date"
 CFG_LOG_ALL_ROLES="log_all_roles"
 CFG_NEW_RECORDS_ONLY="new_records_only"
 CFG_CHECK_MASTER="check_master"
@@ -196,6 +197,8 @@ class OtsDiscogsToCsv:
 
         self.ignore_roles = []
 
+        self.added_after_date = None
+
         self.all_roles = []
 
         args = self.parse_arguments()
@@ -266,6 +269,18 @@ class OtsDiscogsToCsv:
             self.new_records_only = True
         elif config and config.has_option(CFG_SETTINGS,CFG_NEW_RECORDS_ONLY):
             self.new_records_only = config[CFG_SETTINGS][CFG_NEW_RECORDS_ONLY]
+
+        added_after_str = None
+        if args.added_after_date:
+            added_after_str = args.added_after_date.strip()
+        elif config and config.has_option(CFG_SETTINGS,CFG_ADDED_AFTER_DATE):
+            added_after_str = config[CFG_SETTINGS][CFG_ADDED_AFTER_DATE].strip()
+        if added_after_str:
+            try:
+                self.added_after_date = datetime.datetime.fromisoformat(added_after_str.strip())
+            except ValueError as e:
+                print(f"Invalid date ({added_after_str}: {e}")
+                sys.exit(1)
 
         self.check_master = False
         if args.check_master:
@@ -357,6 +372,11 @@ class OtsDiscogsToCsv:
             print ("A user token is required for the query option")
             sys.exit(1)
 
+        if self.added_after_date:
+            if not self.query_for_ids:
+                print ("added-after-date also requires query-for-ids")
+                sys.exit(1)
+
         if self.new_records_only:
             if not self.query_for_ids or not self.input_file:
                 print ("new-records-only also requires input-file and query-for-ids")
@@ -414,6 +434,10 @@ class OtsDiscogsToCsv:
 
             seen = {}
             duplicates = []
+
+            if self.added_after_date and not self.test_case: # test case already sorted
+                my_releases.sort('added', 'desc')
+
             for r in my_releases:
                 if r.id in seen:
                     self.writelog(f'Skipping duplicate record ID {r.id}')
@@ -421,6 +445,9 @@ class OtsDiscogsToCsv:
                     continue
                 else:
                     seen[r.id] = None
+
+                if not self.check_date_added(r):
+                    break
 
                 if r.id not in records_to_skip:
                     if self.get_record_data(r.id):
@@ -443,6 +470,26 @@ class OtsDiscogsToCsv:
                 sys.exit(1)
 
         self.log_final_stats()
+
+    def check_date_added(self, r):
+        if not self.added_after_date:
+            return True
+        # Discogs API returns date_added as an ISO string or datetime
+        date_added = r.date_added
+        if isinstance(date_added, str):
+            date_added = datetime.datetime.fromisoformat(date_added)
+
+        # Strip timezone info if needed for clean comparison
+        if (date_added.tzinfo is not None
+            and self.added_after_date.tzinfo is None):
+            date_added = date_added.replace(tzinfo=None)
+
+        if date_added < self.added_after_date:
+            self.writelog(
+                f"Stopping on release {r.id}: added on {date_added} (before {self.added_after_date})"
+            )
+            return False
+        return True
 
     # read ID from first position in file, ignore anything that comes after.
     def extract_release_id(self, row):
@@ -725,6 +772,12 @@ class OtsDiscogsToCsv:
         )
 
         parser.add_argument(
+            "-aa", "--added-after-date",
+            type=str,
+            help="Only process albums added to a collection on or after this date (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS).",
+        )
+
+        parser.add_argument(
             '-lar', '--log-all-roles', 
             action='store_true', 
             help="Log all artist roles encountered (not including configured ignored roles)."
@@ -983,6 +1036,7 @@ class OtsDiscogsToCsv:
                                     if role not in self.all_roles:
                                         self.all_roles.append(role)
                                     roles.append(role)
+
     def check_written_by(self):
 
         # Positions of existing tracks

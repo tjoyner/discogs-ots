@@ -639,6 +639,69 @@ def test_new_records_only(monkeypatch, discogs_connection):
         finally:
             os.remove(input_file.name)
 
+@dataclass
+class MockReleaseDA:
+    id: int
+    date_added: str
+
+def test_added_after_date(monkeypatch, discogs_connection):
+    monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-cm", "-qi", "-ua", "testus", "-ut", "1234567890", "-aa", "2026-03-01" ])
+    d = discogs_connection
+    s = OtsDiscogsToCsv(d)
+    my_releases = [
+            MockReleaseDA(15, "2026-08-09"),
+            MockReleaseDA(17, "2026-03-02"),
+            MockReleaseDA(16, "2026-03-01"),
+            MockReleaseDA(18, "2026-02-28"),
+            MockReleaseDA(19, "2025-04-28")
+            ]
+
+    s.my_releases=my_releases
+    s.run()
+    assert 18 not in s.csv_rows
+    assert 19 not in s.csv_rows
+    assert 15 in s.csv_rows
+    assert 17 in s.csv_rows
+    assert 16 in s.csv_rows
+
+    # include all
+    d = discogs_connection
+    s = OtsDiscogsToCsv(d)
+    my_releases = [
+            MockReleaseDA(15, "2026-08-09"),
+            MockReleaseDA(18, "2026-04-28"),
+            MockReleaseDA(19, "2026-04-28"),
+            MockReleaseDA(17, "2026-03-02"),
+            MockReleaseDA(16, "2026-03-01")
+            ]
+
+    s.my_releases=my_releases
+    s.run()
+    assert 18 in s.csv_rows
+    assert 19 in s.csv_rows
+    assert 15 in s.csv_rows
+    assert 17 in s.csv_rows
+    assert 16 in s.csv_rows
+
+    # include none
+    d = discogs_connection
+    s = OtsDiscogsToCsv(d)
+    my_releases = [
+            MockReleaseDA(15, "2025-08-09"),
+            MockReleaseDA(18, "2025-04-28"),
+            MockReleaseDA(19, "2025-04-28"),
+            MockReleaseDA(17, "2025-03-02"),
+            MockReleaseDA(16, "2025-03-01")
+            ]
+
+    s.my_releases=my_releases
+    s.run()
+    assert 18 not in s.csv_rows
+    assert 19 not in s.csv_rows
+    assert 15 not in s.csv_rows
+    assert 17 not in s.csv_rows
+    assert 16 not in s.csv_rows
+
 
 
 
