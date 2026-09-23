@@ -1095,7 +1095,8 @@ class OtsDiscogsToCsv:
         row[CSV_FORMATS] = formats
         labels = ''
         if r.labels:
-            labels = f"{CSV_ITEM_SEPARATOR1}".join(r.labels)
+            #labels = f"{CSV_ITEM_SEPARATOR1}".join(r.labels)
+            labels = r.labels[0] # Per Colby on 9/11, first label only
         row[CSV_LABELS] = labels
         row[CSV_COUNTRY] = r.country
         row[CSV_YEAR] = r.year

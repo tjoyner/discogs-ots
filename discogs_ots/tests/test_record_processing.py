@@ -226,7 +226,7 @@ def test_record_extraartists(monkeypatch, discogs_connection):
     assert cr.artists == "Porch Chops & Tom J"
     assert cr.title == "Release with Extra Artists"
     assert cr.formats == ["LP [Album]", "Gramophone [Wax]"]
-    assert cr.labels == ["First Label"]
+    assert cr.labels == ["First Label", "Second Label"]
     assert cr.country == "UK"
     assert cr.year == 2005
     assert cr.genres == ["Deep Vibe", "Shoe Gaze"]
