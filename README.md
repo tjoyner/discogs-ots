@@ -60,8 +60,7 @@ minutes to complete.
 | `--input-file` | `-i` | Path to the input file containing a list of Discogs release IDs, one per line. Anything after the ID is ignored. |
 | `--release-id` | `-id` | Process a single Discogs Release ID. |
 | `--query-for-ids` | `-qi` | Query the user's Discogs collection for release IDs. user-token must also be specified.|
-| `--new-records-only` | `-nro` | Query the user's Discogs collection for release IDs that aren't in the input list. Requires
---query-for-ids and --input-file. |
+| `--new-records-only` | `-nro` | Query the user's Discogs collection for release IDs that aren't in the input list. Requires --query-for-ids and --input-file. |
 | `--output-file` | `-o` | The output CSV file |
 | `--log-file` | `-l` | Path to the file where log messages will be saved. If not specified, the log file is 'output-file'.log |
 | `--user-agent` | `-ua` | User-Agent to use for Discogs API requests |
