@@ -534,7 +534,7 @@ class OtsDiscogsToCsv:
 
         self.current_record = RecordInfo()
         self.current_record.id = release_id_i
-        self.current_record.title = self.release.title
+
         self.master = False
         self.main_release = False
 
@@ -659,7 +659,7 @@ class OtsDiscogsToCsv:
         artist_names = ''
         join = ''
         for artist in artists:
-            artist_name = self.fix_artist_name(artist.get(API_NAME))
+            artist_name = self.remove_disambiguation(artist.get(API_NAME))
             if not artist_name:
                 self.writelog(f"Artist name was not specified in {artist}")
                 return artist_names
@@ -701,15 +701,16 @@ class OtsDiscogsToCsv:
 
         for label in self.release.labels:
             name = label.name.strip()
+            name = self.remove_disambiguation(name)
             #catno = label.catno.strip()
     
             # Format as "Label Name [Catalog Number]"
             # TODO: removed catalog number, restore if needed
             self.current_record.labels.append(name)
 
-    # Duplicate artist names in discogs have a number after them (e.g. "John Doe (2)").
+    # Duplicate names in discogs have a number after them (e.g. "John Doe (2)").
     # This removes the parententical number
-    def fix_artist_name(self, artist_name):
+    def remove_disambiguation(self, artist_name):
         if artist_name == None:
             return ''
         pattern = r"\s*\(\d+\)\s*$"
@@ -885,7 +886,7 @@ class OtsDiscogsToCsv:
         try:
             self.store_album_artists()
 
-            self.current_record.title = self.release.title
+            self.current_record.title = self.remove_disambiguation(self.release.title)
 
             self.store_formats()
 
@@ -948,7 +949,7 @@ class OtsDiscogsToCsv:
         # each artist (if not in ignore_roles list). Written-By roles
         # are handled per track, all others are per record.
         for ea in extraartists:
-            ea_name = self.fix_artist_name(ea.get(API_NAME))
+            ea_name = self.remove_disambiguation(ea.get(API_NAME))
             ea_role = ea.get(API_ROLE, '')
             if ea_role: 
                 rolelist = self.split_roles(ea_role)
@@ -993,6 +994,7 @@ class OtsDiscogsToCsv:
         track_pos = track.get(API_POSITION)
         track_type = track.get(API_TYPE_)
         track_title = track.get(API_TITLE)
+        track_title = self.remove_disambiguation(track_title)
 
         track_artists = self.get_track_artists(track)
 
@@ -1007,7 +1009,9 @@ class OtsDiscogsToCsv:
             st_extraartists = extraartists
             for st in sts:
                 st_track_pos = st.get(API_POSITION, track_pos)
-                st_title = f'{track_title}-{st.get(API_TITLE)}'
+                st_subtitle = st.get(API_TITLE)
+                st_subtitle = self.remove_disambiguation(st_subtitle)
+                st_title = f'{track_title}-{st_subtitle}'
                 self.store_track_info(st_extraartists, st_track_pos, st_title, track_artists)
                 st_extraartists = None # only store extraartists once per track
 
@@ -1032,7 +1036,7 @@ class OtsDiscogsToCsv:
         if extraartists: 
             for ea in extraartists:
                 ea_role = ea.get(API_ROLE)
-                ea_name = self.fix_artist_name(ea.get(API_NAME))
+                ea_name = self.remove_disambiguation(ea.get(API_NAME))
                 if ea_role: 
                     if self.master:
                         self.rs.tl_ea_found_in_master = True
@@ -1258,10 +1262,24 @@ class OtsDiscogsToCsv:
 
         # Mapping of common English articles to their exact character counts
         # This regex ensures we only match full words at the very beginning
+        #articles = [
+        #    (r"^the\s+", 4),  # "The " = 4 chars
+        #    (r"^an\s+", 3),  # "An "  = 3 chars
+        #    (r"^a\s+", 2),  # "A "   = 2 chars
+        #]
         articles = [
-            (r"^the\s+", 4),  # "The " = 4 chars
-            (r"^an\s+", 3),  # "An "  = 3 chars
-            (r"^a\s+", 2),  # "A "   = 2 chars
+            (r"^the\s+", 4),
+            (r"^an\s+", 3),
+            (r"^a\s+", 2),
+            (r"^der\s+", 4),
+            (r"^die\s+", 4),
+            (r"^das\s+", 4),
+            (r"^le\s+", 3),
+            (r"^la\s+", 3),
+            (r"^les\s+", 4),
+            (r"^el\s+", 3),
+            (r"^los\s+", 4),
+            (r"^l\s*'\s*", 2),  # Matches 'L'', 'l\'', or optional spacing around the apostrophe
         ]
 
         for pattern, count in articles:
@@ -1324,7 +1342,7 @@ class OtsDiscogsToCsv:
             roles_str = ",".join(f'{r}' for r in roles)
             # What if artist is listed w/o any roles?
             if roles_str:
-                roles_str = f'[{roles_str}]'
+                roles_str = f'({roles_str})'
             if credit_str:
                 credit_str += f'{CSV_ITEM_SEPARATOR1}'
             credit_str += f'{artist}{roles_str}'
@@ -1337,7 +1355,7 @@ class OtsDiscogsToCsv:
             roles_str = ",".join(f'{r}' for r in roles)
             # What if artist is listed w/o any roles?
             if roles_str:
-                roles_str = f'[{roles_str}]'
+                roles_str = f'({roles_str})'
             if credit_str:
                 credit_str += ','
             artist = self.fix_mrk_text(artist)

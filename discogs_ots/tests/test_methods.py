@@ -44,11 +44,11 @@ def dont_test_sort(monkeypatch):
 def test_fix_artist(monkeypatch):
     monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-id", "11111", "-ua", "testus"])
     s = OtsDiscogsToCsv()
-    assert s.fix_artist_name("Joe Guitar") == "Joe Guitar"
-    assert s.fix_artist_name("Joe Guitar(1)") == "Joe Guitar"
-    assert s.fix_artist_name("Joe Guitar (2)") == "Joe Guitar"
-    assert s.fix_artist_name("Joe Guitar  (3)") == "Joe Guitar"
-    assert s.fix_artist_name("Joe Guitar  (4) ") == "Joe Guitar"
+    assert s.remove_disambiguation("Joe Guitar") == "Joe Guitar"
+    assert s.remove_disambiguation("Joe Guitar(1)") == "Joe Guitar"
+    assert s.remove_disambiguation("Joe Guitar (2)") == "Joe Guitar"
+    assert s.remove_disambiguation("Joe Guitar  (3)") == "Joe Guitar"
+    assert s.remove_disambiguation("Joe Guitar  (4) ") == "Joe Guitar"
 
 def test_ignore_role(monkeypatch):
     monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-id", "11111", "-ua", "testus", "--ignore-roles", 'rolea, role b, role C'])
