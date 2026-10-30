@@ -190,6 +190,7 @@ class OtsDiscogsToCsv:
         if discogs_test_client:
             self.d = discogs_test_client
             self.test_case = True
+            self.mrk_records = {}
 
         self.current_record = None
 
@@ -205,7 +206,7 @@ class OtsDiscogsToCsv:
         config = None
         if args.config:
             if not os.path.exists(args.config):
-                print(f'Error: {args.config} does not exist')
+                print(f'Error: {args.config} does not exist', file=sys.stderr)
                 sys.exit(1)
 
             config = configparser.ConfigParser()
@@ -279,7 +280,7 @@ class OtsDiscogsToCsv:
             try:
                 self.added_after_date = datetime.datetime.fromisoformat(added_after_str.strip())
             except ValueError as e:
-                print(f"Invalid date ({added_after_str}: {e}")
+                print(f"Invalid date ({added_after_str}: {e}", file=sys.stderr)
                 sys.exit(1)
 
         self.check_master = False
@@ -313,7 +314,7 @@ class OtsDiscogsToCsv:
                 try:
                     self.json_out = open(json_file, mode='x', encoding='utf-8')
                 except FileExistsError:
-                    print (f'{json_file} already exists')
+                    print (f'{json_file} already exists', file=sys.stderr)
                     sys.exit(1)
             else:
                 sys.stdout.reconfigure(encoding='utf-8') # Keep PowerShell happy!
@@ -331,14 +332,14 @@ class OtsDiscogsToCsv:
             try:
                 self.out = open(output_file, mode='x', encoding='utf-8')
             except FileExistsError:
-                print (f'{output_file} already exists')
+                print (f'{output_file} already exists', file=sys.stderr)
                 sys.exit(1)
             if self.write_mrk:
                 mrk_file = Path(output_file).with_suffix('.mrk')
                 try:
                     self.mrk_out = open(mrk_file, mode='x', encoding='utf-8')
                 except FileExistsError:
-                    print (f'{mrk_file} already exists')
+                    print (f'{mrk_file} already exists', file=sys.stderr)
                     sys.exit(1)
         else:
             sys.stdout.reconfigure(encoding='utf-8') # Keep PowerShell happy!
@@ -351,35 +352,35 @@ class OtsDiscogsToCsv:
             try:
                 self.log_out = open(log_file, mode='x', encoding='utf-8')
             except FileExistsError:
-                print (f'{log_file} already exists')
+                print (f'{log_file} already exists', file=sys.stderr)
                 sys.exit(1)
         elif output_file:
             log_file = Path(output_file).with_suffix('.log')
             try:
                 self.log_out = open(log_file, mode='x', encoding='utf-8')
             except FileExistsError:
-                print (f'{log_file} already exists')
+                print (f'{log_file} already exists', file=sys.stderr)
                 sys.exit(1)
         else:
             sys.stdout.reconfigure(encoding='utf-8') # Keep PowerShell happy!
             self.log_out = self.out
 
         if not self.user_agent:
-            print ('user_agent must be specified')
+            print ('user_agent must be specified', file=sys.stderr)
             sys.exit(1)
 
         if not self.user_token and self.query_for_ids:
-            print ("A user token is required for the query option")
+            print ("A user token is required for the query option", file=sys.stderr)
             sys.exit(1)
 
         if self.added_after_date:
             if not self.query_for_ids:
-                print ("added-after-date also requires query-for-ids")
+                print ("added-after-date also requires query-for-ids", file=sys.stderr)
                 sys.exit(1)
 
         if self.new_records_only:
             if not self.query_for_ids or not self.input_file:
-                print ("new-records-only also requires input-file and query-for-ids")
+                print ("new-records-only also requires input-file and query-for-ids", file=sys.stderr)
                 sys.exit(1)
         else:
             entered = 0
@@ -390,11 +391,11 @@ class OtsDiscogsToCsv:
             if self.release_id:
                 entered += 1 
             if entered > 1:
-                print ("Only one of input-file, query-for-ids, or release-id can be entered")
+                print ("Only one of input-file, query-for-ids, or release-id can be entered", file=sys.stderr)
                 sys.exit(1)
 
             if not self.release_id and not self.query_for_ids and not self.input_file:
-                print ("Enter input-file, query-for-ids or release-id")
+                print ("Enter input-file, query-for-ids or release-id", file=sys.stderr)
                 sys.exit(1)
 
     def run(self):
@@ -406,6 +407,7 @@ class OtsDiscogsToCsv:
         self.st = AllStats()
 
         if self.release_id:
+            print (f"Getting release ID {self.release_id}", flush=True)
             self.get_record_data(self.release_id)
             self.st.records = 1
             self.log_final_stats()
@@ -414,6 +416,7 @@ class OtsDiscogsToCsv:
 
         my_releases = []
         if self.query_for_ids:
+            print (f"Querying Discogs for records", flush=True)
             if self.test_case:
                 my_releases = self.my_releases
             else:
@@ -429,7 +432,7 @@ class OtsDiscogsToCsv:
                             if release_id_i and release_id_i > 0:
                                 records_to_skip.append(release_id_i)
                 except OSError:
-                    print (f'{self.input_file} could not be opened.')
+                    print (f'{self.input_file} could not be opened.', file=sys.stderr)
                     sys.exit(1)
 
             seen = {}
@@ -452,21 +455,32 @@ class OtsDiscogsToCsv:
                 if r.id not in records_to_skip:
                     if self.get_record_data(r.id):
                         self.st.records += 1
+                        if self.st.records % 100 == 0:
+                            print ("")
+                            print (f"Retrieved {self.st.records} records")
+                        else: 
+                            print (".", end="", flush=True)
                     if not self.test_case:
                         time.sleep(1)
         else:
             try:
                 with open(self.input_file, mode='r', newline='', encoding='utf-8') as file:
                     # Iterate through each row
+                    print (f"Querying Discogs for records in file {self.input_file}")
                     for row in file:
                         release_id_i = self.extract_release_id(row)
                         if release_id_i and release_id_i > 0:
                             if self.get_record_data(f'{release_id_i}'):
                                 self.st.records += 1
+                                if self.st.records % 100 == 0:
+                                    print ("")
+                                    print (f"Retrieved {self.st.records} records")
+                                else: 
+                                    print (".", end="", flush=True)
                             if not self.test_case:
                                 time.sleep(1)
             except OSError:
-                print (f'{self.input_file} could not be opened.')
+                print (f'{self.input_file} could not be opened.', file=sys.stderr)
                 sys.exit(1)
 
         self.log_final_stats()
@@ -609,12 +623,14 @@ class OtsDiscogsToCsv:
                 self.release.refresh()
                 return True
 
-            except (HTTPError, JSONDecodeError) as e:
+            except (HTTPError, json.JSONDecodeError) as e:
 
                 if isinstance(e, HTTPError) and getattr(e, "status_code", None) == 404:
                     self.writelog(
                         f"Record ID {release_id} returned 404 (Not Found). Skipping."
                     )
+                    if self.release_id:
+                        print (f"Record ID {release_id} returned 404 (Not Found).", file=sys.stderr)
                     return False
 
                     self.writelog(
@@ -622,12 +638,10 @@ class OtsDiscogsToCsv:
                     )
                     time.sleep(retry_delay)
                     retry_delay *= 2  # Exponential backoff: 2s -> 4s -> 8s -> 16s -> 32s, up to 1 minute
-            else:
-                self.writelog(
-                    f"Persistent error for record ID {release_id} after {max_retries} attempts: {e}. Skipping record."
-                )
-                return False
-                
+            self.writelog(
+                f"Persistent error for record ID {release_id} after {max_retries} attempts: {e}. Skipping record."
+            )
+            return False
 
     def store_album_artists(self):
         artists = self.release.data.get(API_ARTISTS)
@@ -821,6 +835,8 @@ class OtsDiscogsToCsv:
             self.log_all_roles_found()
 
         self.writelog(f'Total Records={self.st.records}\n')
+        print('')
+        print(f'Total Records Checked={self.st.records}')
         self.writelog(f'Extra Artists:\n    Found in record and master={self.st.has_ea_in_record_and_master}\n    Found in Record only={self.st.has_ea_only_in_record}  Master only={self.st.has_ea_only_in_master}\n    Not found={self.st.no_ea}\n    Main release only={self.st.has_ea_only_in_main_release}')
         self.writelog(f'Track lists:\n    Found in record and master={self.st.has_tl_in_record_and_master}\n    Found in Record only={self.st.has_tl_only_in_record} Master only={self.st.has_tl_only_in_master}\n    Not found={self.st.no_tl}') #\n    Main release only={self.st.has_tl_only_in_main_release}')
         self.writelog(f'Extra Artists in Track lists:\n    Found in record and master={self.st.has_tl_ea_in_record_and_master}\n    Found in Record only={self.st.has_tl_ea_only_in_record} Master only={self.st.has_tl_ea_only_in_master}\n    Not found={self.st.no_tl_ea}') #\n    Main release only={self.st.has_tl_ea_only_in_main_release}')
