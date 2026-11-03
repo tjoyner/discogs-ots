@@ -3,6 +3,8 @@ import sys
 import tempfile
 import textwrap
 import os
+import io
+import csv
 from dataclasses import dataclass
 from discogs_ots import OtsDiscogsToCsv
 from discogs_client import Client
@@ -265,7 +267,7 @@ def test_record_extraartists(monkeypatch, discogs_connection):
     assert track_info.performed_by == "Anonymous"
     assert track_info.written_by == ['Free Byrd'] 
 
-    assert s.csv_rows[15].strip() == '15,Porch Chops & Tom J,Release with Extra Artists,LP [Album]|Gramophone [Wax],First Label,UK,2005,Deep Vibe|Shoe Gaze,Trad Classical,"Title 1++Performed by Some Guy++Written by Free Byrd|Scusa++Performed by Tom I Aint, Tom I Am Not++Written by Free Byrd|Title with, comma++Performed by Porch Chops & Tom J++Written by Song Writer Jr.|We\'re Number 4++Performed by Winken, Blinken, and Nod++Written by Free Byrd|Penultimate Tune++Performed by Unknown++Written by Free Byrd|Finally, ""right?""++Performed by Anonymous++Written by Free Byrd",I P Freely(Guitar)|John Dough(Engineer),https://www.discogs.com/release/15'
+    assert s.csv_rows[15].strip() == '15,Porch Chops & Tom J,Release with Extra Artists,LP [Album]|Gramophone [Wax],First Label,UK,2005,Deep Vibe|Shoe Gaze,Trad Classical,"Title 1++Performed by Some Guy++Written by Free Byrd|Scusa++Performed by Tom I Aint, Tom I Am Not++Written by Free Byrd|Title with, comma++Performed by Porch Chops & Tom J++Written by Song Writer Jr.|We\'re Number 4++Performed by Winken, Blinken, and Nod++Written by Free Byrd|Penultimate Tune++Performed by Unknown++Written by Free Byrd|Finally, ""right?""++Performed by Anonymous++Written by Free Byrd",I P Freely(Guitar)|John Dough(Engineer),,https://www.discogs.com/release/15'
 
     assert s.st.has_ea_only_in_record == 1
     assert s.st.has_tl_only_in_record == 1
@@ -332,6 +334,44 @@ def test_record_extraartists_with_tracks(monkeypatch, discogs_connection):
     assert s.st.has_tl_only_in_record == 1
     assert s.st.has_tl_only_in_master == 0
 
+# Test record with non-performing roles
+def test_record_non_performing_roles(monkeypatch, discogs_connection):
+    monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-cm", "-id", "16", "-ua", "testus", "-ir", "Engineer, Gofer", "-npr", "Zither, Producer, A&R" ])
+    d = discogs_connection
+    s = OtsDiscogsToCsv(d)
+    s.run()
+    cr = s.current_record
+    assert cr.id == 16
+    assert cr.artists == "Porch Chops & Tom J"
+    assert cr.title == "Release with Extra Artists"
+    assert cr.formats == ["LP [Album]", "Gramophone [Wax]"]
+    assert cr.labels == ["First Label"]
+    assert cr.country == "UK"
+    assert cr.year == 2015
+    assert cr.genres == ["Deep Vibe", "Shoe Gaze"]
+    assert cr.styles == ["Trad Classical"]
+    assert cr.credits.get("I P Freely", []) == ["Guitar"]
+    assert cr.credits.get("John Dough", []) == ["Kazoo"]
+    assert cr.credits.get("The Third Man", []) == ["Zither", "Viola"]
+    assert cr.credits.get("Just an Engineer", []) == []
+    assert cr.credits.get("Not Just a Gofer", []) == ["Harp"]
+    assert cr.credits.get("Jack Ofalltrades", []) == ["Producer", "Guitar"]
+    assert cr.credits.get("Jack Ofsometrades", []) == ["Producer", "A&R"]
+    assert cr.credits.get("Free Byrd", []) == []
+
+    columns = split_csv(s.csv_rows[16].strip())
+
+    assert columns[10] == "I P Freely(Guitar)|John Dough(Kazoo)|Jack Ofalltrades(Guitar)|The Third Man(Viola)|Not Just a Gofer(Harp)"
+    print (f'{columns[11]}')
+    assert columns[11] == "Jack Ofalltrades(Producer)|Jack Ofsometrades(Producer,A&R)|The Third Man(Zither)"
+
+
+
+def split_csv(csv_row):
+    f = io.StringIO(csv_row)
+    reader = csv.reader(f)
+    return next(reader)
+    
 def test_main_release_has_extraartists(monkeypatch, discogs_connection):
 
     # No extra artists

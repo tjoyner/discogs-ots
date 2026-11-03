@@ -61,6 +61,18 @@ def test_ignore_role(monkeypatch):
     assert s.ignore_role("role c") is True
     assert s.ignore_role("role b plus") is True # ignore role is contained in role
 
+def test_non_performing_role(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-id", "11111", "-ua", "testus", "--non-performing-roles", 'rolea, role b, role C'])
+    s = OtsDiscogsToCsv()
+    assert s.non_performing_role("rolec") is False
+    assert s.non_performing_role("rolea") is True
+    assert s.non_performing_role("role") is False
+    assert s.non_performing_role("role b") is True
+    assert s.non_performing_role("role B") is True
+    assert s.non_performing_role("role c") is True
+    assert s.non_performing_role("role b plus") is True # ignore role is contained in role
+
+
 def test_written_by_in_role(monkeypatch):
     monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-id", "11111", "-ua", "testus"])
     s = OtsDiscogsToCsv()

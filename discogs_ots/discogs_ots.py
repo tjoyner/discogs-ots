@@ -50,6 +50,7 @@ CSV_GENRES="genres"
 CSV_STYLES="styles"
 CSV_TRACKLIST="tracklist"
 CSV_CREDITS="credits"
+CSV_NON_PERFORMING_CREDITS="non-performing credits"
 CSV_URL="url"
 
 CSV_COL_SEPARATOR=","
@@ -69,6 +70,7 @@ headers = {
    #"barcode" : 
    CSV_TRACKLIST : {},
    CSV_CREDITS : '',
+   CSV_NON_PERFORMING_CREDITS : '',
    CSV_URL : ''
    }
 
@@ -81,6 +83,7 @@ CFG_OUTPUT_FILE="output_file"
 CFG_LOG_FILE="log_file"
 CFG_QUERY_FOR_IDS="query_for_ids"
 CFG_IGNORE_ROLES="ignore_roles"
+CFG_NON_PERFORMING_ROLES="non_performing_roles"
 CFG_USER_AGENT="user_agent"
 CFG_USER_TOKEN="user_token"
 CFG_ADDED_AFTER_DATE="added_after_date"
@@ -198,6 +201,8 @@ class OtsDiscogsToCsv:
 
         self.ignore_roles = []
 
+        self.non_performing_roles = []
+
         self.added_after_date = None
 
         self.all_roles = []
@@ -258,6 +263,12 @@ class OtsDiscogsToCsv:
             ignore_roles = args.ignore_roles.strip()
         elif config and config.has_option(CFG_SETTINGS,CFG_IGNORE_ROLES):
             ignore_roles = config[CFG_SETTINGS][CFG_IGNORE_ROLES].strip()
+
+        non_performing_roles = None
+        if args.non_performing_roles:
+            non_performing_roles = args.non_performing_roles.strip()
+        elif config and config.has_option(CFG_SETTINGS,CFG_NON_PERFORMING_ROLES):
+            non_performing_roles = config[CFG_SETTINGS][CFG_NON_PERFORMING_ROLES].strip()
 
         self.log_all_roles = False
         if args.log_all_roles:
@@ -325,6 +336,12 @@ class OtsDiscogsToCsv:
                 rs = r.strip()
                 if rs:
                     self.ignore_roles.append(rs)
+
+        if non_performing_roles:
+            for r in non_performing_roles.split(','):
+                rs = r.strip()
+                if rs:
+                    self.non_performing_roles.append(rs)
 
         self.out = None
         self.mrk_out = None
@@ -787,6 +804,12 @@ class OtsDiscogsToCsv:
         )
 
         parser.add_argument(
+            '-npr', '--non-performing-roles', 
+            type=str, 
+            help="Comma-separated list of roles that are non-performers (e.g., Engineer)."
+        )
+
+        parser.add_argument(
             "-aa", "--added-after-date",
             type=str,
             help="Only process albums added to a collection on or after this date (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS).",
@@ -872,6 +895,14 @@ class OtsDiscogsToCsv:
         if not self.ignore_roles:
             return False
         for r in self.ignore_roles:
+            if role.casefold().startswith(r.casefold()):
+                return True
+        return False
+
+    def non_performing_role(self, role):
+        if not self.non_performing_roles:
+            return False
+        for r in self.non_performing_roles:
             if role.casefold().startswith(r.casefold()):
                 return True
         return False
@@ -1133,6 +1164,8 @@ class OtsDiscogsToCsv:
 
         row[CSV_TRACKLIST] = self.csv_tracklist(r.tracklist)
         row[CSV_CREDITS] = self.csv_credits(r.credits)
+        row[CSV_NON_PERFORMING_CREDITS] = self.csv_non_performing_credits(r.credits)
+
         self.csv_writer.writerow(row)
         if self.test_case:
             self.store_csv_for_test_case(r.id, row)
@@ -1197,6 +1230,10 @@ class OtsDiscogsToCsv:
         mrk_credits = self.mrk_credits(r.credits)
         if mrk_credits:
             mrk_lines.append(f"=511  0\\$a{mrk_credits}")
+
+        mrk_non_performing_credits = self.mrk_credits(r.credits)
+        if mrk_non_performing_credits:
+            mrk_lines.append(f"=508  \\\\$a{mrk_non_performing_credits}")
 
         self.mrk_genres_and_styles(mrk_lines, r.genres, r.styles)
 
@@ -1291,6 +1328,25 @@ class OtsDiscogsToCsv:
 
         return f'{ind1}{ind2}'
 
+    def convert_genre(self, genre):
+        genre_tbl = {
+                "Blues" : "",
+                "Brass & Military" : "",
+                "Children's" : "",
+                "Classical" : "",
+                "Electronic" : "",
+                "Folk, World, & Country" : "",
+                "Funk / Soul" : "",
+                "Hip-Hop" : "",
+                "Jazz" : "",
+                "Latin" : "",
+                "Non-Music" : "",
+                "Pop" : "",
+                "Reggae" : "",
+                "Rock" : "",
+                "Stage & Screen" : ""
+                }
+
     def mrk_genres_and_styles(self, mrk_lines, genres, styles):
         combined = []
         for g_s in genres + styles:
@@ -1339,6 +1395,9 @@ class OtsDiscogsToCsv:
     def csv_credits(self, credits) -> str:
         credit_str = ''
         for artist, roles in credits.items():
+            roles = [r for r in roles if not self.non_performing_role(r)]
+            if not roles:
+                continue
             roles_str = ",".join(f'{r}' for r in roles)
             # What if artist is listed w/o any roles?
             if roles_str:
@@ -1349,9 +1408,44 @@ class OtsDiscogsToCsv:
 
         return credit_str
 
+    def csv_non_performing_credits(self, credits) -> str:
+        np_credit_str = ''
+        for artist, roles in credits.items():
+            roles = [r for r in roles if self.non_performing_role(r)]
+            if not roles:
+                continue
+            roles_str = ",".join(f'{r}' for r in roles)
+            # What if artist is listed w/o any roles?
+            if roles_str:
+                roles_str = f'({roles_str})'
+            if np_credit_str:
+                np_credit_str += f'{CSV_ITEM_SEPARATOR1}'
+            np_credit_str += f'{artist}{roles_str}'
+
+        return np_credit_str
+
     def mrk_credits(self, credits) -> str:
         credit_str = ''
         for artist, roles in credits.items():
+            roles = [r for r in roles if not self.non_performing_role(r)]
+            if not roles:
+                continue
+            roles_str = ",".join(f'{r}' for r in roles)
+            # What if artist is listed w/o any roles?
+            if roles_str:
+                roles_str = f'({roles_str})'
+            if credit_str:
+                credit_str += ','
+            artist = self.fix_mrk_text(artist)
+            credit_str += f'{artist}{roles_str}'
+        return credit_str
+
+    def mrk_non_performing_credits(self, credits) -> str:
+        np_credit_str = ''
+        for artist, roles in credits.items():
+            roles = [r for r in roles if self.non_performing_role(r)]
+            if not roles:
+                continue
             roles_str = ",".join(f'{r}' for r in roles)
             # What if artist is listed w/o any roles?
             if roles_str:
