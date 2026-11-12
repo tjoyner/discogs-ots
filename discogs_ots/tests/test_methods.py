@@ -156,3 +156,25 @@ def test_fix_year(monkeypatch):
     assert s.fix_year("0") == 0
     assert s.fix_year("0.0") == 0
     assert s.fix_year("not") == 0
+
+def test_calculate_245_indicators(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["discogs_ots.py", "-id", "11111", "-ua", "testus"])
+    s = OtsDiscogsToCsv()
+    assert s.calculate_245_indicators("The Beatles") == "14"
+    assert s.calculate_245_indicators("the Beatles", True) == "04"
+    assert s.calculate_245_indicators("Thebus", True) == "00"
+    assert s.calculate_245_indicators("An American in Paris") == "13"
+    assert s.calculate_245_indicators("A Hard Day's Night") == "12"
+    # Parenthetical & Bracketed Articles
+    assert s.calculate_245_indicators("(The) Thing") == "16"
+    assert s.calculate_245_indicators("[An] Example Title") == "15"
+    assert s.calculate_245_indicators(' "The" Wall') == "16"
+    # Apostrophe-Delimited Articles (No trailing space)
+    assert s.calculate_245_indicators("L'enfant") == "12"
+    assert s.calculate_245_indicators("Dell'arte") == "15"
+    assert s.calculate_245_indicators("Un'avventura") == "13"
+    assert s.calculate_245_indicators("Les Misérables") == "14"
+    assert s.calculate_245_indicators("Il Barbiere di Siviglia") == "13"
+    assert s.calculate_245_indicators("Kind of Blue") == "10"
+    assert s.calculate_245_indicators("Abbey Road") == "10"
+    assert s.calculate_245_indicators("The Dark Side of the Moon") == "14"

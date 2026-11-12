@@ -676,6 +676,7 @@ class OtsDiscogsToCsv:
         artist_names = ''
         join = ''
         for artist in artists:
+            #self.is_group(artist)
             artist_name = self.remove_disambiguation(artist.get(API_NAME))
             if not artist_name:
                 self.writelog(f"Artist name was not specified in {artist}")
@@ -695,6 +696,10 @@ class OtsDiscogsToCsv:
                 join = ','
 
         return artist_names
+
+    #def is_group(self, artist): 
+    #    artist_id = artist.get("id")
+    #    artist_obj = self.d.artist(artist_id)
 
 
     def store_formats(self):
@@ -1201,7 +1206,7 @@ class OtsDiscogsToCsv:
         # 100 Main Entry (Artist)
         artists = self.fix_mrk_text(r.artists)
         has_100 = False
-        if artists:
+        if artists and artists.casefold() != 'various':
             has_100 = True
             mrk_lines.append(f"=100  1\\$a{artists}")
             
@@ -1295,7 +1300,7 @@ class OtsDiscogsToCsv:
         ind2 = "0"  # Default fallback if no articles match
 
         # Clean leading whitespace and punctuation like quotes/brackets for matching
-        cleaned_title = title.lstrip(' "\'[{')
+        cleaned_title = title.lstrip(' "\'[{\(').lower()
 
         # Mapping of common English articles to their exact character counts
         # This regex ensures we only match full words at the very beginning
@@ -1318,13 +1323,58 @@ class OtsDiscogsToCsv:
             (r"^los\s+", 4),
             (r"^l\s*'\s*", 2),  # Matches 'L'', 'l\'', or optional spacing around the apostrophe
         ]
+        articles = {
+          # English
+          "the ": 4,
+          "an ": 3,
+          "a ": 2,
+          # French
+          "le ": 3,
+          "la ": 3,
+          "les ": 4,
+          "un ": 3,
+          "une ": 4,
+          "des ": 4,
+          "l'": 2,  # e.g., L'enfant (2 chars)
+          # Italian / Spanish / German equivalents can go here...
+          "il ": 3,
+          "lo ": 3,
+          "la ": 3,
+          "i ": 2,
+          "gli ": 4,
+          "le ": 3,
+          "un'": 3,
+          "uno ": 4,
+          "una ": 4,
+          "un'": 3,
+          "del ": 4,
+          "dell'": 5,
+        }
+        for article, count in articles.items():
+            if cleaned_title.startswith(article):
+        #      ind2 = str(count)
+              break
 
-        for pattern, count in articles:
-            if re.match(pattern, cleaned_title, re.IGNORECASE):
-                # Calculate any initial stripped punctuation variance
-                punctuation_offset = len(title) - len(cleaned_title)
-                ind2 = str(count + punctuation_offset)
-                break
+        pattern = re.compile(
+              r'^(\s*[\(\[\{\"\']?'
+              r'(?:the|an|a|le|la|les|un|une|des|il|lo|i|gli|uno|una|del)'
+              r'[\)\]\}\"\']?\s+|'
+              r'\s*[\(\[\{\"\']?(?:l\'|dell\'|un\')[^\w]*)',
+            re.IGNORECASE,
+        )
+ 
+        title = title.lstrip()
+        match = pattern.match(title)
+        if match:
+            prefix = match.group(0)
+            ind2 =   min(len(prefix), 9)
+
+        #for pattern, count in articles:
+        #    if re.match(pattern, cleaned_title, re.IGNORECASE):
+        #        # Calculate any initial stripped punctuation variance
+        #        punctuation_offset = len(title) - len(cleaned_title)
+        #        ind2 = str(count + punctuation_offset)
+        #        break
 
         return f'{ind1}{ind2}'
 
