@@ -57,6 +57,8 @@ CSV_COL_SEPARATOR=","
 CSV_ITEM_SEPARATOR1="|"
 CSV_ITEM_SEPARATOR2="++"
 
+VARIOUS='various'
+
 headers = {
    CSV_RELEASE_ID : '',
    CSV_ARTIST : '',
@@ -1206,7 +1208,7 @@ class OtsDiscogsToCsv:
         # 100 Main Entry (Artist)
         artists = self.fix_mrk_text(r.artists)
         has_100 = False
-        if artists and artists.casefold() != 'various':
+        if artists and artists.casefold() != VARIOUS:
             has_100 = True
             mrk_lines.append(f"=100  1\\$a{artists}")
             
@@ -1287,7 +1289,6 @@ class OtsDiscogsToCsv:
         - title (str): The full title of the album.
         - has_main_entry (bool): True if there is a 1XX field (e.g., 100 Artist).
                                  False if entered directly under title.
-                                 (used?)
 
         Returns:
         - list: A list of two strings containing [indicator_1, indicator_2].
@@ -1299,62 +1300,8 @@ class OtsDiscogsToCsv:
         # 2. Determine Second Indicator (Non-filing characters)
         ind2 = "0"  # Default fallback if no articles match
 
-        # Clean leading whitespace and punctuation like quotes/brackets for matching
-        cleaned_title = title.lstrip(' "\'[{\(').lower()
-
-        # Mapping of common English articles to their exact character counts
-        # This regex ensures we only match full words at the very beginning
-        #articles = [
-        #    (r"^the\s+", 4),  # "The " = 4 chars
-        #    (r"^an\s+", 3),  # "An "  = 3 chars
-        #    (r"^a\s+", 2),  # "A "   = 2 chars
-        #]
-        articles = [
-            (r"^the\s+", 4),
-            (r"^an\s+", 3),
-            (r"^a\s+", 2),
-            (r"^der\s+", 4),
-            (r"^die\s+", 4),
-            (r"^das\s+", 4),
-            (r"^le\s+", 3),
-            (r"^la\s+", 3),
-            (r"^les\s+", 4),
-            (r"^el\s+", 3),
-            (r"^los\s+", 4),
-            (r"^l\s*'\s*", 2),  # Matches 'L'', 'l\'', or optional spacing around the apostrophe
-        ]
-        articles = {
-          # English
-          "the ": 4,
-          "an ": 3,
-          "a ": 2,
-          # French
-          "le ": 3,
-          "la ": 3,
-          "les ": 4,
-          "un ": 3,
-          "une ": 4,
-          "des ": 4,
-          "l'": 2,  # e.g., L'enfant (2 chars)
-          # Italian / Spanish / German equivalents can go here...
-          "il ": 3,
-          "lo ": 3,
-          "la ": 3,
-          "i ": 2,
-          "gli ": 4,
-          "le ": 3,
-          "un'": 3,
-          "uno ": 4,
-          "una ": 4,
-          "un'": 3,
-          "del ": 4,
-          "dell'": 5,
-        }
-        for article, count in articles.items():
-            if cleaned_title.startswith(article):
-        #      ind2 = str(count)
-              break
-
+        # this pattern also looks for parenthetical articles e.g. (The). It also 
+        # allows patterns like "(The]", but this is close enough. 
         pattern = re.compile(
               r'^(\s*[\(\[\{\"\']?'
               r'(?:the|an|a|le|la|les|un|une|des|il|lo|i|gli|uno|una|del)'
@@ -1368,13 +1315,6 @@ class OtsDiscogsToCsv:
         if match:
             prefix = match.group(0)
             ind2 =   min(len(prefix), 9)
-
-        #for pattern, count in articles:
-        #    if re.match(pattern, cleaned_title, re.IGNORECASE):
-        #        # Calculate any initial stripped punctuation variance
-        #        punctuation_offset = len(title) - len(cleaned_title)
-        #        ind2 = str(count + punctuation_offset)
-        #        break
 
         return f'{ind1}{ind2}'
 
@@ -1426,11 +1366,25 @@ class OtsDiscogsToCsv:
     
 
     def mrk_tracklist(self, mrk_lines, tracklist):
+        performed_by = None
+        performed_by_differs = False
+        for (title, track_pos), track_info in tracklist.items():
+            if track_info.performed_by:
+                ticf = track_info.performed_by.casefold()
+                if not performed_by:
+                    performed_by = ticf
+                else:
+                    if performed_by != ticf:
+                        performed_by_differs = True
+                        break;
+        if not performed_by_differs:
+            self.writelog(f"Performed by {performed_by} is the same for all tracks in {self.current_record.id}")
+
         for (title, track_pos), track_info in tracklist.items():
             written_by_str = ",".join(f'{w}' for w in track_info.written_by)
             if written_by_str:
                 written_by_str = f'Written by {written_by_str}'
-            if track_info.performed_by:
+            if track_info.performed_by and track_info.performed_by != VARIOUS and performed_by_differs:
                 performed_by_str = f'Performed by {track_info.performed_by}'
             else:
                 performed_by_str = ''
