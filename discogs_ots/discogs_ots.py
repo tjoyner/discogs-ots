@@ -1238,7 +1238,7 @@ class OtsDiscogsToCsv:
         if mrk_credits:
             mrk_lines.append(f"=511  0\\$a{mrk_credits}")
 
-        mrk_non_performing_credits = self.mrk_credits(r.credits)
+        mrk_non_performing_credits = self.mrk_non_performing_credits(r.credits)
         if mrk_non_performing_credits:
             mrk_lines.append(f"=508  \\\\$a{mrk_non_performing_credits}")
 
